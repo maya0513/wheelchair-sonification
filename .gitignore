@@ -1,0 +1,45 @@
+# Local tool configuration, credentials, and verification output
+/.local/
+/mise.local.toml
+/mise.local.lock
+/.env
+/.env.*
+!/.env.example
+/.codex/*
+!/.codex/config.toml
+/.mise/**/.venv/
+**/__pycache__/
+
+# Unity generated state (keep Assets and their .meta files)
+/wheelchair-sonification/[Ll]ibrary/
+/wheelchair-sonification/[Tt]emp/
+/wheelchair-sonification/[Oo]bj/
+/wheelchair-sonification/[Ll]ogs/
+/wheelchair-sonification/[Uu]ser[Ss]ettings/
+/wheelchair-sonification/[Bb]uild/
+/wheelchair-sonification/[Bb]uilds/
+/wheelchair-sonification/[Mm]emoryCaptures/
+/wheelchair-sonification/[Rr]ecordings/
+/wheelchair-sonification/.vs/
+/wheelchair-sonification/.idea/
+/wheelchair-sonification/.vscode/
+/wheelchair-sonification/*.csproj
+/wheelchair-sonification/*.sln
+/wheelchair-sonification/*.slnx
+/wheelchair-sonification/*.user
+/wheelchair-sonification/*.pidb
+/wheelchair-sonification/*.booproj
+/wheelchair-sonification/*.opendb
+/wheelchair-sonification/*.VC.db
+/wheelchair-sonification/sysinfo.txt
+/wheelchair-sonification/*.apk
+/wheelchair-sonification/*.aab
+/wheelchair-sonification/*.unitypackage
+/wheelchair-sonification/[Cc]rash[Rr]eports/
+/wheelchair-sonification/mono_crash.*
+/wheelchair-sonification/*.dmp
+/wheelchair-sonification/*.log
+
+# OS metadata
+.DS_Store
+Thumbs.db

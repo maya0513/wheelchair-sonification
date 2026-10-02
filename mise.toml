@@ -1,0 +1,10 @@
+[settings]
+lockfile = true
+
+[tools]
+just = "latest"
+node = "lts"
+python = "latest"
+uv = "latest"
+typst = "latest"
+"pypi:mcpforunityserver" = "10.2.0"
