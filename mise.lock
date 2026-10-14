@@ -25,16 +25,16 @@ url = "https://nodejs.org/dist/v24.21.0/node-v24.21.0-linux-x64.tar.gz"
 version = "10.2.0"
 backend = "pypi:mcpforunityserver"
 specifiers = ["10.2.0"]
-uv = { path = ".mise/locks/pypi-mcpforunityserver/10.2.0", digest = "sha256:8c438812ec526d0abd62941d66c6f0609a1b5adfae93016fc9878d022cc49c78" }
+uv = { path = ".mise/locks/pypi-mcpforunityserver/10.2.0", digest = "sha256:7403fb4f74e92db7fc28bba6bb736a3ba94a75eff3bac975c70a79e0e740a154" }
 
 [[tools.python]]
-version = "3.14.8"
+version = "3.15.0"
 backend = "core:python"
 specifiers = ["latest"]
 
 [tools.python."platforms.linux-x64"]
-checksum = "sha256:b373a4a4e4e70fc05f368c9b53d7738bf37637682b650d96c742805d2da26c32"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261001/cpython-3.14.8+20261001-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz"
+checksum = "sha256:69740dcd9b3480b3d53760f2d3b75582adb14fa54434628dea32480ddede542a"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.15.0+20261013-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
 [[tools.typst]]
@@ -48,12 +48,12 @@ url = "https://github.com/typst/typst/releases/download/v0.15.1/typst-x86_64-unk
 url_api = "https://api.github.com/repos/typst/typst/releases/assets/480300761"
 
 [[tools.uv]]
-version = "0.12.21"
+version = "0.13.0"
 backend = "aqua:astral-sh/uv"
 specifiers = ["latest"]
 
 [tools.uv."platforms.linux-x64"]
-checksum = "sha256:23f02075b652bb1df64178cfae41b5caf160822e720e2663568f3f5d63bc52c0"
-url = "https://github.com/astral-sh/uv/releases/download/0.12.21/uv-x86_64-unknown-linux-gnu.tar.gz"
-url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/599238020"
+checksum = "sha256:1468ebd5a5541121837c5a2817b9972ba6090fa6caa3d142620850a47fb75154"
+url = "https://github.com/astral-sh/uv/releases/download/0.13.0/uv-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/626003332"
 provenance = "github-attestations"
