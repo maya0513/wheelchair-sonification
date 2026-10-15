@@ -2,15 +2,15 @@
 set -euo pipefail
 
 if [[ $# -ne 1 ]]; then
-    echo "Usage: $0 {path|libraries|open|check}" >&2
+    echo "Usage: $0 {path|libraries|open|check|test-edit|test-play|build}" >&2
     exit 2
 fi
 case "$1" in
-    path|libraries|open|check) ;;
-    *) echo "Usage: $0 {path|libraries|open|check}" >&2; exit 2 ;;
+    path|libraries|open|check|test-edit|test-play|build) ;;
+    *) echo "Usage: $0 {path|libraries|open|check|test-edit|test-play|build}" >&2; exit 2 ;;
 esac
 
-if [[ "$1" == open ]]; then
+if [[ "$1" == open || "$1" == test-play ]]; then
     graphics_api=${UNITY_GRAPHICS_API:-vulkan}
     case "$graphics_api" in
         vulkan) graphics_args=(-force-vulkan) ;;
@@ -70,13 +70,38 @@ if [[ "$1" == open ]]; then
     exec "$editor" "${graphics_args[@]}" -projectPath "$project" -logFile "$root/.local/logs/unity-editor.log"
 fi
 
-log="$root/.local/logs/unity-check.log"
+log="$root/.local/logs/unity-$1.log"
 # 古いログを今回の結果として扱わない。直前のログは残す。
 if [[ -e "$log" ]]; then
     mv -- "$log" "$log.previous"
 fi
 status=0
-"$editor" -batchmode -nographics -quit -projectPath "$project" -logFile "$log" || status=$?
+results=''
+case "$1" in
+    test-edit|test-play)
+        results="$root/.local/logs/unity-$1.xml"
+        if [[ -e "$results" ]]; then mv -- "$results" "$results.previous"; fi
+        if [[ "$1" == test-edit ]]; then
+            test_platform=EditMode
+            test_assembly=WheelchairSonification.EditModeTests
+            test_graphics=(-nographics)
+        else
+            test_platform=PlayMode
+            test_assembly=WheelchairSonification.PlayModeTests
+            test_graphics=("${graphics_args[@]}")
+        fi
+        # -quit can terminate the test runner before it finishes; the runner exits itself.
+        "$editor" -batchmode "${test_graphics[@]}" -projectPath "$project" -logFile "$log" \
+            -runTests -testPlatform "$test_platform" -assemblyNames "$test_assembly" -testResults "$results" || status=$?
+        ;;
+    build)
+        "$editor" -batchmode -nographics -quit -projectPath "$project" -logFile "$log" \
+            -executeMethod WheelchairSonification.Editor.DemoBuildTools.BuildLinux || status=$?
+        ;;
+    check)
+        "$editor" -batchmode -nographics -quit -projectPath "$project" -logFile "$log" || status=$?
+        ;;
+esac
 if [[ "$status" -ne 0 ]]; then
     echo "Unityバッチ確認に失敗しました（終了コード: $status、ログ: $log）。" >&2
     if [[ -s "$log" ]]; then
@@ -94,10 +119,22 @@ if grep -Eq 'error CS[0-9]+|Scripts have compiler errors|Compilation failed' "$l
     echo "コンパイルエラーがあります: $log" >&2
     exit 1
 fi
+if [[ -n "$results" ]]; then
+    "${UNITY_RESULTS_PYTHON:-python3}" "$root/scripts/unity-results.py" "$results"
+    exit $?
+fi
 if ! grep -Fq 'Exiting batchmode successfully now!' "$log" ||
     ! grep -Fq 'Application will exit with return code 0' "$log"; then
     echo "Unityの正常終了記録がありません: $log" >&2
     tail -n 60 -- "$log" >&2
     exit 1
 fi
-printf 'Unity %s: 依存解決・コンパイル成功（ログ: %s）\n' "$version" "$log"
+if [[ "$1" == build ]]; then
+    if ! grep -Fq 'Feedback demo built:' "$log" || [[ ! -x "$root/.local/builds/feedback-demo/FeedbackDemo.x86_64" ]]; then
+        echo "今回のLinuxビルドの成功を確認できません: $log" >&2
+        exit 1
+    fi
+    printf 'Linuxデモ: %s\n' "$root/.local/builds/feedback-demo/FeedbackDemo.x86_64"
+else
+    printf 'Unity %s: 依存解決・コンパイル成功（ログ: %s）\n' "$version" "$log"
+fi

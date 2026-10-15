@@ -1,0 +1,5 @@
+{
+    "name": "WheelchairSonification.Core",
+    "rootNamespace": "WheelchairSonification.Core",
+    "noEngineReferences": true
+}

@@ -1,0 +1,6 @@
+{
+    "name": "WheelchairSonification.EditModeTests",
+    "references": ["WheelchairSonification.Core", "WheelchairSonification.Runtime"],
+    "includePlatforms": ["Editor"],
+    "optionalUnityReferences": ["TestAssemblies"]
+}

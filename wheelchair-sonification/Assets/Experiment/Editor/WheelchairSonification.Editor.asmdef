@@ -1,0 +1,5 @@
+{
+    "name": "WheelchairSonification.Editor",
+    "references": ["WheelchairSonification.Runtime"],
+    "includePlatforms": ["Editor"]
+}

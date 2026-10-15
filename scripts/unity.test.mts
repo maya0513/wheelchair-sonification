@@ -14,6 +14,7 @@ function fixture(t: { after: (fn: () => void) => void }) {
   t.after(() => rmSync(root, { recursive: true, force: true }));
   for (const dir of ['scripts', 'bin', 'wheelchair-sonification/ProjectSettings', 'wheelchair-sonification/Temp']) mkdirSync(join(root, dir), { recursive: true });
   copyFileSync(script, join(root, 'scripts/unity.sh'));
+  copyFileSync(join(dirname(script), 'unity-results.py'), join(root, 'scripts/unity-results.py'));
   writeFileSync(join(root, 'wheelchair-sonification/ProjectSettings/ProjectVersion.txt'), 'm_EditorVersion: 6000.6.4f1\r\n');
   writeFileSync(join(root, 'bin/ldd'), '#!/bin/sh\nif [ "$TEST_CASE" = libraries ]; then echo "libmissing.so => not found"; else echo "共有ライブラリOK"; fi\n', { mode: 0o755 });
   const editor = join(root, 'fake Unity');
@@ -21,8 +22,10 @@ function fixture(t: { after: (fn: () => void) => void }) {
 set -eu
 printf '%s\\n' "$@" > "${root}/invocation"
 log=''
+results=''
 while [[ $# -gt 0 ]]; do
   if [[ "$1" == -logFile ]]; then log="$2"; shift; fi
+  if [[ "$1" == -testResults ]]; then results="$2"; shift; fi
   shift
 done
 case "$TEST_CASE" in
@@ -32,6 +35,9 @@ case "$TEST_CASE" in
   incomplete) echo 'startup only' > "$log" ;;
   *) printf '${successLog}' > "$log" ;;
 esac
+if [[ -n "$results" && "$TEST_CASE" != no-results ]]; then
+  printf '%s' '<test-run total="1" passed="1" failed="0" skipped="0" inconclusive="0" result="Passed"><test-case fullname="fixture" result="Passed" /></test-run>' > "$results"
+fi
 `, { mode: 0o755 });
   const execute = (mode = 'check', scenario = 'success', args: string[] = [], graphicsApi = '') => spawnSync('bash', [join(root, 'scripts/unity.sh'), mode, ...args], {
     cwd: tmpdir(), encoding: 'utf8', timeout: 5000,
@@ -141,4 +147,29 @@ test('incomplete log cannot be treated as success', t => {
   const result = execute('check', 'incomplete');
   assert.equal(result.status, 1);
   assert.match(result.stderr, /正常終了記録がありません/);
+});
+
+test('test modes run only their assembly, validate results and omit quit', t => {
+  const { root, execute } = fixture(t);
+  for (const [mode, platform] of [['test-edit', 'EditMode'], ['test-play', 'PlayMode']]) {
+    const result = execute(mode);
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /1件成功/);
+    const args = readFileSync(join(root, 'invocation'), 'utf8').trim().split('\n');
+    assert.ok(args.includes('-runTests'));
+    assert.ok(!args.includes('-quit'));
+    assert.equal(args[args.indexOf('-testPlatform') + 1], platform);
+    assert.equal(args[args.indexOf('-assemblyNames') + 1], `WheelchairSonification.${platform}Tests`);
+    assert.equal(args.includes('-nographics'), mode === 'test-edit');
+  }
+});
+
+test('old results cannot make a test run without new results succeed', t => {
+  const { root, execute } = fixture(t);
+  assert.equal(execute('test-edit').status, 0);
+  const result = execute('test-edit', 'no-results');
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Unityテスト結果を確認できません/);
+  assert.ok(existsSync(join(root, '.local/logs/unity-test-edit.xml.previous')));
+  assert.equal(existsSync(join(root, '.local/logs/unity-test-edit.xml')), false);
 });

@@ -20,6 +20,7 @@
 | 装置と手順の成立性を確かめる | [検証計画](specifications/validation.md) | 精度・追跡・提示の受入れ基準と通し予備実験 |
 | 結果を分析・報告する | [分析計画](analysis-plan.md) | 集約式、主要比較、副次評価、欠測、結果の示し方 |
 | 開発方法を学ぶ | [開発ガイド](development/guide.md) | Unity、模擬入力、自動テスト、実機確認の進め方 |
+| 模擬入力版を動かす | [起動と操作](development/feedback-demo.md) | デモの操作、ログ、自動テスト、Linuxビルド |
 
 ## 情報の置き場所
 

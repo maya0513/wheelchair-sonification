@@ -10,16 +10,29 @@ setup:
 
 # 補助スクリプトの構文と失敗時の動作を確認（Editor未実行）
 check:
-    mise exec -- bash -n scripts/unity.sh
-    mise exec -- node --test scripts/*.test.mts
+    bash -n scripts/unity.sh
+    mise exec node python -- node --test scripts/*.test.mts
 
 # Unityを開く（Vulkan、終了まで端末を使用）
 unity-open:
-    mise exec -- bash scripts/unity.sh open
+    bash scripts/unity.sh open
 
 # Unityを閉じてから、バッチで依存解決とコンパイルを確認
 unity-check:
-    mise exec -- bash scripts/unity.sh check
+    bash scripts/unity.sh check
+
+# 判定とUnity統合のテストを順に実行（Editorを閉じてから）
+unity-test: unity-test-edit unity-test-play
+
+unity-test-edit:
+    mise exec python -- bash scripts/unity.sh test-edit
+
+unity-test-play:
+    mise exec python -- bash scripts/unity.sh test-play
+
+# Linux用の技術検証デモを.local/builds/へ作成
+unity-build:
+    bash scripts/unity.sh build
 
 # UnityとCodexをつなぐHTTPサーバーを起動（Ctrl+Cで終了）
 unity-mcp:

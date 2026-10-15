@@ -1,0 +1,5 @@
+{
+    "name": "WheelchairSonification.PlayModeTests",
+    "references": ["WheelchairSonification.Core", "WheelchairSonification.Runtime"],
+    "optionalUnityReferences": ["TestAssemblies"]
+}

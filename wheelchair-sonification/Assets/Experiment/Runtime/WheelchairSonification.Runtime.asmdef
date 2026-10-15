@@ -1,0 +1,5 @@
+{
+    "name": "WheelchairSonification.Runtime",
+    "rootNamespace": "WheelchairSonification.Runtime",
+    "references": ["WheelchairSonification.Core", "UnityEngine.UI", "Unity.InputSystem"]
+}
