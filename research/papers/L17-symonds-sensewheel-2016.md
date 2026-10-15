@@ -5,7 +5,7 @@
 Symonds A; Taylor SJ; Holloway C. Healthcare technology letters. 2016.
 
 - 出典：[10.1049/htl.2016.0056](https://doi.org/10.1049/htl.2016.0056)
-- 閲覧範囲：本文の方法・結果・限界を重点確認。調査日：2026-10-14
+- 閲覧範囲：本文の方法・結果・限界を重点確認。初回調査：2026-10-14。受理稿と出版最終版の関連節を再照合：2026-10-15。
 - 本文：[保存PDF](../pdfs/L17.pdf)。保存版・取得条件は[PDF一覧](../pdfs/INDEX.md)参照。
 
 ## 研究の要約
@@ -21,7 +21,17 @@ Symonds A; Taylor SJ; Holloway C. Healthcare technology letters. 2016.
 
 ## 結果と限界
 
-角度53.75→79.13度、ピーク力44.07→55.60 N、速度0.76→0.95 m/s。頻度の低下は非有意。
+出版最終版の§3・Table 1では角度59.85→80.96度、速度0.76→0.95 m/s。頻度の低下は非有意。ピーク力も増加するが、最終版の本文と表で数値が一致しないため、引用位置を明示する。[出版最終版 §3・Table 1](https://ietresearch.onlinelibrary.wiley.com/doi/10.1049/htl.2016.0056)
+
+### 参照版と数値の差
+
+| 指標 | 保存したUCL受理稿 Table 1 | 出版最終版 §3・Table 1 |
+|---|---|---|
+| 角度 | 53.75→79.13度 | 59.85→80.96度 |
+| ピーク力 | 44.07→55.60 N | §3本文43.00→53.36 N／Table 1は43.00→55.36 N |
+| 速度 | 0.76→0.95 m/s | 0.76→0.95 m/s |
+
+初回ノートの数値は[保存受理稿](../pdfs/L17.pdf)に基づいていた。受理稿と最終版の差、最終版内のピーク力の不一致が生じた理由は未確認であり、一つの値へ統合しない。数値を引用する場合は版と節・表を添える。保存PDFは受理稿の記録として保持する。[UCL公開元](https://discovery.ucl.ac.uk/id/eprint/1524165/1/HTL.2016.0056.pdf)、[出版最終版](https://ietresearch.onlinelibrary.wiley.com/doi/10.1049/htl.2016.0056)
 
 速度も変化し、無作為対照・順序統制なし。角度改善だけで負荷低減を示さない。
 
@@ -31,6 +41,6 @@ Symonds A; Taylor SJ; Holloway C. Healthcare technology letters. 2016.
 
 ## 確認位置
 
-保存PDF pp.1–4、Methods 2.2–2.5、表1、Limitations 4.2。
+保存受理稿PDF pp.1–4、Methods 2.2–2.5、Table 1、Limitations 4.2。出版最終版の§2.3（回復期FB）、§3・Table 1（結果）、§4（ピーク力の記述）を追加照合。版差は上表に記録した。
 
 数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

@@ -15,7 +15,7 @@
 | [L12](../papers/L12-ghai-2018.md) | [L12.pdf](L12.pdf) | 21 | 出版社／公式公開版 | [公開元](https://www.frontiersin.org/journals/neurology/articles/10.3389/fneur.2018.00488/pdf)。CC BYの表示。バージョン等は原文参照。 |
 | [L13](../papers/L13-gref-2016.md) | [L13.pdf](L13.pdf) | 6 | 出版社／公式公開版 | [公開元](https://zenodo.org/api/records/851169/files/smc_2016_002.pdf/content)。CC BY 3.0（原著1ページとZenodoの表示） |
 | [L14](../papers/L14-yan-2021.md) | [L14.pdf](L14.pdf) | 19 | 出版社／公式公開版 | [公開元](https://link.springer.com/content/pdf/10.1186/s12984-021-00936-x.pdf)。CC BYの表示。バージョン等は原文参照。 |
-| [L17](../papers/L17-symonds-sensewheel-2016.md) | [L17.pdf](L17.pdf) | 5 | 著者最終稿 | [公開元](https://discovery.ucl.ac.uk/1524165/1/HTL.2016.0056.pdf)。大学公開の著者最終稿。ライセンスの詳細はPDF・公開元参照。 |
+| [L17](../papers/L17-symonds-sensewheel-2016.md) | [L17.pdf](L17.pdf) | 5 | 著者最終稿 | [公開元](https://discovery.ucl.ac.uk/1524165/1/HTL.2016.0056.pdf)。大学公開の著者最終稿。出版最終版との数値差・最終版内の不一致は文献ノートに記録（2026-10-15）。ライセンスの詳細はPDF・公開元参照。 |
 | [L18](../papers/L18-symonds-review-2018.md) | [L18.pdf](L18.pdf) | 25 | 著者最終稿 | [公開元](https://discovery.ucl.ac.uk/id/eprint/1537291/1/Submission%20Proof_%20A%20systematic%20review_%20real%20time%20feedback.pdf)。大学公開の著者最終稿。ライセンスの詳細はPDF・公開元参照。 |
 | [L20](../papers/L20-pva-guideline-2005.md) | [L20.pdf](L20.pdf) | 48 | 出版社／公式公開版 | [公開元](https://pva.org/wp-content/uploads/2021/09/cpg_upperlimb.pdf)。©2005 Paralyzed Veterans of America、公式公開のガイドライン。利用条件は原文参照。 |
 | [L23](../papers/L23-vegter-2014.md) | [L23.pdf](L23.pdf) | 10 | 出版社／公式公開版 | [公開元](https://journals.plos.org/plosone/article/file?id=10.1371%2Fjournal.pone.0089729&type=printable)。CC BYの表示。バージョン等は原文参照。 |

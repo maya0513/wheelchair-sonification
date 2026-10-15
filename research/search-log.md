@@ -68,3 +68,12 @@ L02はCrossref DOIで照合。L31は検索名を修正しPMID 26125019のSoltau�
 | D09 | WSP公式Skills Manual and Forms | Word関連節 | 公式現行5.5.1を取得。配布承認2026-08-14。検索上位の旧版を現行と誤認しない |
 
 L53はEurope PMCのDOI検索0件のためJ-STAGE原記録とPDFで同定。L54–L59はEurope PMCのDOI／PMIDで照合。L60はJ-STAGEの原記録・PDF。L61はRESNA原会議ページの検索公開テキスト、直接取得の文字コードエラーを区別。
+
+## 計画改訂に伴う関連節の照合（2026-10-15）
+
+文献の追加網羅検索ではなく、既存の数値と分析の事前定義の補助照合。既存70件の採択集計・保存PDFの件数は変えていない。
+
+| 資料・照合キー | 閲覧範囲 | 確認内容・反映先 |
+|---|---|---|
+| [L17出版最終版、10.1049/htl.2016.0056](https://ietresearch.onlinelibrary.wiley.com/doi/10.1049/htl.2016.0056)／[UCL受理稿](https://discovery.ucl.ac.uk/id/eprint/1524165/1/HTL.2016.0056.pdf) | §2.3、§3・Table 1、§4、受理稿Table 1 | 回復期の言語FBを再確認。角度の版差・最終版内のピーク力の不一致を[L17ノート](papers/L17-symonds-sensewheel-2016.md)へ注記。保存受理稿は保持 |
+| [Hopewell et al., CONSORT 2025説明文書、10.1136/bmj-2024-081124](https://pmc.ncbi.nlm.nih.gov/articles/PMC11995452/) | Item 14、21c、21dの関連節のみ | 集約・時点・欠測・追加解析の事前定義の参考として[分析計画](../docs/analysis-plan.md)へ反映。車いす介入の効果文献としての追加採択ではなく、方法上の補助資料。全文精読・新規PDF取得は行っていない |
