@@ -13,4 +13,4 @@ Welchの窓長・FFT・重なりを指定できる。不良区間はBADで始ま
 
 単位はV/µVを明記し、振幅閾値の単位を揃える。解析環境のバージョンを固定。MNE導入自体は少数電極の妥当性や自動ノイズ除去を保証しない。
 
-参照：[装置案](../../docs/specifications/feedback.md)、[EEG案](../../docs/archive/exploratory-eeg.md)。
+参照：[フィードバック仕様](../../docs/specifications/feedback.md)、[EEGの品質と解釈](../topics/eeg.md)。

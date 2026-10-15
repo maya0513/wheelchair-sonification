@@ -13,4 +13,4 @@ PlayScheduledはdspTime上の絶対時刻へ予約。DSPバッファは遅延と
 
 完了後に分かる接触角を過去へ予約できない。プリロード音をイベント後に鳴らし実測する。Update周期や予約時刻を実際の音開始時刻と同一視しない。
 
-参照：[装置案](../../docs/specifications/feedback.md)、[EEG案](../../docs/archive/exploratory-eeg.md)。
+参照：[フィードバック仕様](../../docs/specifications/feedback.md)、[EEGの品質と解釈](../topics/eeg.md)。

@@ -12,4 +12,4 @@
 
 時計の同期と装置内部の遅れは別。OSC/LSLへ送信した時刻だけで、皮膚上の取得時点や音の到達時点を保証しない。L45と併読。
 
-参照：[装置案](../../docs/specifications/feedback.md)、[EEG案](../../docs/archive/exploratory-eeg.md)。
+参照：[フィードバック仕様](../../docs/specifications/feedback.md)、[EEGの品質と解釈](../topics/eeg.md)。

@@ -27,4 +27,4 @@
 | 保存PDF、取得元、利用条件 | [PDF一覧](pdfs/INDEX.md)・[容量とハッシュ](pdfs/manifest.json) |
 | 公式Wordの原本と取得条件 | [保存資料一覧](sources/INDEX.md) |
 
-研究計画の選択理由は[設計上の判断](../docs/decisions.md)、原発表と未採用の検討案は[参考資料](../docs/archive/README.md)を参照してください。参加者の映像・生ログは文献調査の資料に含めません。
+研究計画の選択理由は[設計上の判断](../docs/decisions.md)、原発表の内容は[原資料](../docs/archive/README.md)を参照してください。参加者の映像・生ログは文献調査の資料に含めません。

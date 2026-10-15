@@ -13,4 +13,4 @@ Mental Demand、Physical Demand、Temporal Demand、Performance、Effort、Frust
 
 身体負荷と精神的負荷を混同しない。項目を削った独自の平均をNASA-TLXの標準得点と呼ばない。公式PDFのローカル取得はタイムアウトし、公開情報を確認。
 
-参照：[主観評価と用紙](../../docs/operations/participant-materials.md#主観評価用紙)、[日本語版原著L60](L60-haga-1996.md)、[EEGの保留案](../../docs/archive/exploratory-eeg.md)。
+参照：[主観評価と用紙](../../docs/operations/participant-materials.md#主観評価用紙)、[日本語版原著L60](L60-haga-1996.md)、[EEGの品質と解釈](../topics/eeg.md)。

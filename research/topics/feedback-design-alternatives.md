@@ -41,4 +41,4 @@ FBの内容、提示時点、音と表示への割当を、先行研究と比較
 
 技術精度と回復期の実提示開始は[検証計画](../../docs/specifications/validation.md)で確認する。受入れ基準も本研究の設計値として扱う。
 
-[画面・音の仕様](../../docs/specifications/feedback.md)、[開始条件](../../docs/operations/study-operations.md#本計測開始条件)、[未採用の検討案](../../docs/archive/README.md)を参照。
+[画面・音の仕様](../../docs/specifications/feedback.md)、[開始条件](../../docs/operations/study-operations.md#本計測開始条件)を参照。
