@@ -1,6 +1,4 @@
-# L32 nourbakhsh（2026）
-
-**Evaluation of visual augmented feedback on manual wheelchair (MWC) users' wheelchair propulsion pattern in a MWC simulator to enhance training outcomes: a pilot study.**
+# L32｜Evaluation of visual augmented feedback on manual wheelchair (MWC) users' wheelchair propulsion pattern in a MWC simulator to enhance training outcomes: a pilot study.
 
 Nourbakhsh S; Rocha JM; Monacelli E; Archambault PS. Disability and rehabilitation. Assistive technology. 2026.
 
@@ -32,5 +30,3 @@ Nourbakhsh S; Rocha JM; Monacelli E; Archambault PS. Disability and rehabilitati
 ## 確認位置
 
 Abstract、DOIの正式刊行記録。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

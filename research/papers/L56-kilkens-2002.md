@@ -1,6 +1,4 @@
-# L56 Kilkens OJ; Post MW; van der Woude LH; Dallmeijer AJ; van den Heuvel WJ（2002）
-
-**The wheelchair circuit: reliability of a test to assess mobility in persons with spinal cord injuries**
+# L56｜The wheelchair circuit: reliability of a test to assess mobility in persons with spinal cord injuries
 
 Archives of Physical Medicine and Rehabilitation 83(12), 1783–1788。調査・照合日：2026-10-14。
 

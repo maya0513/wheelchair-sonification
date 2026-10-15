@@ -12,4 +12,4 @@
 
 配列の一時的なdeviceIndexだけで左右を決めず、起動時にserial/役割を対応づける。tracking lossを0座標の観測として扱わない。
 
-参照：[装置案](../../docs/feedback-specification.md)、[EEG案](../../docs/archive/exploratory-eeg-on-hold.md)。
+参照：[装置案](../../docs/specifications/feedback.md)、[EEG案](../../docs/archive/exploratory-eeg.md)。

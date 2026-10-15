@@ -1,6 +1,4 @@
-# L43 cavanagh（2014）
-
-**Frontal theta as a mechanism for cognitive control.**
+# L43｜Frontal theta as a mechanism for cognitive control.
 
 Cavanagh JF; Frank MJ. Trends in cognitive sciences. 2014.
 
@@ -32,5 +30,3 @@ Cavanagh JF; Frank MJ. Trends in cognitive sciences. 2014.
 ## 確認位置
 
 Abstract。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

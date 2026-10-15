@@ -1,6 +1,4 @@
-# L48 lakens（2022）
-
-**Sample Size Justification**
+# L48｜Sample Size Justification
 
 Daniël Lakens. Collabra: Psychology. 2022.
 
@@ -32,5 +30,3 @@ N=15が十分だと保証する文献ではない。計測周期や試行数を�
 ## 確認位置
 
 Six Approaches / Resource Constraints / Sensitivity Power Analysis、著者公開版。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

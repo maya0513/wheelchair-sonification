@@ -23,4 +23,4 @@
 
 実物の型番・個数確認 → 実際の取得周期と追跡可能範囲の計測 → 座標・中心・接触推定の検証 → 1変数のFB → 記録・同期 → 本計測。音楽・3D音場・自動パターン分類の追加は、この順序の後に置く。
 
-比較表は[device-comparison](../implementation/device-comparison.md)、現行の研究要件は[FB仕様](../../docs/feedback-specification.md)と[検証・記録](../../docs/study-operations.md)。以前の詳細な実装検討は[旧システム案](../../docs/archive/2026-10-14-initial-system-proposal.md)として保存し、現在の承認済みアルゴリズムと混同しない。
+比較表は[装置比較](device-comparison.md)、本研究の要件は[FB仕様](../../docs/specifications/feedback.md)と[検証計画](../../docs/specifications/validation.md)。仮の検出法は[区間終了後FBの検討案](../../docs/archive/terminal-feedback-system.md)に分けている。開発の進め方は[開発ガイド](../../docs/development/guide.md)を参照する。

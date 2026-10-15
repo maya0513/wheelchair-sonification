@@ -1,6 +1,4 @@
-# L35 badcock（2013）
-
-**Validation of the Emotiv EPOC(®) EEG gaming system for measuring research quality auditory ERPs.**
+# L35｜Validation of the Emotiv EPOC(®) EEG gaming system for measuring research quality auditory ERPs.
 
 Badcock NA; Mousikou P; Mahajan Y; de Lissa P; Thie J; McArthur G. PeerJ. 2013.
 
@@ -32,5 +30,3 @@ Badcock NA; Mousikou P; Mahajan Y; de Lissa P; Thie J; McArthur G. PeerJ. 2013.
 ## 確認位置
 
 Materials and Methods: Participants / Equipment / Testing procedure、Discussion。本文XML。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

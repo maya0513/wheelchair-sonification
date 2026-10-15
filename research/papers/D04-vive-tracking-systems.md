@@ -13,4 +13,4 @@ Tracker 3.0はベースステーション方式、Ultimateはカメラによる�
 
 Focus系と旧Lighthouse Trackerの直接互換を仮定しない。異なる座標系を混ぜる場合の校正は追加作業。今回、型番未確定のまま組合せを断定しない。
 
-参照：[装置案](../../docs/feedback-specification.md)、[EEG案](../../docs/archive/exploratory-eeg-on-hold.md)。
+参照：[装置案](../../docs/specifications/feedback.md)、[EEG案](../../docs/archive/exploratory-eeg.md)。

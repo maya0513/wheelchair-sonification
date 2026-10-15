@@ -1,6 +1,4 @@
-# L49 nikmaram（2019）
-
-**Musical Sonification of Arm Movements in Stroke Rehabilitation Yields Limited Benefits.**
+# L49｜Musical Sonification of Arm Movements in Stroke Rehabilitation Yields Limited Benefits.
 
 Nikmaram N; Scholz DS; Großbach M; Schmidt SB; Spogis J; Belardinelli P; Müller-Dahlhaus F; Remy J; Ziemann U; Rollnik JD; Altenmüller E. Frontiers in neuroscience. 2019.
 
@@ -32,5 +30,3 @@ Site1は交互割付、Site2は擬似無作為。装置・施設差が滑らか�
 ## 確認位置
 
 Materials and Methods: Patients / Experimental Setup / EMG and EEG Recordings、Results、Discussion。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

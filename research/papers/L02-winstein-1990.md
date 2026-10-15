@@ -1,6 +1,4 @@
-# L02 winstein（1990）
-
-**Reduced frequency of knowledge of results enhances motor skill learning.**
+# L02｜Reduced frequency of knowledge of results enhances motor skill learning.
 
 Carolee J. Winstein; Richard A. Schmidt. Journal of Experimental Psychology: Learning, Memory, and Cognition. 1990.
 
@@ -32,5 +30,3 @@ APA本文へのアクセス制限。視覚・KRの知見をすべての並行聴
 ## 確認位置
 
 Crossref書誌、DOI、L05 Discussion。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

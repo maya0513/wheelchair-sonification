@@ -1,6 +1,4 @@
-# L55 Pradon D; Pinsault N; Zory R; Routhier F（2012）
-
-**Could mobilty performance measures be used to evaluate wheelchair skills?**
+# L55｜Could mobilty performance measures be used to evaluate wheelchair skills?
 
 Journal of Rehabilitation Medicine 44, 276–279。調査・照合日：2026-10-14。
 

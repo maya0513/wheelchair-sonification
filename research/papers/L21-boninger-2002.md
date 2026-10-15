@@ -1,6 +1,4 @@
-# L21 boninger（2002）
-
-**Propulsion patterns and pushrim biomechanics in manual wheelchair propulsion.**
+# L21｜Propulsion patterns and pushrim biomechanics in manual wheelchair propulsion.
 
 Boninger ML; Souza AL; Cooper RA; Fitzgerald SG; Koontz AM; Fay BT. Archives of physical medicine and rehabilitation. 2002.
 
@@ -32,5 +30,3 @@ Boninger ML; Souza AL; Cooper RA; Fitzgerald SG; Koontz AM; Fay BT. Archives of 
 ## 確認位置
 
 Abstract。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

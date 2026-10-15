@@ -1,6 +1,4 @@
-# L47 pernet（2019）
-
-**EEG-BIDS, an extension to the brain imaging data structure for electroencephalography.**
+# L47｜EEG-BIDS, an extension to the brain imaging data structure for electroencephalography.
 
 Pernet CR; Appelhoff S; Gorgolewski KJ; Flandin G; Phillips C; Delorme A; Oostenveld R. Scientific data. 2019.
 
@@ -32,5 +30,3 @@ Pernet CR; Appelhoff S; Gorgolewski KJ; Flandin G; Phillips C; Delorme A; Oosten
 ## 確認位置
 
 本文の導入・取得資料、全条項適合の検証なし。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

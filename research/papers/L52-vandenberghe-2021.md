@@ -1,6 +1,4 @@
-# L52 vandenberghe（2021）
-
-**Music-based biofeedback to reduce tibial shock in over-ground running: a proof-of-concept study.**
+# L52｜Music-based biofeedback to reduce tibial shock in over-ground running: a proof-of-concept study.
 
 Van den Berghe P; Lorenzoni V; Derie R; Six J; Gerlo J; Leman M; De Clercq D. Scientific reports. 2021.
 
@@ -32,5 +30,3 @@ Van den Berghe P; Lorenzoni V; Derie R; Six J; Gerlo J; Leman M; De Clercq D. Sc
 ## 確認位置
 
 Methods: Set-up / A smart music player / Data processing、Discussion: Limitations、図2。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

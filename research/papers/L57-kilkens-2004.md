@@ -1,6 +1,4 @@
-# L57 Kilkens OJ; Dallmeijer AJ; de Witte LP; van der Woude LH; Post MW（2004）
-
-**The Wheelchair Circuit: Construct validity and responsiveness of a test to assess manual wheelchair mobility in persons with spinal cord injury**
+# L57｜The Wheelchair Circuit: Construct validity and responsiveness of a test to assess manual wheelchair mobility in persons with spinal cord injury
 
 Archives of Physical Medicine and Rehabilitation 85(3), 424–431。調査・照合日：2026-10-14。
 

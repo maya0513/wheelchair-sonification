@@ -1,6 +1,4 @@
-# L44 gramfort（2013）
-
-**MEG and EEG data analysis with MNE-Python.**
+# L44｜MEG and EEG data analysis with MNE-Python.
 
 Gramfort A; Luessi M; Larson E; Engemann DA; Strohmeier D; Brodbeck C; Goj R; Jas M; Brooks T; Parkkonen L; Hämäläinen M. Frontiers in neuroscience. 2013.
 
@@ -32,5 +30,3 @@ CSV等の生データ→区間注釈→PSD→参加者集約という小さい�
 ## 確認位置
 
 Abstract、現在のAPIはD06。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

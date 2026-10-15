@@ -1,6 +1,4 @@
-# L11 scholz（2016）
-
-**Sonification of Arm Movements in Stroke Rehabilitation - A Novel Approach in Neurologic Music Therapy.**
+# L11｜Sonification of Arm Movements in Stroke Rehabilitation - A Novel Approach in Neurologic Music Therapy.
 
 Scholz DS; Rohde S; Nikmaram N; Brückner HP; Großbach M; Rollnik JD; Altenmüller EO. Frontiers in neurology. 2016.
 
@@ -32,5 +30,3 @@ IMU2個で成立する処理経路は参考になる。抽象的な「有効」�
 ## 確認位置
 
 Materials and Methods: Patients / Sonification Training、Results: Motor Tests / Arm Movement Smoothness。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

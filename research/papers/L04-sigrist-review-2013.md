@@ -1,6 +1,4 @@
-# L04 sigrist-review（2013）
-
-**Augmented visual, auditory, haptic, and multimodal feedback in motor learning: a review.**
+# L04｜Augmented visual, auditory, haptic, and multimodal feedback in motor learning: a review.
 
 Sigrist R; Rauter G; Riener R; Wolf P. Psychonomic bulletin & review. 2013.
 
@@ -32,5 +30,3 @@ Sigrist R; Rauter G; Riener R; Wolf P. Psychonomic bulletin & review. 2013.
 ## 確認位置
 
 Abstract。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

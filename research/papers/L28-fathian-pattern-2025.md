@@ -1,6 +1,4 @@
-# L28 fathian-pattern（2025）
-
-**Monitoring wheelchair propulsion patterns: feasibility and validity of using wearable sensors.**
+# L28｜Monitoring wheelchair propulsion patterns: feasibility and validity of using wearable sensors.
 
 Fathian R; Khandan A; Rahmanifar N; Ho C; Rouhani H. Journal of neuroengineering and rehabilitation. 2025.
 
@@ -32,5 +30,3 @@ MLP accuracy95%、F1 89%。SVM多項式accuracy94%、F1 88%。
 ## 確認位置
 
 Methods: Experimental design / Propulsion pattern classification / Performance analysis、Discussion。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

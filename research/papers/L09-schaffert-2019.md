@@ -1,6 +1,4 @@
-# L09 schaffert（2019）
-
-**A Review on the Relationship Between Sound and Movement in Sports and Rehabilitation.**
+# L09｜A Review on the Relationship Between Sound and Movement in Sports and Rehabilitation.
 
 Schaffert N; Janzen TB; Mattes K; Thaut MH. Frontiers in psychology. 2019.
 
@@ -32,5 +30,3 @@ Schaffert N; Janzen TB; Mattes K; Thaut MH. Frontiers in psychology. 2019.
 ## 確認位置
 
 Abstract。公開本文は取得、今回の要約は抄録中心。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

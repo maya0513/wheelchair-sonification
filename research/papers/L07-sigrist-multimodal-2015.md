@@ -1,6 +1,4 @@
-# L07 sigrist-multimodal（2015）
-
-**Sonification and haptic feedback in addition to visual feedback enhances complex motor task learning.**
+# L07｜Sonification and haptic feedback in addition to visual feedback enhances complex motor task learning.
 
 Sigrist R; Rauter G; Marchal-Crespo L; Riener R; Wolf P. Experimental brain research. 2015.
 
@@ -32,5 +30,3 @@ Sigrist R; Rauter G; Marchal-Crespo L; Riener R; Wolf P. Experimental brain rese
 ## 確認位置
 
 Abstract。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

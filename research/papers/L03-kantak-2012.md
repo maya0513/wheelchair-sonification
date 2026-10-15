@@ -1,6 +1,4 @@
-# L03 kantak（2012）
-
-**Learning-performance distinction and memory processes for motor skills: a focused review and perspective.**
+# L03｜Learning-performance distinction and memory processes for motor skills: a focused review and perspective.
 
 Kantak SS; Winstein CJ. Behavioural brain research. 2012.
 
@@ -32,5 +30,3 @@ Kantak SS; Winstein CJ. Behavioural brain research. 2012.
 ## 確認位置
 
 Abstract。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

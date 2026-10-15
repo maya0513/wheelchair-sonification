@@ -1,6 +1,4 @@
-# L22 degroot-practice（2002）
-
-**Wheelchair propulsion technique and mechanical efficiency after 3 wk of practice.**
+# L22｜Wheelchair propulsion technique and mechanical efficiency after 3 wk of practice.
 
 De Groot S; Veeger DH; Hollander AP; Van der Woude LH. Medicine and science in sports and exercise. 2002.
 
@@ -32,5 +30,3 @@ De Groot S; Veeger DH; Hollander AP; Van der Woude LH. Medicine and science in s
 ## 確認位置
 
 Abstract。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

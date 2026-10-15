@@ -13,6 +13,6 @@ Tracker 2018/3.0のSteamVRベースステーション対応、PCへのUSB・ド�
 
 旧型・3.0・Ultimateは同一機種ではない。手元の型番・ドングル数・ベースステーションを先に確認。仕様表を計測精度の検証の代用にしない。
 
-参照：[装置案](../../docs/feedback-specification.md)、[EEG案](../../docs/archive/exploratory-eeg-on-hold.md)。
+参照：[装置案](../../docs/specifications/feedback.md)、[EEG案](../../docs/archive/exploratory-eeg.md)。
 
 [保存PDF](../pdfs/D01.pdf)／[取得元一覧](../pdfs/INDEX.md)。

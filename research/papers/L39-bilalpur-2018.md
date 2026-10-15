@@ -1,6 +1,4 @@
-# L39 bilalpur（2018）
-
-**EEG-based Evaluation of Cognitive Workload Induced by Acoustic Parameters for Data Sonification**
+# L39｜EEG-based Evaluation of Cognitive Workload Induced by Acoustic Parameters for Data Sonification
 
 Maneesh Bilalpur; Mohan Kankanhalli; Stefan Winkler; Ramanathan Subramanian. Proceedings of the 20th ACM International Conference on Multimodal Interaction. 2018.
 
@@ -32,5 +30,3 @@ Maneesh Bilalpur; Mohan Kankanhalli; Stefan Winkler; Ramanathan Subramanian. Pro
 ## 確認位置
 
 本文3.2–3.5、5.1 Data Preprocessing、5.2 Spectral Analysis、6分類。保存は会議採択のarXiv著者版。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

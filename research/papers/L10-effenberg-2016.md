@@ -1,6 +1,4 @@
-# L10 effenberg（2016）
-
-**Movement Sonification: Effects on Motor Learning beyond Rhythmic Adjustments.**
+# L10｜Movement Sonification: Effects on Motor Learning beyond Rhythmic Adjustments.
 
 Effenberg AO; Fehse U; Schmitz G; Krueger B; Mechling H. Frontiers in neuroscience. 2016.
 
@@ -32,5 +30,3 @@ Effenberg AO; Fehse U; Schmitz G; Krueger B; Mechling H. Frontiers in neuroscien
 ## 確認位置
 
 Methods: Experimental design / Auditory stimuli / Feedback / Retention、Results: Retention test、図3・4。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

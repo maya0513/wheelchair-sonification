@@ -1,6 +1,4 @@
-# L61 Manrique L; Rabideau G; Reinhold G; Hoffman A（2007）
-
-**Using an Obstacle Sensing System in Power Wheelchair Training of Children: A Pilot Study**
+# L61｜Using an Obstacle Sensing System in Power Wheelchair Training of Children: A Pilot Study
 
 RESNA 2007 Conference Proceedings。調査・照合日：2026-10-14。
 

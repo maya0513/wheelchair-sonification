@@ -1,6 +1,4 @@
-# L38 muthukumaraswamy（2013）
-
-**High-frequency brain activity and muscle artifacts in MEG/EEG: a review and recommendations.**
+# L38｜High-frequency brain activity and muscle artifacts in MEG/EEG: a review and recommendations.
 
 Muthukumaraswamy SD. Frontiers in human neuroscience. 2013.
 
@@ -32,5 +30,3 @@ Muthukumaraswamy SD. Frontiers in human neuroscience. 2013.
 ## 確認位置
 
 Abstract。公開本文・PDFは保存。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

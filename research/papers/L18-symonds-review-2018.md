@@ -1,6 +1,4 @@
-# L18 symonds-review（2018）
-
-**A systematic review: the influence of real time feedback on wheelchair propulsion biomechanics.**
+# L18｜A systematic review: the influence of real time feedback on wheelchair propulsion biomechanics.
 
 Symonds A; Barbareschi G; Taylor S; Holloway C. Disability and rehabilitation. Assistive technology. 2018.
 
@@ -32,5 +30,3 @@ Symonds A; Barbareschi G; Taylor S; Holloway C. Disability and rehabilitation. A
 ## 確認位置
 
 著者最終稿 Methods / Results / Discussion / Limitations / Conclusion。印刷版2018、オンライン2017。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

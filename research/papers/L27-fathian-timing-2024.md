@@ -1,6 +1,4 @@
-# L27 fathian-timing（2024）
-
-**Feasibility and Validity of Wearable Sensors for Monitoring Temporal Parameters in Manual Wheelchair Propulsion.**
+# L27｜Feasibility and Validity of Wearable Sensors for Monitoring Temporal Parameters in Manual Wheelchair Propulsion.
 
 Fathian R; Khandan A; Rahmanifar N; Ho C; Rouhani H. IEEE journal of biomedical and health informatics. 2024.
 
@@ -32,5 +30,3 @@ Fathian R; Khandan A; Rahmanifar N; Ho C; Rouhani H. IEEE journal of biomedical 
 ## 確認位置
 
 Abstract。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

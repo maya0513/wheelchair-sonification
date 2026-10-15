@@ -1,6 +1,4 @@
-# L54 Askari S; Kirby RL; Parker K; Thompson K; O’Neill J（2013）
-
-**Wheelchair Propulsion Test: Development and Measurement Properties of a New Test for Manual Wheelchair Users**
+# L54｜Wheelchair Propulsion Test: Development and Measurement Properties of a New Test for Manual Wheelchair Users
 
 Archives of Physical Medicine and Rehabilitation 94(9), 1690–1698。調査・照合日：2026-10-14。
 

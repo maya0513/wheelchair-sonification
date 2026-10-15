@@ -1,6 +1,4 @@
-# L16 guo-optipush（2011）
-
-**Validation of a biofeedback system for wheelchair propulsion training.**
+# L16｜Validation of a biofeedback system for wheelchair propulsion training.
 
 Guo L; Kwarciak AM; Rodriguez R; Sarkar N; Richter WM. Rehabilitation research and practice. 2011.
 
@@ -32,5 +30,3 @@ Guo L; Kwarciak AM; Rodriguez R; Sarkar N; Richter WM. Rehabilitation research a
 ## 確認位置
 
 Materials and Methods 2.1–2.7、Results 3、図1–3、表1。本文XML。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

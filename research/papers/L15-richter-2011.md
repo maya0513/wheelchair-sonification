@@ -1,6 +1,4 @@
-# L15 richter（2011）
-
-**Effects of single-variable biofeedback on wheelchair handrim biomechanics.**
+# L15｜Effects of single-variable biofeedback on wheelchair handrim biomechanics.
 
 Richter WM; Kwarciak AM; Guo L; Turner JT. Archives of physical medicine and rehabilitation. 2011.
 
@@ -32,5 +30,3 @@ Richter WM; Kwarciak AM; Guo L; Turner JT. Archives of physical medicine and reh
 ## 確認位置
 
 Abstract Results / Conclusions。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

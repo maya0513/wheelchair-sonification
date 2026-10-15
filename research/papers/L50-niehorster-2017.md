@@ -1,6 +1,4 @@
-# L50 niehorster（2017）
-
-**The Accuracy and Precision of Position and Orientation Tracking in the HTC Vive Virtual Reality System for Scientific Research.**
+# L50｜The Accuracy and Precision of Position and Orientation Tracking in the HTC Vive Virtual Reality System for Scientific Research.
 
 Niehorster DC; Li L; Lappe M. i-Perception. 2017.
 
@@ -32,5 +30,3 @@ Niehorster DC; Li L; Lappe M. i-Perception. 2017.
 ## 確認位置
 
 General Methods、Results: Changing Reference Plane / Examining Vive System Latency、Discussion。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

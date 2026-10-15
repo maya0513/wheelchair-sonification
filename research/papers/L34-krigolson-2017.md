@@ -1,6 +1,4 @@
-# L34 krigolson（2017）
-
-**Choosing MUSE: Validation of a Low-Cost, Portable EEG System for ERP Research.**
+# L34｜Choosing MUSE: Validation of a Low-Cost, Portable EEG System for ERP Research.
 
 Krigolson OE; Williams CC; Norton A; Hassall CD; Colino FL. Frontiers in neuroscience. 2017.
 
@@ -32,5 +30,3 @@ Krigolson OE; Williams CC; Norton A; Hassall CD; Colino FL. Frontiers in neurosc
 ## 確認位置
 
 Methods: Participants / Data acquisition / MUSE analysis、Discussion: Data quality / Event markers、PDF p.4。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

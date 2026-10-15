@@ -1,6 +1,4 @@
-# L31 soltau（2015）
-
-**An Investigation of Bilateral Symmetry During Manual Wheelchair Propulsion.**
+# L31｜An Investigation of Bilateral Symmetry During Manual Wheelchair Propulsion.
 
 Soltau SL; Slowik JS; Requejo PS; Mulroy SJ; Neptune RR. Frontiers in bioengineering and biotechnology. 2015.
 
@@ -32,5 +30,3 @@ Soltau SL; Slowik JS; Requejo PS; Mulroy SJ; Neptune RR. Frontiers in bioenginee
 ## 確認位置
 
 Materials and Methods: Data collection / Data processing、Results、Discussion、表1。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

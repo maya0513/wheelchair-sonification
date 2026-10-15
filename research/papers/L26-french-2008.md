@@ -1,6 +1,4 @@
-# L26 french（2008）
-
-**Classifying Wheelchair Propulsion Patterns with a Wrist Mounted Accelerometer**
+# L26｜Classifying Wheelchair Propulsion Patterns with a Wrist Mounted Accelerometer
 
 Brian French; Asim Smailagic; Dan Siewiorek; Vishnu Ambur; Divya Tyamagundlu. Proceedings of the 3rd International ICST Conference on Body Area Networks. 2008.
 
@@ -32,5 +30,3 @@ PDF取得は403。被験者間汎化、人数、分割法を原文で検証で�
 ## 確認位置
 
 EUDL Abstract、Crossref書誌。会議年2008、EUDL掲載日は2010と区別。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

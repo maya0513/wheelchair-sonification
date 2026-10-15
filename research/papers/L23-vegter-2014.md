@@ -1,6 +1,4 @@
-# L23 vegter（2014）
-
-**Inter-individual differences in the initial 80 minutes of motor learning of handrim wheelchair propulsion.**
+# L23｜Inter-individual differences in the initial 80 minutes of motor learning of handrim wheelchair propulsion.
 
 Vegter RJ; Lamoth CJ; de Groot S; Veeger DH; van der Woude LH. PloS one. 2014.
 
@@ -32,5 +30,3 @@ Vegter RJ; Lamoth CJ; de Groot S; Veeger DH; van der Woude LH. PloS one. 2014.
 ## 確認位置
 
 Methods: Participants / Protocol、Discussion、図1・6。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

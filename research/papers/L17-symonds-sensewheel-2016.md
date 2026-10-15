@@ -1,6 +1,4 @@
-# L17 symonds-sensewheel（2016）
-
-**Sensewheel: an adjunct to wheelchair skills training.**
+# L17｜Sensewheel: an adjunct to wheelchair skills training.
 
 Symonds A; Taylor SJ; Holloway C. Healthcare technology letters. 2016.
 
@@ -42,5 +40,3 @@ Symonds A; Taylor SJ; Holloway C. Healthcare technology letters. 2016.
 ## 確認位置
 
 保存受理稿PDF pp.1–4、Methods 2.2–2.5、Table 1、Limitations 4.2。出版最終版の§2.3（回復期FB）、§3・Table 1（結果）、§4（ピーク力の記述）を追加照合。版差は上表に記録した。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。

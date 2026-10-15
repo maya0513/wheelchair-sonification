@@ -12,4 +12,4 @@ Muse等の対応機種・preset・標本化周波数・EEG/IMUの区別を確認
 
 全EEG機種に対応するわけではない。型番確定後にSDK・OS・生波形・ライセンスを確認。名前の似た機種や旧Muse研究の500 Hzを転用しない。
 
-参照：[装置案](../../docs/feedback-specification.md)、[EEG案](../../docs/archive/exploratory-eeg-on-hold.md)。
+参照：[装置案](../../docs/specifications/feedback.md)、[EEG案](../../docs/archive/exploratory-eeg.md)。

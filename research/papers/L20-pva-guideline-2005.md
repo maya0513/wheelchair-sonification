@@ -1,6 +1,4 @@
-# L20 pva-guideline（2005）
-
-**Preservation of upper limb function following spinal cord injury: a clinical practice guideline for health-care professionals.**
+# L20｜Preservation of upper limb function following spinal cord injury: a clinical practice guideline for health-care professionals.
 
 Paralyzed Veterans of America Consortium for Spinal Cord Medicine.. The journal of spinal cord medicine. 2005.
 
@@ -32,5 +30,3 @@ Paralyzed Veterans of America Consortium for Spinal Cord Medicine.. The journal 
 ## 確認位置
 
 PVA公式公開PDF、推奨3–5（反復・力・肢位）および推奨10（長く滑らかな推進・回復軌跡）。48ページ全条項の精読ではなく、推進関連の記述を照合。
-
-数値・装置は当該研究の報告であり、手元の装置の仕様や再現性能を保証する値ではない。提案との関係は[全体まとめ](../synthesis.md)・[装置比較](../implementation/device-comparison.md)参照。
