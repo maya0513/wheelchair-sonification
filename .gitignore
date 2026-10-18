@@ -5,6 +5,8 @@
 /.env
 /.env.*
 !/.env.example
+*.keystore
+*.jks
 /.codex/*
 !/.codex/config.toml
 /.mise/**/.venv/

@@ -21,6 +21,8 @@ just unity-build
 
 生成物はGit管理外の`.local/builds/feedback-demo/`に置く。同梱フォントのライセンスは、その中の`ThirdPartyNotices/Noto-OFL.txt`に含める。Unityの操作にはMCPサーバーの起動・導入を必要としない。
 
+共用Windows PCでAPKを生成する場合は[Androidビルドと導入](android-build.md)の`just unity-build-release`を使う。現在の内容は同じ2Dデモで、VR表示とトラッカー入力は含まない。
+
 ## 基本操作
 
 1. 「セッション設定」で事前2反復の有効角をカンマ区切りで入力する。各反復1本以上・合計4本以上が必要。正の有限値だけを受け付け、無効値を黙って除外しない。初期例の各`60, 60`では目標70°になる。

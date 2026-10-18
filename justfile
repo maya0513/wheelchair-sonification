@@ -1,4 +1,7 @@
+[unix]
 set shell := ["bash", "-eu", "-o", "pipefail", "-c"]
+[windows]
+set shell := ["cmd.exe", "/D", "/C"]
 
 # 利用できる操作を表示
 default:
@@ -33,6 +36,12 @@ unity-test-play:
 # Linux用の技術検証デモを.local/builds/へ作成
 unity-build:
     bash scripts/unity.sh build
+
+# 署名付きAndroid APKを作成（Windows/Linux、初回設定はdocs/development/android-build.md）
+unity-build-release:
+    node scripts/unity-release.mts
+
+alias unity-build-apk := unity-build-release
 
 # UnityとCodexをつなぐHTTPサーバーを起動（Ctrl+Cで終了）
 unity-mcp:

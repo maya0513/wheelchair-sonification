@@ -52,7 +52,7 @@ namespace WheelchairSonification.Editor
                 throw new InvalidOperationException("Linuxビルドに失敗しました: " + report.summary.result);
             string notices = Path.Combine(Path.GetDirectoryName(output), "ThirdPartyNotices");
             Directory.CreateDirectory(notices);
-            File.Copy(Path.Combine(Application.dataPath, "Experiment", "Fonts", "OFL.txt"),
+            File.Copy(Path.Combine(Application.dataPath, "StreamingAssets", "Noto-OFL.txt"),
                 Path.Combine(notices, "Noto-OFL.txt"), true);
             Debug.Log("Feedback demo built: " + output);
         }
