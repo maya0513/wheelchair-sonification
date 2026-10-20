@@ -7,7 +7,7 @@ using WheelchairSonification.Core;
 
 namespace WheelchairSonification.Runtime
 {
-    internal sealed class DemoUi
+    public sealed class DemoUi
     {
         private readonly Font font;
         public static readonly Color Ink = new Color32(31, 47, 62, 255);

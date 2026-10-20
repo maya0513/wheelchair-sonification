@@ -250,6 +250,12 @@ namespace WheelchairSonification.Core
             }
         }
 
+        public void Interrupt(string reason)
+        {
+            Guard(() => Record("session_interruption", reason: reason));
+            Dispose();
+        }
+
         // Disposal/quit is an interruption. Only explicit EndSession writes a completion marker.
         public void Dispose()
         {

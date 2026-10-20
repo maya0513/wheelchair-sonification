@@ -16,6 +16,10 @@ check:
     bash -n scripts/unity.sh
     mise exec node python -- node --test scripts/*.test.mts
 
+# HTC公式SDKを取得し、固定チェックサムを確認
+unity-prepare:
+    node scripts/unity-xr-sdk.mts
+
 # Unityを開く（Vulkan、終了まで端末を使用）
 unity-open:
     bash scripts/unity.sh open
@@ -42,6 +46,14 @@ unity-build-release:
     node scripts/unity-release.mts
 
 alias unity-build-apk := unity-build-release
+
+# このPCに配布用の署名鍵を作成（既存の鍵は上書きしない）
+android-signing-init:
+    node scripts/android-signing.mts
+
+# 指定版をビルドし、GitHubのプレリリースとして公開
+release-apk tag version_code:
+    node scripts/github-apk-release.mts {{quote(tag)}} {{quote(version_code)}}
 
 # UnityとCodexをつなぐHTTPサーバーを起動（Ctrl+Cで終了）
 unity-mcp:

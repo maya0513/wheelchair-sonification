@@ -1,20 +1,16 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { closeSync, createReadStream, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { homedir } from 'node:os';
-import { dirname, join, resolve, win32 } from 'node:path';
+import { closeSync, createReadStream, existsSync, lstatSync, mkdirSync, mkdtempSync, openSync, readFileSync, readdirSync, renameSync, rmdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { prepareXrSdk } from './unity-xr-sdk.mts';
+import { signingEnvironment, signingVariables } from './android-signing.mts';
+import { verifyApk } from './android-apk-validation.mts';
+import { editorPath } from './unity-editor.mts';
+export { editorPath } from './unity-editor.mts';
 
 const repository = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const apkName = 'WheelchairSonification.apk';
-const signingVariables = ['UNITY_ANDROID_KEYSTORE', 'UNITY_ANDROID_KEY_ALIAS', 'UNITY_ANDROID_KEYSTORE_PASSWORD', 'UNITY_ANDROID_KEY_ALIAS_PASSWORD'];
-
-export function editorPath(version: string, platform: string, env: NodeJS.ProcessEnv, home = homedir()) {
-  if (env.UNITY_EDITOR) return resolve(env.UNITY_EDITOR);
-  if (platform === 'win32') return win32.join(env.ProgramFiles || 'C:\\Program Files', 'Unity', 'Hub', 'Editor', version, 'Editor', 'Unity.exe');
-  if (platform === 'darwin') return `/Applications/Unity/Hub/Editor/${version}/Unity.app/Contents/MacOS/Unity`;
-  return join(home, 'Unity', 'Hub', 'Editor', version, 'Editor', 'Unity');
-}
 
 type Invocation = { editor: string; args: string[]; env: NodeJS.ProcessEnv; cwd: string };
 async function launchUnity({ editor, args, env, cwd }: Invocation): Promise<number> {
@@ -25,7 +21,9 @@ async function launchUnity({ editor, args, env, cwd }: Invocation): Promise<numb
   });
 }
 
-export async function buildRelease(root = repository, env = process.env, runUnity = launchUnity) {
+export async function buildRelease(root = repository, env = process.env, runUnity = launchUnity,
+  dependencies = { prepare: prepareXrSdk, verify: verifyApk }) {
+  env = signingEnvironment(root, env);
   const project = join(root, 'wheelchair-sonification');
   const version = /^m_EditorVersion: (\S+)\r?$/m.exec(readFileSync(join(project, 'ProjectSettings/ProjectVersion.txt'), 'utf8'))?.[1];
   if (!version) throw new Error('ProjectVersion.txtからUnityの版を読めません。');
@@ -39,6 +37,7 @@ export async function buildRelease(root = repository, env = process.env, runUnit
   if (env.UNITY_ANDROID_VERSION_CODE && (!/^[1-9]\d*$/.test(env.UNITY_ANDROID_VERSION_CODE) || Number(env.UNITY_ANDROID_VERSION_CODE) > 2100000000)) {
     throw new Error('UNITY_ANDROID_VERSION_CODEは1〜2100000000の整数で指定してください。');
   }
+  await dependencies.prepare(root);
 
   const builds = join(root, '.local/builds');
   const log = join(root, '.local/logs/unity-release-android.log');
@@ -53,10 +52,27 @@ export async function buildRelease(root = repository, env = process.env, runUnit
   let staging: string | undefined;
   const settingsPaths = ['ProjectSettings/ProjectSettings.asset', 'Assets/Settings/Mobile_RPAsset.asset',
     'Assets/Settings/UniversalRenderPipelineGlobalSettings.asset'].map(path => join(project, path));
+  const addSettingsAssets = (directory: string) => {
+    if (!existsSync(directory)) return;
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      const path = join(directory, entry.name);
+      if (entry.isDirectory()) addSettingsAssets(path);
+      else if (entry.isFile() && entry.name.endsWith('.asset')) settingsPaths.push(path);
+    }
+  };
+  for (const relative of ['Assets/XR', 'Assets/XRI', 'Assets/VIVE']) addSettingsAssets(join(project, relative));
   const originalSettings = new Map<string, Buffer>();
   const restoreSettings = () => {
     for (const [path, bytes] of originalSettings) {
       if (!existsSync(path) || !bytes.equals(readFileSync(path))) writeFileSync(path, bytes);
+    }
+    // Some XR package setup hooks leave empty numbered folders. They contain no settings.
+    for (const relative of ['Assets/XR 1', 'Assets/XR/Settings 1']) {
+      const path = join(project, relative);
+      if (existsSync(path) && lstatSync(path).isDirectory() && readdirSync(path).length === 0) {
+        rmdirSync(path);
+        rmSync(path + '.meta', { force: true });
+      }
     }
   };
   try {
@@ -83,7 +99,10 @@ export async function buildRelease(root = repository, env = process.env, runUnit
     const apk = join(staging, apkName);
     if (info.result !== 'Succeeded' || info.target !== 'Android' || info.development !== false || info.unityVersion !== version
       || info.architecture !== 'ARM64' || info.scriptingBackend !== 'IL2CPP' || !info.customSigning
+      || info.targetDevice !== 'VIVE Focus Vision' || info.xrLoader !== 'OpenXR' || info.passthrough !== true
+      || info.inputMode !== 'simulated' || info.scenes?.length !== 1 || info.scenes[0] !== 'Assets/Scenes/FeedbackDemoXR.unity'
       || !existsSync(apk) || statSync(apk).size === 0) throw new Error(`今回の署名付き非開発APKを確認できません。ログ: ${log}`);
+    const validation = dependencies.verify(apk, editor, env, info);
     const hash = createHash('sha256');
     for await (const chunk of createReadStream(apk)) hash.update(chunk);
     const sha256 = hash.digest('hex');
@@ -92,7 +111,7 @@ export async function buildRelease(root = repository, env = process.env, runUnit
     const status = git(['status', '--porcelain']);
     Object.assign(info, { apk: apkName, sha256, builtAtUtc: new Date().toISOString(),
       gitCommit: commit.status === 0 ? commit.stdout.trim() : null,
-      gitDirty: status.status === 0 ? status.stdout.trim().length > 0 : null });
+      gitDirty: status.status === 0 ? status.stdout.trim().length > 0 : null, validation });
     writeFileSync(infoPath, JSON.stringify(info, null, 2) + '\n');
     writeFileSync(join(staging, 'SHA256SUMS.txt'), `${sha256}  ${apkName}\n`);
     const previous = `${output}.previous`;

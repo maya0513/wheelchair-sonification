@@ -1,5 +1,6 @@
 {
     "name": "WheelchairSonification.PlayModeTests",
-    "references": ["WheelchairSonification.Core", "WheelchairSonification.Runtime"],
+    "references": ["WheelchairSonification.Core", "WheelchairSonification.Runtime", "WheelchairSonification.XR",
+        "Unity.XR.Interaction.Toolkit", "Unity.InputSystem"],
     "optionalUnityReferences": ["TestAssemblies"]
 }

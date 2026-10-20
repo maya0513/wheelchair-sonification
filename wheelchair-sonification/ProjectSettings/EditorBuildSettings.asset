@@ -8,5 +8,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/FeedbackDemo.unity
     guid: ea83217c048ab317c919449e5e4797a6
+  - enabled: 1
+    path: Assets/Scenes/FeedbackDemoXR.unity
+    guid: 8e289dffce90ab8388ce5f8b7bac2f9e
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 20d28d6aa7b3f03cd8e94d560194f0a9, type: 2}
+    com.unity.xr.openxr.settings4: {fileID: 11400000, guid: abcbcf2541582b9bbac58d533dce3adf, type: 2}

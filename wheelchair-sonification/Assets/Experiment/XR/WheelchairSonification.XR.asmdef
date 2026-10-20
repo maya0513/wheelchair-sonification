@@ -1,0 +1,8 @@
+{
+    "name": "WheelchairSonification.XR",
+    "rootNamespace": "WheelchairSonification.XR",
+    "references": ["WheelchairSonification.Core", "WheelchairSonification.Runtime", "UnityEngine.UI",
+        "Unity.InputSystem", "Unity.XR.CoreUtils", "Unity.XR.Management", "Unity.XR.OpenXR",
+        "Unity.XR.Interaction.Toolkit", "VIVE.OpenXR"],
+    "includePlatforms": ["Android", "Editor"]
+}

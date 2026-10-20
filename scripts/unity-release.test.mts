@@ -4,7 +4,11 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, 
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { apkName, buildRelease, editorPath } from './unity-release.mts';
+import { apkName, buildRelease as actualBuildRelease, editorPath } from './unity-release.mts';
+
+const verified = { signatureVerified: true, xrManifestVerified: true };
+const dependencies = { prepare: async () => '', verify: () => verified };
+const buildRelease: typeof actualBuildRelease = (root, env, runUnity) => actualBuildRelease(root, env, runUnity, dependencies);
 
 function fixture(t: { after: (cleanup: () => void) => void }) {
   const root = mkdtempSync(join(tmpdir(), 'unity release with spaces & '));
@@ -17,6 +21,10 @@ function fixture(t: { after: (cleanup: () => void) => void }) {
     .map(name => join(root, 'wheelchair-sonification/Assets/Settings', name));
   mkdirSync(join(root, 'wheelchair-sonification/Assets/Settings'), { recursive: true });
   for (const path of renderSettings) writeFileSync(path, 'original render settings\r\n');
+  mkdirSync(join(root, 'wheelchair-sonification/Assets/XR'), { recursive: true });
+  const xrSettings = join(root, 'wheelchair-sonification/Assets/XR/fixture.asset');
+  writeFileSync(xrSettings, 'original render settings\r\n');
+  renderSettings.push(xrSettings);
   const store = join(root, 'private signing key.jks');
   writeFileSync(store, 'fixture key');
   const env = { ...process.env, UNITY_EDITOR: process.execPath, UNITY_ANDROID_KEYSTORE: store,
@@ -34,7 +42,9 @@ function fixture(t: { after: (cleanup: () => void) => void }) {
     writeFileSync(log, 'Android release built: ' + staging);
     writeFileSync(join(staging, apkName), 'new APK');
     writeFileSync(join(staging, 'build-info.json'), JSON.stringify({ result: 'Succeeded', target: 'Android',
-      unityVersion: '6000.6.4f1', development: false, customSigning: true, architecture: 'ARM64', scriptingBackend: 'IL2CPP' }));
+      unityVersion: '6000.6.4f1', development: false, customSigning: true, architecture: 'ARM64', scriptingBackend: 'IL2CPP',
+      targetDevice: 'VIVE Focus Vision', xrLoader: 'OpenXR', passthrough: true, inputMode: 'simulated',
+      scenes: ['Assets/Scenes/FeedbackDemoXR.unity'], version: '0.2.0', versionCode: 2 }));
   };
   return { root, env, output, log, settings, renderSettings, complete };
 }
@@ -78,6 +88,8 @@ test('a successful new APK is promoted with a matching hash and metadata', async
     assert.ok(request.args.includes('-quit'));
     assert.ok(!request.args.some(arg => /do-not-log-this/.test(arg)));
     f.complete(request);
+    mkdirSync(join(f.root, 'wheelchair-sonification/Assets/XR 1'));
+    writeFileSync(join(f.root, 'wheelchair-sonification/Assets/XR 1.meta'), 'empty generated folder metadata');
     return 0;
   });
   const info = JSON.parse(readFileSync(join(f.output, 'build-info.json'), 'utf8'));
@@ -87,6 +99,7 @@ test('a successful new APK is promoted with a matching hash and metadata', async
   assert.equal(readFileSync(join(f.output, 'SHA256SUMS.txt'), 'utf8'), `${hash}  ${apkName}\n`);
   assert.equal(readFileSync(join(f.output + '.previous', apkName), 'utf8'), 'previous APK');
   assert.equal(readFileSync(f.settings, 'utf8'), 'original settings\r\n');
+  assert.equal(existsSync(join(f.root, 'wheelchair-sonification/Assets/XR 1.meta')), false);
   for (const path of f.renderSettings) assert.equal(readFileSync(path, 'utf8'), 'original render settings\r\n');
   assert.deepEqual(readdirSync(join(f.root, '.local/builds')).sort(), ['android-release', 'android-release.previous']);
 });
@@ -104,8 +117,21 @@ test('failed Unity preserves the previous APK and removes incomplete output and 
   assert.deepEqual(readdirSync(join(f.root, '.local/builds')), ['android-release']);
 });
 
+test('SDK preparation and APK validation failures cannot promote an artifact', async t => {
+  const f = fixture(t);
+  await assert.rejects(actualBuildRelease(f.root, f.env, async () => assert.fail('must not launch'), {
+    prepare: async () => { throw new Error('SDK download failed'); }, verify: () => verified,
+  }), /SDK download failed/);
+  await assert.rejects(actualBuildRelease(f.root, f.env, async request => { f.complete(request); return 0; }, {
+    prepare: async () => '', verify: () => { throw new Error('APK signature failed'); },
+  }), /APK signature failed/);
+  assert.equal(readFileSync(join(f.output, apkName), 'utf8'), 'previous APK');
+  assert.equal(readFileSync(f.settings, 'utf8'), 'original settings\r\n');
+  assert.deepEqual(readdirSync(join(f.root, '.local/builds')), ['android-release']);
+});
+
 test('a zero exit and an old success cannot mask missing or invalid current output', async t => {
-  for (const scenario of ['no-log', 'no-info', 'empty-apk', 'development', 'wrong-version', 'no-signing', 'compiler']) {
+  for (const scenario of ['no-log', 'no-info', 'empty-apk', 'development', 'wrong-version', 'no-signing', 'compiler', '2d-scene']) {
     await t.test(scenario, async t => {
       const f = fixture(t);
       mkdirSync(join(f.root, '.local/logs'), { recursive: true });
@@ -117,6 +143,12 @@ test('a zero exit and an old success cannot mask missing or invalid current outp
         if (scenario === 'no-info') rmSync(join(directory, 'build-info.json'));
         if (scenario === 'empty-apk') writeFileSync(join(directory, apkName), '');
         if (scenario === 'compiler') writeFileSync(f.log, 'error CS1002: expected ;');
+        if (scenario === '2d-scene') {
+          const path = join(directory, 'build-info.json');
+          const value = JSON.parse(readFileSync(path, 'utf8'));
+          value.scenes = ['Assets/Scenes/FeedbackDemo.unity'];
+          writeFileSync(path, JSON.stringify(value));
+        }
         const infoPath = join(directory, 'build-info.json');
         if (existsSync(infoPath)) {
           const info = JSON.parse(readFileSync(infoPath, 'utf8'));

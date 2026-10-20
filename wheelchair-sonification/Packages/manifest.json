@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.htc.upm.vive.openxr": "file:../../.local/unity-packages/com.htc.upm.vive.openxr-2.5.1.tgz",
     "com.coplaydev.unity-mcp": "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#v10.2.0",
     "com.unity.ai.navigation": "2.0.12",
     "com.unity.collab-proxy": "2.12.4",
@@ -10,6 +11,10 @@
     "com.unity.test-framework": "1.8.0",
     "com.unity.timeline": "6.6.0",
     "com.unity.ugui": "2.6.0",
-    "com.unity.visualscripting": "1.9.11"
+    "com.unity.visualscripting": "1.9.11",
+    "com.unity.xr.openxr": "1.18.0",
+    "com.unity.xr.interaction.toolkit": "3.4.1",
+    "com.unity.xr.management": "4.5.4",
+    "com.unity.xr.hands": "1.6.3"
   }
 }

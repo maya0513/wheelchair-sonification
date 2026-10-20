@@ -21,7 +21,7 @@
 | 結果を分析・報告する | [分析計画](analysis-plan.md) | 集約式、主要比較、副次評価、欠測、結果の示し方 |
 | 開発方法を学ぶ | [開発ガイド](development/guide.md) | Unity、模擬入力、自動テスト、実機確認の進め方 |
 | 模擬入力版を動かす | [起動と操作](development/feedback-demo.md) | デモの操作、ログ、自動テスト、Linuxビルド |
-| 共用Windows PCでAPKを作る | [Androidビルドと導入](development/android-build.md) | 署名、APK生成、端末への導入、機器情報の確認場所 |
+| Focus Vision用APKを入手・公開する | [Androidビルドと導入](development/android-build.md) | Releasesから導入、Ubuntuで署名・ビルド・公開、実機確認 |
 
 ## 情報の置き場所
 

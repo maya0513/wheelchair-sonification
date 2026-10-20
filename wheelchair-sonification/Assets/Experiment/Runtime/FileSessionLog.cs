@@ -40,6 +40,9 @@ namespace WheelchairSonification.Runtime
         public string unity_version;
         public string build_guid;
         public string operating_system;
+        public string presentation_mode = "desktop";
+        public string demo_mode = "detailed";
+        public string xr_runtime;
     }
 
     // Immutable settings + append-only events + an atomic completion marker.

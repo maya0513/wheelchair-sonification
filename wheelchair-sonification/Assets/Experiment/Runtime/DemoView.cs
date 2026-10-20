@@ -28,12 +28,14 @@ namespace WheelchairSonification.Runtime
         public Text StrokeText { get; }
         public GaugeView Gauge { get; }
         public GameObject OperatorPanel { get; }
+        public RectTransform ParticipantCanvas { get; }
 
         public DemoView(Transform parent, Font font, Action start, Action end, Action contact, Action release,
             Action setupChanged, Action contextChanged)
         {
             var ui = new DemoUi(font);
             var preview = DemoUi.Canvas("Participant preview", parent, 0);
+            ParticipantCanvas = preview;
             Gauge = new GaugeView(ui, preview);
             var operatorCanvas = DemoUi.Canvas("Operator controls", parent, 1);
             OperatorPanel = operatorCanvas.gameObject;

@@ -14,6 +14,7 @@ function fixture(t: { after: (fn: () => void) => void }) {
   t.after(() => rmSync(root, { recursive: true, force: true }));
   for (const dir of ['scripts', 'bin', 'wheelchair-sonification/ProjectSettings', 'wheelchair-sonification/Temp']) mkdirSync(join(root, dir), { recursive: true });
   copyFileSync(script, join(root, 'scripts/unity.sh'));
+  writeFileSync(join(root, 'scripts/unity-xr-sdk.mts'), '// Launcher fixture; SDK acquisition has dedicated tests.\n');
   copyFileSync(join(dirname(script), 'unity-results.py'), join(root, 'scripts/unity-results.py'));
   writeFileSync(join(root, 'wheelchair-sonification/ProjectSettings/ProjectVersion.txt'), 'm_EditorVersion: 6000.6.4f1\r\n');
   writeFileSync(join(root, 'bin/ldd'), '#!/bin/sh\nif [ "$TEST_CASE" = libraries ]; then echo "libmissing.so => not found"; else echo "共有ライブラリOK"; fi\n', { mode: 0o755 });

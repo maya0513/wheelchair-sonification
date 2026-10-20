@@ -8,6 +8,6 @@
 | 先行研究と根拠となる文献 | [文献調査](research/README.md) |
 | 装置の開発と動作確認 | [開発ガイド](docs/development/guide.md) |
 | 模擬入力版の起動・操作 | [デモの使い方](docs/development/feedback-demo.md) |
-| WindowsでAPKを作り、機器情報を確認する | [Androidビルドと導入](docs/development/android-build.md) |
+| Focus Vision用APKを入手・公開する | [Androidビルドと導入](docs/development/android-build.md) |
 | 実験アプリ | [Unityプロジェクト](wheelchair-sonification) |
 | 開発環境の起動スクリプト | [スクリプトの説明](scripts/README.md) |

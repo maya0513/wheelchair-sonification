@@ -21,17 +21,20 @@ namespace WheelchairSonification.Editor
                 throw new InvalidOperationException("Unity HubでAndroid Build Support、SDK & NDK Tools、OpenJDKを追加してください。");
             if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.Android)
                 throw new InvalidOperationException("-buildTarget Androidを指定して起動してください。");
+            FocusVisionProject.Validate();
             string directory = Required("WHEELCHAIR_BUILD_DIRECTORY");
             string keystore = Required("UNITY_ANDROID_KEYSTORE");
             string alias = Required("UNITY_ANDROID_KEY_ALIAS");
             string storePassword = Required("UNITY_ANDROID_KEYSTORE_PASSWORD");
             string aliasPassword = Required("UNITY_ANDROID_KEY_ALIAS_PASSWORD");
             if (!File.Exists(keystore)) throw new FileNotFoundException("署名用キーストアがありません。");
-            string[] scenes = EditorBuildSettings.scenes.Where(scene => scene.enabled).Select(scene => scene.path).ToArray();
+            string[] scenes = { FocusVisionProject.ScenePath };
             if (scenes.Length == 0 || scenes.Any(scene => !File.Exists(scene)))
                 throw new InvalidOperationException("ビルド対象のSceneがないか、ファイルがありません。");
             if (!File.Exists(Path.Combine(Application.dataPath, "StreamingAssets", "Noto-OFL.txt")))
                 throw new InvalidOperationException("同梱フォントのライセンスがありません。");
+            if (!File.Exists(Path.Combine(Application.dataPath, "StreamingAssets", "HTC-OpenXR-LICENSE.txt")))
+                throw new InvalidOperationException("HTC OpenXRのライセンス案内がありません。");
             string version = Environment.GetEnvironmentVariable("UNITY_BUILD_VERSION") ?? PlayerSettings.bundleVersion;
             if (string.IsNullOrWhiteSpace(version)) throw new InvalidOperationException("アプリのバージョンが空です。");
             int versionCode = PlayerSettings.Android.bundleVersionCode;
@@ -124,7 +127,10 @@ namespace WheelchairSonification.Editor
         {
             public string result, unityVersion, applicationId, version;
             public string target = "Android", architecture = "ARM64", scriptingBackend = "IL2CPP";
-            public string application = "feedback-demo", inputMode = "simulated";
+            public string application = "feedback-demo-xr", inputMode = "simulated";
+            public string targetDevice = "VIVE Focus Vision", xrLoader = "OpenXR";
+            public bool passthrough = true, deviceTested = false;
+            public string viveOpenXrVersion = "2.5.1", unityOpenXrVersion = "1.18.0";
             public bool development = false, customSigning = true;
             public int versionCode;
             public string[] scenes;

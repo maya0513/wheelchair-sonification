@@ -1,5 +1,6 @@
 {
     "name": "WheelchairSonification.Editor",
-    "references": ["WheelchairSonification.Runtime"],
+    "references": ["WheelchairSonification.Runtime", "WheelchairSonification.XR", "Unity.XR.Management",
+        "Unity.XR.Management.Editor", "Unity.XR.OpenXR", "Unity.XR.OpenXR.Editor", "VIVE.OpenXR"],
     "includePlatforms": ["Editor"]
 }

@@ -65,6 +65,7 @@ if [[ -e "$project/Temp/UnityLockfile" ]]; then
     exit 1
 fi
 mkdir -p "$root/.local/logs"
+node "$root/scripts/unity-xr-sdk.mts"
 
 if [[ "$1" == open ]]; then
     exec "$editor" "${graphics_args[@]}" -projectPath "$project" -logFile "$root/.local/logs/unity-editor.log"

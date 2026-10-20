@@ -11,6 +11,11 @@ namespace WheelchairSonification.Runtime
 {
     public sealed class DemoController : MonoBehaviour
     {
+        [SerializeField] private bool externalPresentation;
+        public bool PresentationReady { get; private set; } = true;
+        public string PresentationMode { get; set; } = "desktop";
+        public string DemoMode { get; private set; } = "detailed";
+        public string XrRuntime { get; set; }
         private readonly Queue<string> recent = new Queue<string>();
         private MonotonicClock clock;
         private DemoInput input;
@@ -36,13 +41,8 @@ namespace WheelchairSonification.Runtime
                 UpdateTarget, ChangeContext);
             Output = gameObject.AddComponent<UnityFeedbackOutput>();
             Output.Initialize(View.Gauge);
-            var cameraObject = new GameObject("Demo background", typeof(Camera), typeof(AudioListener));
-            cameraObject.transform.SetParent(transform, false);
-            var camera = cameraObject.GetComponent<Camera>();
-            camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = new Color32(239, 244, 248, 255);
-            camera.cullingMask = 0;
-            camera.orthographic = true;
+            if (!externalPresentation) CreateDesktopCamera();
+            else PresentationReady = false;
             ReadCommandLine();
             UpdateTarget();
             try
@@ -54,6 +54,64 @@ namespace WheelchairSonification.Runtime
             catch (Exception exception) { message = "保存先を確認できません: " + exception.Message; }
             View.PathText.text = "保存先: " + SaveRoot;
             Refresh();
+        }
+
+        private void CreateDesktopCamera()
+        {
+            var cameraObject = new GameObject("Demo background", typeof(Camera), typeof(AudioListener));
+            cameraObject.transform.SetParent(transform, false);
+            var camera = cameraObject.GetComponent<Camera>();
+            camera.clearFlags = CameraClearFlags.SolidColor;
+            camera.backgroundColor = new Color32(239, 244, 248, 255);
+            camera.cullingMask = 0;
+            camera.orthographic = true;
+        }
+
+        public void SetPresentationReady(bool ready, string reason)
+        {
+            if (!ready) InterruptSession(reason);
+            PresentationReady = ready;
+            message = reason;
+            Refresh();
+        }
+
+        public void InterruptSession(string reason)
+        {
+            Engine?.Interrupt(reason);
+            Engine = null;
+            Output.Stop();
+            Output.SetGaugeVisible(false);
+            View.ResetContext();
+            message = "中断しました（未完了として保存）: " + reason;
+            Refresh();
+        }
+
+        public void SwitchMode(string mode)
+        {
+            if (mode != "quick" && mode != "detailed") throw new ArgumentException(nameof(mode));
+            if (Running) EndSession();
+            DemoMode = mode;
+        }
+
+        public bool QuickPush(StudyGroup group, float volume, FeedbackState state)
+        {
+            if (!PresentationReady) return false;
+            if (DemoMode != "quick") SwitchMode("quick");
+            if (Running && (View.Group.value != (int)group || View.Volume.value != volume)) EndSession();
+            if (!Running)
+            {
+                View.BaselineFirst.text = View.BaselineSecond.text = "60, 60";
+                View.Group.value = (int)group;
+                View.Volume.value = volume;
+                if (!StartSession()) return false;
+                View.Phase.value = (int)StudyPhase.Training;
+                View.Task.value = (int)StudyTask.Straight;
+                View.Motion.value = (int)MotionState.Straight;
+                View.CentralArea.isOn = true;
+            }
+            View.Angle.text = (60 + (int)state * 10).ToString(CultureInfo.InvariantCulture);
+            Contact(); Release();
+            return Running;
         }
 
         private void ReadCommandLine()
@@ -84,6 +142,7 @@ namespace WheelchairSonification.Runtime
 
         public bool StartSession()
         {
+            if (!PresentationReady) return false;
             if (Running) return false;
             UpdateTarget();
             if (!target.Success) { message = target.Error; Refresh(); return false; }
@@ -102,7 +161,8 @@ namespace WheelchairSonification.Runtime
                     baseline_median_degrees = target.BaselineDegrees, target_degrees = target.TargetDegrees,
                     increment_degrees = target.IncrementDegrees, digital_volume = View.Volume.value,
                     unity_version = Application.unityVersion, build_guid = Application.buildGUID,
-                    operating_system = SystemInfo.operatingSystem
+                    operating_system = SystemInfo.operatingSystem,
+                    presentation_mode = PresentationMode, demo_mode = DemoMode, xr_runtime = XrRuntime
                 });
                 SessionDirectory = file.DirectoryPath;
                 recent.Clear();
@@ -174,7 +234,7 @@ namespace WheelchairSonification.Runtime
 
         private void Refresh()
         {
-            View.UpdateControls(Running, target.Success, Running && Engine.HasOpenContact);
+            View.UpdateControls(Running, target.Success && PresentationReady, Running && Engine.HasOpenContact);
             bool fault = Engine != null && Engine.State == SessionState.Faulted;
             View.StatusText.text = fault ? "処理を停止しました。記録は未完了です: " + Engine.Fault : message;
             View.StatusText.color = fault ? new Color32(157, 52, 48, 255) : DemoUi.Ink;
