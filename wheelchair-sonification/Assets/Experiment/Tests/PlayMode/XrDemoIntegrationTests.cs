@@ -87,7 +87,11 @@ namespace WheelchairSonification.Tests
         {
             xr.ShowMode(true);
             var field = app.View.BaselineFirst;
-            xr.NumberPad.Open(field);
+            Assert.That(field.enabled, Is.False, "Native InputField handling must not open an Android keyboard.");
+            ExecuteEvents.Execute(field.gameObject, new PointerEventData(EventSystem.current), ExecuteEvents.pointerClickHandler);
+            yield return null;
+            Assert.That(xr.NumberPad.Root.activeSelf, Is.True);
+            Assert.That(field.isFocused, Is.False);
             xr.NumberPad.Press("clear");
             foreach (char key in "64.9,70,75.1") xr.NumberPad.Press(key.ToString());
             Assert.That(field.text, Is.EqualTo("60, 60"));

@@ -35,6 +35,10 @@ namespace WheelchairSonification.XR
         {
             field.shouldHideMobileInput = true;
             field.shouldActivateOnSelect = false;
+            // uGUI's OnPointerClick activates the native Android keyboard even with
+            // shouldActivateOnSelect=false. Keep the value/label but let only our trigger edit it.
+            field.DeactivateInputField();
+            field.enabled = false;
             var trigger = field.gameObject.AddComponent<EventTrigger>();
             var entry = new EventTrigger.Entry { eventID = EventTriggerType.PointerClick };
             entry.callback.AddListener(_ => { if (field.interactable) Open(field); });
