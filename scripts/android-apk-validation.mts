@@ -31,7 +31,7 @@ export function checkApkReports(badging: string, manifest: string, entries: stri
     throw new Error('Focus Vision用のOpenXR Manifestを確認できません。');
   const files = new Set(entries.split(/\r?\n/));
   for (const name of ['lib/arm64-v8a/libUnityOpenXR.so', 'lib/arm64-v8a/libopenxr_loader.so',
-    'lib/arm64-v8a/libviveopenxr.so', 'assets/Noto-OFL.txt', 'assets/HTC-OpenXR-LICENSE.txt'])
+    'lib/arm64-v8a/libviveopenxr.so', 'assets/Noto-OFL.txt', 'assets/Liberation-OFL.txt', 'assets/HTC-OpenXR-LICENSE.txt'])
     if (!files.has(name)) throw new Error('APKの必須ファイルがありません: ' + name);
 }
 

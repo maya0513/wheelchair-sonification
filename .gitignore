@@ -45,3 +45,10 @@
 # OS metadata
 .DS_Store
 Thumbs.db
+
+# Research records and temporary embedded build identity
+**/ResearchSessions/
+**/DemoSessions/
+**/WheelchairSonificationExports/
+/wheelchair-sonification/Assets/Experiment/Resources/BuildIdentity.txt
+/wheelchair-sonification/Assets/Experiment/Resources/BuildIdentity.txt.meta

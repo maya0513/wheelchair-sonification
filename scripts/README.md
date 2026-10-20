@@ -19,4 +19,12 @@ Unityの操作は`just unity-open`、`just unity-check`、`just unity-test`、`j
 
 Unityの起動・ビルドにMCPサーバーは不要。`just check`はNodeとPython、`just unity-test`はPythonだけをmiseで解決し、無関係なツールの自動導入を要求しない。デモの操作と生成物は[使い方](../docs/development/feedback-demo.md)を参照する。
 
-`just unity-build-release`（別名`just unity-build-apk`）はWindowsでも使えるFocus Vision向けの入口。SDKは自動取得し、AndroidのXR Sceneだけをビルドする。`just android-signing-init`で署名鍵を初回作成でき、Ubuntuでは`just release-apk v0.2.0 2`でGitHubへ公開する。配布先PCではReleasesからAPKを取得すれば再ビルドは不要。[Androidビルドと導入](../docs/development/android-build.md)を参照する。`just unity-open`など`unity.sh`を呼ぶ既存コマンドはLinux向け。
+`just unity-build-release`（別名`just unity-build-apk`）はWindowsでも使えるFocus Vision向けの入口。SDKは自動取得し、AndroidのXR Sceneだけをビルドする。`just android-signing-init`で署名鍵を初回作成でき、Ubuntuでは`just release-apk v0.3.0 3`でGitHubへ公開する。配布先PCではReleasesからAPKを取得すれば再ビルドは不要。[Androidビルドと導入](../docs/development/android-build.md)を参照する。`just unity-open`など`unity.sh`を呼ぶ既存コマンドはLinux向け。
+
+`just unity-preview`はAPKと共通のSDF UIをUnityからPNGへ描画し、切り出し・一覧・HTMLを`.local/ui-preview/`へ出力する。`just unity-preview-open`はEditor専用のXR Interaction Simulatorを起動する。`just unity-replay /path/to/trial`は元の時刻・校正・位置姿勢で推定と判定を再解析する。[画像確認](../docs/development/xr-preview.md)・[記録再解析](../docs/development/research-records.md)
+
+- `unity-preview.mts` / `unity-preview.test.mts`: 実描画の起動、撮影条件の検査、画像ギャラリー、公開ZIP。実験ログをZIPへ含めない。
+- `unity-state.mts`: ビルド・画像確認後に設定と動的フォントのシリアライズを戻す。
+- `preview-test-fixture.mts`: 公開・ファイル検査のテスト専用データ。実描画の代用にはしない。
+
+Releaseは新しいUnity画像と署名APKの検証後、4ファイルを添付する。実機性能と画面の画像確認は別に記録する。

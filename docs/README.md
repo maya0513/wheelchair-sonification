@@ -22,6 +22,9 @@
 | 開発方法を学ぶ | [開発ガイド](development/guide.md) | Unity、模擬入力、自動テスト、実機確認の進め方 |
 | 模擬入力版を動かす | [起動と操作](development/feedback-demo.md) | デモの操作、ログ、自動テスト、Linuxビルド |
 | Focus Vision用APKを入手・公開する | [Androidビルドと導入](development/android-build.md) | Releasesから導入、Ubuntuで署名・ビルド・公開、実機確認 |
+| APKの画面を実機前に確認する | [画面画像と模擬操作](development/xr-preview.md) | 共通Unity UIからのPNG・切り出し・一覧とSimulator |
+| 5台を取り付け計測する | [機器・校正](development/tracker-measurement.md) | 役割、左右の傾斜軸、推定方式、現地確認 |
+| 実測データを保存・回収する | [実測記録](development/research-records.md) | ファイル定義、Downloadへの取り出し、再解析 |
 
 ## 情報の置き場所
 

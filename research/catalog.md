@@ -75,7 +75,7 @@
 | [D01](papers/D01-vive-tracker.md) | HTC | HTC VIVE Tracker開発資料 | 2026-10-14 |
 | [D02](papers/D02-steamvr-pose.md) | Valve | SteamVR Unity Plugin: Behaviour Pose | 2026-10-14 |
 | [D03](papers/D03-unity-audio.md) | Unity Technologies | Unity音出力の時刻・DSPバッファ | 2026-10-14 |
-| [D04](papers/D04-vive-tracking-systems.md) | HTC | VIVEのトラッキング方式とUltimateの対応 | 2026-10-14 |
+| [D04](papers/D04-vive-tracking-systems.md) | HTC | VIVEのトラッキング方式とUltimateの対応 | 2026-10-20 |
 | [D05](papers/D05-lsl-time.md) | LSL contributors | Lab Streaming Layer: Time Synchronization | 2026-10-14 |
 | [D06](papers/D06-mne-psd.md) | MNE contributors | MNE-Python: Welch PSDと不良区間注釈 | 2026-10-14 |
 | [D07](papers/D07-brainflow-boards.md) | BrainFlow contributors | BrainFlow: Supported Boards | 2026-10-14 |

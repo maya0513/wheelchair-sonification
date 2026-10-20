@@ -1,12 +1,13 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { closeSync, createReadStream, existsSync, lstatSync, mkdirSync, mkdtempSync, openSync, readFileSync, readdirSync, renameSync, rmdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { closeSync, createReadStream, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { prepareXrSdk } from './unity-xr-sdk.mts';
 import { signingEnvironment, signingVariables } from './android-signing.mts';
 import { verifyApk } from './android-apk-validation.mts';
 import { editorPath } from './unity-editor.mts';
+import { snapshotUnitySettings } from './unity-state.mts';
 export { editorPath } from './unity-editor.mts';
 
 const repository = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -50,34 +51,10 @@ export async function buildRelease(root = repository, env = process.env, runUnit
   catch { throw new Error(`別のAPKビルドが実行中です。停止済みならロックを確認してください: ${lock}`); }
   closeSync(lockHandle);
   let staging: string | undefined;
-  const settingsPaths = ['ProjectSettings/ProjectSettings.asset', 'Assets/Settings/Mobile_RPAsset.asset',
-    'Assets/Settings/UniversalRenderPipelineGlobalSettings.asset'].map(path => join(project, path));
-  const addSettingsAssets = (directory: string) => {
-    if (!existsSync(directory)) return;
-    for (const entry of readdirSync(directory, { withFileTypes: true })) {
-      const path = join(directory, entry.name);
-      if (entry.isDirectory()) addSettingsAssets(path);
-      else if (entry.isFile() && entry.name.endsWith('.asset')) settingsPaths.push(path);
-    }
-  };
-  for (const relative of ['Assets/XR', 'Assets/XRI', 'Assets/VIVE']) addSettingsAssets(join(project, relative));
-  const originalSettings = new Map<string, Buffer>();
-  const restoreSettings = () => {
-    for (const [path, bytes] of originalSettings) {
-      if (!existsSync(path) || !bytes.equals(readFileSync(path))) writeFileSync(path, bytes);
-    }
-    // Some XR package setup hooks leave empty numbered folders. They contain no settings.
-    for (const relative of ['Assets/XR 1', 'Assets/XR/Settings 1']) {
-      const path = join(project, relative);
-      if (existsSync(path) && lstatSync(path).isDirectory() && readdirSync(path).length === 0) {
-        rmdirSync(path);
-        rmSync(path + '.meta', { force: true });
-      }
-    }
-  };
+  const restoreSettings = snapshotUnitySettings(project);
+  const sourceCommit = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8', shell: false }).stdout?.trim() || 'unknown';
   try {
     // Unityはビルド時に設定を保存する。Editor終了後に空の辞書等も含めて復元する。
-    for (const path of settingsPaths) if (existsSync(path)) originalSettings.set(path, readFileSync(path));
     staging = mkdtempSync(join(builds, '.android-release-'));
     if (existsSync(log)) {
       rmSync(`${log}.previous`, { force: true });
@@ -87,7 +64,8 @@ export async function buildRelease(root = repository, env = process.env, runUnit
     const code = await runUnity({ editor, cwd: root,
       args: ['-batchmode', '-nographics', '-quit', '-buildTarget', 'Android', '-projectPath', project, '-logFile', log,
         '-executeMethod', 'WheelchairSonification.Editor.ReleaseBuildTools.BuildAndroid'],
-      env: { ...env, UNITY_ANDROID_KEYSTORE: keystore, WHEELCHAIR_BUILD_DIRECTORY: staging, WHEELCHAIR_EXPECTED_UNITY_VERSION: version },
+      env: { ...env, UNITY_ANDROID_KEYSTORE: keystore, WHEELCHAIR_BUILD_DIRECTORY: staging, WHEELCHAIR_EXPECTED_UNITY_VERSION: version,
+        WHEELCHAIR_SOURCE_COMMIT: sourceCommit },
     });
     restoreSettings();
     if (code !== 0) throw new Error(`Unityが終了コード${code}で失敗しました。ログ: ${log}`);
@@ -100,7 +78,7 @@ export async function buildRelease(root = repository, env = process.env, runUnit
     if (info.result !== 'Succeeded' || info.target !== 'Android' || info.development !== false || info.unityVersion !== version
       || info.architecture !== 'ARM64' || info.scriptingBackend !== 'IL2CPP' || !info.customSigning
       || info.targetDevice !== 'VIVE Focus Vision' || info.xrLoader !== 'OpenXR' || info.passthrough !== true
-      || info.inputMode !== 'simulated' || info.scenes?.length !== 1 || info.scenes[0] !== 'Assets/Scenes/FeedbackDemoXR.unity'
+      || info.inputMode !== 'simulated-and-vive-ultimate-tracker' || info.scenes?.length !== 1 || info.scenes[0] !== 'Assets/Scenes/FeedbackDemoXR.unity'
       || !existsSync(apk) || statSync(apk).size === 0) throw new Error(`今回の署名付き非開発APKを確認できません。ログ: ${log}`);
     const validation = dependencies.verify(apk, editor, env, info);
     const hash = createHash('sha256');

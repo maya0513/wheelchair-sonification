@@ -115,11 +115,11 @@ namespace WheelchairSonification.XR
             controller.SetActive(true);
         }
 
-        public void UpdatePointers()
+        public void UpdatePointers(bool visible = true)
         {
             foreach (var pointer in pointers)
             {
-                bool tracked = pointer.tracked.IsPressed();
+                bool tracked = visible && pointer.tracked.IsPressed();
                 pointer.ray.enabled = tracked;
                 pointer.line.enabled = tracked;
                 if (!tracked) continue;

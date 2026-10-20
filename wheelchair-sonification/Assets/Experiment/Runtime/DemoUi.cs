@@ -181,7 +181,7 @@ namespace WheelchairSonification.Runtime
         }
     }
 
-    public sealed class GaugeView
+    public sealed class GaugeView : IFeedbackGauge
     {
         private readonly GameObject root;
         private readonly GameObject[] markers = new GameObject[3];

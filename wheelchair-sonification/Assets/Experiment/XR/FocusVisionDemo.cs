@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.XR;
 using UnityEngine.XR.Management;
 using UnityEngine.XR.OpenXR;
@@ -17,87 +19,45 @@ namespace WheelchairSonification.XR
     [RequireComponent(typeof(DemoController))]
     public sealed class FocusVisionDemo : MonoBehaviour
     {
-        private DemoController app;
-        private FocusVisionRig rig;
+        public FocusVisionRig Rig { get; private set; }
+        public FocusVisionPanel Panel { get; private set; }
+        public XrGauge Gauge { get; private set; }
+        public ResearchController Research { get; private set; }
+        public DemoController App { get; private set; }
+        public bool IsEditorPreview { get; private set; }
+        public bool Ready => ready;
         private Transform menuAnchor;
-        private RectTransform quick;
-        private RectTransform bar;
-        private Text status;
-        private Text quickStatus;
-        private Dropdown quickGroup;
-        private Slider quickVolume;
-        private Button[] quickPushes;
         private XRManagerSettings manager;
         private VivePassthrough feature;
         private XrPassthroughHTC passthrough;
-        private bool hasPassthrough;
-        private bool nativeStarted;
-        private bool paused;
+        private bool hasPassthrough, nativeStarted, paused, ready, attempted, wasTracking, busy;
         private bool focused = true;
-        private bool detailed;
-        private bool ready;
-        private bool attempted;
-        private bool wasTracking;
-        private string runtimeStatus = "OpenXRを初期化しています。";
+        private string runtimeStatus = "OpenXRを初期化しています。", userStatus;
         private double nextAttempt;
-        public XrNumberPad NumberPad { get; private set; }
+        private Coroutine quickRoutine;
 
         private void Awake()
         {
-            app = GetComponent<DemoController>();
-            app.PresentationMode = "focus-vision-openxr";
-            app.SetPresentationReady(false, runtimeStatus);
-            rig = new FocusVisionRig(transform);
+            App = GetComponent<DemoController>();
+            App.PresentationMode = "focus-vision-openxr";
+            App.SetPresentationReady(false, runtimeStatus);
+            // Keep the desktop input adapter for the shared demo engine, but never render its dense UI in XR.
+            App.View.OperatorPanel.SetActive(false);
+            App.View.ParticipantCanvas.gameObject.SetActive(false);
+            Rig = new FocusVisionRig(transform);
             menuAnchor = new GameObject("Menu anchor").transform;
             menuAnchor.SetParent(transform, false);
-            rig.WorldCanvas((RectTransform)app.View.OperatorPanel.transform, menuAnchor, Vector3.zero,
-                new Vector2(1440, 960), 0.001f);
-            var ui = new DemoUi(Resources.Load<Font>("DemoJapanese"));
-            NumberPad = new XrNumberPad(ui, app.View.OperatorPanel.transform.Find("Operator layout"));
-            foreach (var field in new[] { app.View.BaselineFirst, app.View.BaselineSecond, app.View.Angle }) NumberPad.Bind(field);
-
-            rig.WorldCanvas(app.View.ParticipantCanvas, rig.Camera.transform, new Vector3(0, -0.35f, 1),
-                new Vector2(1440, 960), 0.0014f);
-            var gauge = app.View.Gauge.Root;
-            gauge.anchorMin = gauge.anchorMax = gauge.pivot = new Vector2(0.5f, 0.5f);
-            gauge.anchoredPosition = Vector2.zero;
-
-            quick = DemoUi.Canvas("Quick controls", transform, 2);
-            rig.WorldCanvas(quick, menuAnchor, Vector3.zero, new Vector2(900, 620), 0.0012f);
-            var card = ui.Card(quick, "Focus Vision  /  模擬入力デモ", 0, 0, 900, 620);
-            card.anchorMin = card.anchorMax = card.pivot = new Vector2(0.5f, 0.5f);
-            card.anchoredPosition = Vector2.zero;
-            ui.Text(card, "Instructions", "座った状態で確認してください。実際の走行や角度計測は行いません。\nポインターを合わせ、トリガーで選択します。", 24, 60, 852, 80, 21);
-            quickGroup = ui.Dropdown(card, "Feedback mode", new[] { "A：聴覚", "V：視覚", "N：追加FBなし" }, 24, 158, 320);
-            quickGroup.SetValueWithoutNotify((int)StudyGroup.Visual);
-            ui.Text(card, "Volume label", "音量", 380, 158, 80, 40, 21);
-            quickVolume = ui.Volume(card, 470, 160, 320);
-            quickPushes = new Button[3];
-            string[] labels = { "短い  60°", "目標範囲  70°", "長い  80°" };
-            for (int i = 0; i < 3; i++)
-            {
-                var state = (FeedbackState)i;
-                quickPushes[i] = ui.Button(card, labels[i], 24 + i * 288, 240, 276,
-                    () => app.QuickPush((StudyGroup)quickGroup.value, quickVolume.value, state), true);
-            }
-            quickStatus = ui.Text(card, "Quick status", "", 24, 310, 852, 92, 20);
-            ui.Text(card, "Target note", "基準60°・目標70°。各ボタンが1回の接触→離手を模擬します。\nA / Xで操作欄を表示・非表示、B / Yで正面へ戻します。", 24, 410, 852, 70, 20);
-            ui.Button(card, "詳細設定", 24, 520, 270, () => ShowMode(true));
-            ui.Button(card, "記録を終了", 312, 520, 270, () => app.EndSession());
-            ui.Button(card, "アプリ終了", 600, 520, 270, Application.Quit);
-            quickGroup.onValueChanged.AddListener(_ => { if (app.Running) app.EndSession(); });
-            quickVolume.onValueChanged.AddListener(_ => { if (app.Running) app.EndSession(); });
-
-            bar = DemoUi.Canvas("XR controls", transform, 3);
-            rig.WorldCanvas(bar, rig.Camera.transform, new Vector3(0, 0.50f, 1), new Vector2(900, 150), 0.0009f);
-            var barCard = ui.Card(bar, "", 0, 0, 900, 150);
-            barCard.anchorMin = barCard.anchorMax = barCard.pivot = new Vector2(0.5f, 0.5f);
-            barCard.anchoredPosition = Vector2.zero;
-            status = ui.Text(barCard, "XR status", "", 20, 8, 860, 60, 20);
-            ui.Button(barCard, "操作欄を切替", 20, 86, 270, TogglePanel);
-            ui.Button(barCard, "正面へ配置", 310, 86, 270, Recenter);
-            ui.Button(barCard, "再確認 / 簡単操作", 600, 86, 280, () => { attempted = false; ShowMode(false); });
-            ShowMode(false);
+            var ui = new XrUi();
+            var canvas = DemoUi.Canvas("XR feedback canvas", transform, 0);
+            float scale = 2 * Mathf.Tan(12 * Mathf.Deg2Rad) / 600;
+            Rig.WorldCanvas(canvas, Rig.Camera.transform, new Vector3(0, -Mathf.Tan(10 * Mathf.Deg2Rad), 1), new Vector2(600, 200), scale);
+            Gauge = new XrGauge(ui, canvas);
+            App.Output.BindGauge(Gauge);
+            Research = gameObject.AddComponent<ResearchController>();
+            Research.Output = App.Output;
+            Research.SetSource(new UltimatePoseSource());
+            Panel = new FocusVisionPanel(this, ui, Rig, menuAnchor);
+            Research.StateChanged += OnTrialStateChanged;
             Recenter();
         }
 
@@ -107,126 +67,220 @@ namespace WheelchairSonification.XR
             manager = XRGeneralSettings.Instance?.Manager;
             if (manager == null) { SetReady(false, "AndroidのXR設定がありません。"); yield break; }
             yield return manager.InitializeLoader();
-            if (manager.activeLoader == null) { SetReady(false, "OpenXRを起動できません。本体の状態・ログを確認してください。"); yield break; }
-            manager.StartSubsystems();
-            nativeStarted = true;
+            if (manager.activeLoader == null) { SetReady(false, "OpenXRを起動できません。本体の状態を確認してください。"); yield break; }
+            manager.StartSubsystems(); nativeStarted = true;
             feature = OpenXRSettings.Instance.GetFeature<VivePassthrough>();
-            app.XrRuntime = OpenXRRuntime.name + " / " + OpenXRRuntime.version;
+            App.XrRuntime = OpenXRRuntime.name + " / " + OpenXRRuntime.version;
+            foreach (var subsystem in manager.activeLoader.GetLoadedSubsystem<XRInputSubsystem>() is XRInputSubsystem input ? new[] { input } : Array.Empty<XRInputSubsystem>())
+                subsystem.trackingOriginUpdated += OnTrackingOriginUpdated;
 #else
-            SetReady(false, "Editorでは配置のみ確認できます。Focus Vision上でAPKを起動してください。");
+            if (!IsEditorPreview) SetReady(false, "Editorの模擬確認は unity-preview-open から起動します。");
             yield break;
 #endif
         }
 
-        public void ShowMode(bool showDetailed)
+        private void Update()
         {
-            NumberPad.Cancel();
-            app.SwitchMode(showDetailed ? "detailed" : "quick");
-            detailed = showDetailed;
-            app.View.OperatorPanel.SetActive(detailed);
-            quick.gameObject.SetActive(!detailed);
-            Recenter();
-        }
-
-        public void TogglePanel()
-        {
-            NumberPad.Cancel();
-            var panel = detailed ? app.View.OperatorPanel : quick.gameObject;
-            panel.SetActive(!panel.activeSelf);
+            if (Rig.TogglePressed) TogglePanel();
+            if (Rig.RecenterPressed) Recenter();
+            Rig.UpdatePointers(Panel.Visible && !Research.Active);
+            if (Panel.Visible && Panel.Page == XrPage.Devices) Panel.RefreshDevices();
+            if (nativeStarted && !paused && focused) UpdateRuntime();
+            foreach (var button in Panel.Tabs) button.interactable = !busy && Research.MenuAllowed && quickRoutine == null;
+            if (Research.State == TrialRunState.Countdown)
+                Panel.UpdateNotice("計測開始まで\n" + Math.Ceiling(Research.CountdownRemaining) + "秒");
+            Panel.SetStatus(userStatus ?? (!ready ? runtimeStatus : Panel.Page == XrPage.Quick ? "模擬入力。最初は座って確認してください。" : Research.Status));
         }
 
         public void Recenter()
         {
-            var forward = Vector3.ProjectOnPlane(rig.Camera.transform.forward, Vector3.up).normalized;
-            if (forward.sqrMagnitude < 0.01f) forward = Vector3.forward;
-            menuAnchor.position = rig.Camera.transform.position + forward * 1.4f + Vector3.up * 0.12f;
+            var forward = Vector3.ProjectOnPlane(Rig.Camera.transform.forward, Vector3.up).normalized;
+            if (forward.sqrMagnitude < .01f) forward = Vector3.forward;
+            menuAnchor.position = Rig.Camera.transform.position + forward * XrUi.Distance;
             menuAnchor.rotation = Quaternion.LookRotation(forward, Vector3.up);
         }
 
-        private void Update()
+        public void Notify(string message) { userStatus = message; Panel.SetStatus(message); }
+
+        public void TogglePanel()
         {
-            foreach (var dropdown in new[] { quickGroup, app.View.Group, app.View.Phase, app.View.Task, app.View.Motion })
-                FocusVisionRig.PrepareDropdown(dropdown);
-            rig.UpdatePointers();
-            if (rig.TogglePressed) TogglePanel();
-            if (rig.RecenterPressed) Recenter();
-            if (nativeStarted && !paused && focused) UpdateRuntime();
-            foreach (var button in quickPushes) button.interactable = ready;
-            status.text = runtimeStatus;
-            quickStatus.text = ready ? app.View.StatusText.text : runtimeStatus;
+            if (busy) return;
+            userStatus = null;
+            if (Research.Active || Research.State == TrialRunState.WaitingForStop)
+            { Research.RequestMenu(); OnTrialStateChanged(); return; }
+            StopQuick();
+            if (Panel.KeypadVisible) { Panel.CancelNumber(); return; }
+            if (Panel.Visible) Panel.SetVisible(false);
+            else { Panel.Show(Panel.Page, Panel.Step); Recenter(); }
+        }
+
+        public void RunQuick(StudyGroup group, float volume, FeedbackState state)
+        {
+            if (!ready || !Research.MenuAllowed || busy) { Notify("準備完了・停止を確認してください。"); return; }
+            StopQuick();
+            if (!App.QuickPush(group, volume, state)) return;
+            Panel.SetVisible(false);
+            quickRoutine = StartCoroutine(ReturnFromQuick());
+        }
+        private IEnumerator ReturnFromQuick()
+        {
+            yield return new WaitForSecondsRealtime(1);
+            App.EndSession(); quickRoutine = null;
+            Panel.Show(XrPage.Quick); Recenter();
+        }
+        public void StopQuick()
+        {
+            if (quickRoutine != null) { StopCoroutine(quickRoutine); quickRoutine = null; }
+            if (App.Running) App.EndSession();
+            if (!Research.Active) { App.Output.Stop(); Gauge.SetVisible(false); }
+        }
+
+        public void BeginResearch(float volume)
+        {
+            StopQuick(); userStatus = null;
+            if (Research.BeginTrial(volume)) Panel.ShowNotice("計測開始まで\n10秒");
+        }
+
+        private void OnTrialStateChanged()
+        {
+            userStatus = null;
+            if (Research.State == TrialRunState.Running) Panel.SetVisible(false);
+            else if (Research.State == TrialRunState.Countdown) Panel.ShowNotice("計測開始まで\n10秒");
+            else if (Research.State == TrialRunState.WaitingForStop)
+                Panel.ShowNotice("安全に停止してください。", () => { Research.ConfirmStopped(); Panel.Show(XrPage.Settings, 1); Recenter(); });
+            else { Panel.Show(XrPage.Settings, 1); Recenter(); }
         }
 
         private void UpdateRuntime()
         {
             if (feature == null || !feature.enabled) { SetReady(false, "パススルー機能が無効です。"); return; }
             bool tracking = InputDevices.GetDeviceAtXRNode(XRNode.Head).TryGetFeatureValue(CommonUsages.isTracked, out bool tracked) && tracked;
-            if (!tracking)
-            {
-                SetReady(false, "HMDの追跡を待っています。復帰後は操作して再開してください。");
-                wasTracking = false;
-                return;
-            }
+            if (!tracking) { SetReady(false, "HMD追跡を待っています。復帰後に操作して再開。"); wasTracking = false; return; }
             if (!wasTracking) Recenter();
             wasTracking = true;
             if (!feature.XrSessionCreated || feature.XrSessionEnding)
             {
-                hasPassthrough = false; // The SDK destroys handles with their OpenXR session.
-                attempted = false;
-                SetReady(false, "OpenXRセッションの準備を待っています。");
-                return;
+                hasPassthrough = false; attempted = false;
+                SetReady(false, "OpenXRセッションの準備を待っています。"); return;
             }
             if (!hasPassthrough && !attempted && Time.realtimeSinceStartupAsDouble >= nextAttempt)
             {
                 if (!OpenXRRuntime.IsExtensionEnabled("XR_HTC_passthrough"))
-                { attempted = true; SetReady(false, "本体のパススルー拡張を使用できません。ROMとXR設定を確認してください。"); return; }
+                { attempted = true; SetReady(false, "パススルー拡張が使えません。設定を確認してください。"); return; }
                 attempted = true;
                 var result = PassthroughAPI.CreatePlanarPassthrough(out passthrough, LayerType.Underlay);
                 hasPassthrough = result == XrResult.XR_SUCCESS;
-                if (!hasPassthrough) { SetReady(false, "パススルーの生成に失敗: " + result + "。再確認ボタンで再試行できます。"); return; }
+                if (!hasPassthrough) { SetReady(false, "パススルー生成失敗：" + result); return; }
             }
             if (hasPassthrough)
             {
-                if (!rig.AnyControllerTracked) SetReady(false, "コントローラーの追跡を待っています。左右いずれかを使ってください。");
-                else SetReady(true, "パススルー準備完了 / 模擬入力 / 座った状態で操作");
+                // Hands are free during propulsion. Losing an idle controller must not stop a real trial.
+                if (!Research.Active && Research.State != TrialRunState.WaitingForStop && !Rig.AnyControllerTracked)
+                    SetReady(false, "操作時はコントローラーの追跡を確認してください。");
+                else SetReady(true, "パススルー準備完了");
             }
         }
 
         private void SetReady(bool value, string message)
         {
             if (ready == value && runtimeStatus == message) return;
-            ready = value;
-            runtimeStatus = message;
-            app.SetPresentationReady(value, message);
+            bool lost = ready && !value;
+            ready = value; runtimeStatus = message;
+            App.SetPresentationReady(value, message);
+            Research.PresentationReady = value;
+            if (lost)
+            {
+                if (Research.Active) { Research.Interrupt(message); OnTrialStateChanged(); }
+                StopQuick();
+                if (!Panel.Visible) { Panel.Show(Panel.Page, Panel.Step); Recenter(); }
+            }
         }
 
+        private void OnTrackingOriginUpdated(XRInputSubsystem _) => Research.InvalidateCalibration("tracking_origin_changed_recalibrate");
+
+        public string RecordCounts()
+        {
+            string Count(string root)
+            {
+                int total = Directory.Exists(root) ? Directory.GetDirectories(root).Count(p => File.Exists(Path.Combine(p, "session.json"))) : 0;
+                return total + "件 ／ 未完了 " + FileSessionLog.CountIncomplete(root) + "件";
+            }
+            try { return "実測 " + Count(Research.SaveRoot) + "\n模擬 " + Count(App.SaveRoot); }
+            catch (Exception e) { return "記録一覧を開けません：" + e.Message; }
+        }
+        public void Export(bool research)
+        {
+            if (busy || Research.Active) return;
+            StopQuick(); busy = true; Notify("記録を書き出しています…");
+            string root = research ? Research.SaveRoot : App.SaveRoot;
+            string staging = Path.Combine(Application.persistentDataPath, "ExportStaging");
+            var destination = new AndroidDownloadExport();
+            StartCoroutine(WaitForOperation(System.Threading.Tasks.Task.Run(() =>
+            {
+                string archive = SessionExporter.CreateArchive(root, staging);
+                string result = destination.Write(archive, Path.GetFileName(archive));
+                File.Delete(archive); return "書き出し完了。Download内のExportsへ。";
+            }), true));
+        }
+        public void ReplayLatest()
+        {
+            if (busy || Research.Active) return;
+            busy = true; Notify("直近の実測を再解析しています…");
+            string root = Research.SaveRoot;
+            string output = Path.Combine(Application.persistentDataPath, "ReplayReports");
+            StartCoroutine(WaitForOperation(System.Threading.Tasks.Task.Run(() => PoseReplay.Latest(root, output))));
+        }
+        private IEnumerator WaitForOperation(Task<string> task, bool showDestination = false)
+        {
+            while (!task.IsCompleted) yield return null;
+            busy = false;
+            Notify(task.IsFaulted ? "失敗。元記録は保持：" + task.Exception.GetBaseException().Message : task.Result);
+            Panel.Show(XrPage.Records, !task.IsFaulted && showDestination ? 1 : 0);
+        }
+        public void Quit() { if (busy) { Notify("書き出し完了までお待ちください。"); return; } Research.Interrupt("operator_quit"); StopQuick(); Application.Quit(); }
+
+#if UNITY_EDITOR
+        public void EnableEditorPreview()
+        {
+            IsEditorPreview = true;
+            Rig.Camera.stereoTargetEye = StereoTargetEyeMask.None;
+            Rig.Camera.backgroundColor = new Color32(50, 50, 50, 255);
+            SetReady(true, "Editor模擬確認（実機性能は未検証）");
+        }
+#endif
         private void ReleasePassthrough()
         {
             if (hasPassthrough && feature != null && feature.XrSessionCreated && !feature.XrSessionEnding)
                 PassthroughAPI.DestroyPassthrough(passthrough);
-            hasPassthrough = false;
-            attempted = false;
+            hasPassthrough = false; attempted = false;
         }
-
         private void OnApplicationPause(bool pause)
         {
             paused = pause;
-            if (app == null) return;
-            if (pause) { SetReady(false, "アプリを一時中断しました。操作して新しく開始してください。"); ReleasePassthrough(); }
-            else nextAttempt = Time.realtimeSinceStartupAsDouble + 0.2;
+            if (App == null) return;
+            if (pause) { SetReady(false, "アプリ中断。操作して新しく開始してください。"); ReleasePassthrough(); }
+            else nextAttempt = Time.realtimeSinceStartupAsDouble + .2;
         }
-
         private void OnApplicationFocus(bool focus)
         {
+#if UNITY_EDITOR
+            if (IsEditorPreview) return;
+#endif
             focused = focus;
-            if (!focus && app != null) SetReady(false, "フォーカスを失いました。復帰後に操作して再開してください。");
+            if (!focus && App != null) SetReady(false, "フォーカス喪失。操作して再開してください。");
         }
-
         private void OnDestroy()
         {
-            if (app != null) app.InterruptSession("xr_scene_closed");
+            if (Research != null) Research.Interrupt("xr_scene_closed");
+            if (App != null) App.InterruptSession("xr_scene_closed");
             ReleasePassthrough();
-            if (nativeStarted && manager != null) { manager.StopSubsystems(); manager.DeinitializeLoader(); }
-            rig?.Dispose();
+            if (nativeStarted && manager != null)
+            {
+                var input = manager.activeLoader?.GetLoadedSubsystem<XRInputSubsystem>();
+                if (input != null) input.trackingOriginUpdated -= OnTrackingOriginUpdated;
+                manager.StopSubsystems(); manager.DeinitializeLoader();
+            }
+            Rig?.Dispose();
         }
     }
 }

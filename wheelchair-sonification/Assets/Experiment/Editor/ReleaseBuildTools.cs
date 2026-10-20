@@ -33,6 +33,8 @@ namespace WheelchairSonification.Editor
                 throw new InvalidOperationException("ビルド対象のSceneがないか、ファイルがありません。");
             if (!File.Exists(Path.Combine(Application.dataPath, "StreamingAssets", "Noto-OFL.txt")))
                 throw new InvalidOperationException("同梱フォントのライセンスがありません。");
+            if (!File.Exists(Path.Combine(Application.dataPath, "StreamingAssets", "Liberation-OFL.txt")))
+                throw new InvalidOperationException("TMP既定フォントのライセンスがありません。");
             if (!File.Exists(Path.Combine(Application.dataPath, "StreamingAssets", "HTC-OpenXR-LICENSE.txt")))
                 throw new InvalidOperationException("HTC OpenXRのライセンス案内がありません。");
             string version = Environment.GetEnvironmentVariable("UNITY_BUILD_VERSION") ?? PlayerSettings.bundleVersion;
@@ -56,8 +58,12 @@ namespace WheelchairSonification.Editor
             bool oldDevelopment = EditorUserBuildSettings.development, oldDebugging = EditorUserBuildSettings.allowDebugging;
             bool oldProfiler = EditorUserBuildSettings.connectProfiler, oldBundle = EditorUserBuildSettings.buildAppBundle;
             bool oldExport = EditorUserBuildSettings.exportAsGoogleAndroidProject;
+            string identityPath = "Assets/Experiment/Resources/BuildIdentity.txt";
+            if (File.Exists(identityPath)) throw new InvalidOperationException("一時ビルド識別ファイルが残っています。");
             try
             {
+                File.WriteAllText(identityPath, Required("WHEELCHAIR_SOURCE_COMMIT"));
+                AssetDatabase.ImportAsset(identityPath, ImportAssetOptions.ForceSynchronousImport);
                 PlayerSettings.SetScriptingBackend(target, ScriptingImplementation.IL2CPP);
                 PlayerSettings.SetIl2CppCompilerConfiguration(target, Il2CppCompilerConfiguration.Release);
                 PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
@@ -94,6 +100,7 @@ namespace WheelchairSonification.Editor
             }
             finally
             {
+                AssetDatabase.DeleteAsset(identityPath);
                 PlayerSettings.SetScriptingBackend(target, oldBackend);
                 PlayerSettings.SetIl2CppCompilerConfiguration(target, oldConfiguration);
                 PlayerSettings.Android.targetArchitectures = oldArchitecture;
@@ -127,7 +134,8 @@ namespace WheelchairSonification.Editor
         {
             public string result, unityVersion, applicationId, version;
             public string target = "Android", architecture = "ARM64", scriptingBackend = "IL2CPP";
-            public string application = "feedback-demo-xr", inputMode = "simulated";
+            public string application = "feedback-and-tracking-xr", inputMode = "simulated-and-vive-ultimate-tracker";
+            public string measurementValidation = "pending_five_trackers_video_accuracy_latency_and_field_validation";
             public string targetDevice = "VIVE Focus Vision", xrLoader = "OpenXR";
             public bool passthrough = true, deviceTested = false;
             public string viveOpenXrVersion = "2.5.1", unityOpenXrVersion = "1.18.0";

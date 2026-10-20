@@ -1,8 +1,8 @@
 # Focus VisionへAPKを入れる・Ubuntuから公開する
 
-VIVE Focus Vision本体で動くAndroid / OpenXR版の模擬入力デモを配布する。普段のUbuntuでビルドしてGitHub Releasesへ置き、共用Windows PCではダウンロードとUSBコピーだけを行う。
+VIVE Focus Vision本体で動くAndroid / OpenXRアプリを配布する。普段のUbuntuでビルドしてGitHub Releasesへ置き、共用Windows PCではダウンロードとUSBコピーだけを行う。
 
-実トラッカーの位置姿勢、接触検出、推定接触角の計測は含まない。研究実験に使える測定装置としての検証は別途必要。[模擬入力版の操作](feedback-demo.md)・[検証計画](../specifications/validation.md)
+模擬提示に加え、Ultimate Tracker 5台の役割設定、左右の車輪軸を別々に求める3次元校正、接触候補・角度推定、元データ記録とZIP取り出しを実装した。5台の実測性能は未確認。研究実験に使える測定装置としての検証は別途必要。[模擬入力版の操作](feedback-demo.md)・[検証計画](../specifications/validation.md)
 
 ## Releasesからインストールする
 
@@ -54,15 +54,15 @@ EditorをHubから直接開く場合も、先に`just unity-prepare`を実行す
 Editorを閉じ、変更を確認してcommit・pushした状態で実行する。公開先は`maya0513/wheelchair-sonification`に固定している。
 
 ```sh
-just release-apk v0.2.0 2
+just release-apk v0.3.0 3
 ```
 
-引数は**タグ**と**Android versionCode**。例の次の版なら`v0.2.1 3`のようにする。コマンドは以下を確認・実行する。
+引数は**タグ**と**Android versionCode**。例の次の版なら`v0.3.1 4`のようにする。コマンドは以下を確認・実行する。
 
 1. ghの認証、origin、クリーンな作業ツリー、HEADがGitHubにあること、署名設定、タグとReleaseが未使用であることを確認する。
-2. 対象版のAPKを新しくビルドし、署名・ARM64・非デバッグ設定・XR Manifest・必要なネイティブライブラリ・ライセンス同梱を検証する。
-3. ビルド中もソースが変わっていないことを確認し、Draft Releaseを作る。APK・ビルド情報・チェックサムをアップロードする。
-4. 3ファイルの名前とサイズを確認してからプレリリースとして公開し、URLを表示する。
+2. 同じソースからUnity画面画像・切り出し・一覧を新しく生成し、検査に通ったことを確認する。対象版のAPKを新しくビルドし、署名・ARM64・非デバッグ設定・XR Manifest・必要なネイティブライブラリ・ライセンス同梱を検証する。
+3. ビルド中もソースが変わっていないことを確認し、Draft Releaseを作る。APK・ビルド情報・画像一覧ZIP・チェックサムをアップロードする。
+4. 4ファイルの名前とサイズを確認してからプレリリースとして公開し、URLを表示する。
 
 毎回のpushで自動公開はしない。GitHub Actionsやクラウド用のUnity認証情報は不要。既存の公開物・タグは上書きしない。
 
@@ -75,7 +75,7 @@ just unity-build-release
 # 同じ処理: just unity-build-apk
 ```
 
-版を一時指定する場合は`UNITY_BUILD_VERSION=0.2.0 UNITY_ANDROID_VERSION_CODE=2 just unity-build-release`とする。Unityの標準配置以外の場合は`UNITY_EDITOR`へ実行ファイルの絶対パスを指定する。
+版を一時指定する場合は`UNITY_BUILD_VERSION=0.3.0 UNITY_ANDROID_VERSION_CODE=3 just unity-build-release`とする。Unityの標準配置以外の場合は`UNITY_EDITOR`へ実行ファイルの絶対パスを指定する。
 
 | 項目 | 設定 |
 |---|---|
@@ -85,32 +85,32 @@ just unity-build-release
 | 開発用機能 | Development Build・Script Debugging・Profiler自動接続なし |
 | 生成形式 | 単一APK。AAB・OBB分割・Androidプロジェクト書き出しなし |
 | アプリID | `io.github.maya0513.wheelchairsonification` |
-| 描画 | OpenGLES3、Single Pass Instanced、透明背景、HDRなし |
-| XR | VIVE XR Support・Focus 3 Controller Interaction・VIVE XR Passthrough |
-| 入力 | 既知角度の模擬イベント。コントローラー姿勢を推進角として扱わない |
+| 描画 | OpenGLES3、Single Pass Instanced、Render Scale 1.0、MSAA 4、透明背景、HDR・後処理なし |
+| XR | VIVE XR Support・Focus 3 Controller Interaction・VIVE XR Passthrough・VIVE XR Tracker |
+| 入力 | 既知角度の模擬提示とUltimate Trackerの明示的な実測開始。接続不良から模擬へ切り替えない。コントローラー姿勢を推進角として扱わない |
 
-出力はGit管理外の`.local/builds/android-release/`。APKと一緒に`build-info.json`・`SHA256SUMS.txt`を生成する。公開時にはローカルの`release-notes.md`も作るが、添付は3ファイルのみ。ログは`.local/logs/unity-release-android.log`。
+出力はGit管理外の`.local/builds/android-release/`。APKと一緒に`build-info.json`・`SHA256SUMS.txt`を生成する。公開時には`ui-preview.zip`とローカルの`release-notes.md`も作る。添付はAPK・build-info.json・ui-preview.zip・SHA256SUMS.txtの4ファイル。チェックサムは前3ファイル分を含む。画像ZIPを展開してindex.htmlを開けば、閲覧側にUnityは不要。[画像の用途・制約](xr-preview.md)。ログは`.local/logs/unity-release-android.log`。
 
-`build-info.json`には対象機種、Scene、Unity・SDK版、アプリ版、模擬入力、XR・パススルー設定、ソースコミット、未コミット変更の有無、APKのSHA-256、静的検証と実機確認の状態を残す。署名パスワードは含めない。
+`build-info.json`には対象機種、Scene、Unity・SDK版、アプリ版、模擬／実測入力の対応範囲、計測性能の未検証状態、XR・パススルー設定、ソースコミット、未コミット変更の有無、APKのSHA-256、静的検証と実機確認の状態を残す。署名パスワードは含めない。
 
 ビルドは一時ディレクトリーで行い、今回の終了コード・ログ・完了記録・APKを検証してから保存先へ置く。失敗時に前回のAPKを今回の成功として扱わない。直前の成功品は`android-release.previous/`に残す。
 
-一時的なPlayer SettingsはUnity側で戻し、Node側でも`ProjectSettings/ProjectSettings.asset`・`Assets/Settings/Mobile_RPAsset.asset`・`Assets/Settings/UniversalRenderPipelineGlobalSettings.asset`と、`Assets/XR/`・`Assets/XRI/`・`Assets/VIVE/`以下の設定assetを元のバイト列へ戻す。SDKが作った空の番号付き設定フォルダーも整理する。ビルド中は同じプロジェクトを別のEditorで開かない。強制終了後は`git diff`と残ったロックを確認する。
+一時的なPlayer SettingsはUnity側で戻し、Node側でも`ProjectSettings/ProjectSettings.asset`・`Assets/Settings/Mobile_RPAsset.asset`・`Assets/Settings/UniversalRenderPipelineGlobalSettings.asset`と、`Assets/XR/`・`Assets/XRI/`・`Assets/VIVE/`以下の設定asset、および実験Resources・TMP設定と動的フォントassetを元のバイト列へ戻す。SDKが作った空の番号付き設定フォルダーも整理する。ビルド中は同じプロジェクトを別のEditorで開かない。強制終了後は`git diff`と残ったロックを確認する。
 
 Windowsで再ビルドする必要がある場合も同じNodeコマンドを使える。Unity・Android Build Support・Node・just・署名設定・SDK取得が別途必要になるため、通常は配布済みAPKを使う。
 
 ## 機器情報と実機での確認
 
-ゴーグルはユーザー確認により**VIVE Focus Vision**。車いす計測に使うトラッカーの製品名・型番・個数・接続先は未確認。「付属の手持ち機器」は今回のUI操作に使うコントローラーと、独立した計測用トラッカーを区別して確認する。
+ゴーグルはユーザー確認により**VIVE Focus Vision**。車いす計測用は**VIVE Ultimate Tracker 5台**、ドングルと接続部品ありとのユーザー確認。5台の動作確認と現地性能は未実施。停止中はコントローラーで設定し、10秒の準備後は手を空けて走行できる。[接続・校正手順](tracker-measurement.md)
 
 | 確認するもの | 場所・方法 |
 |---|---|
 | 本体のシステム版 | 設定→一般→状態→ヘッドセットの状態。ラベル・備品記録とも照合 |
 | コントローラー | 本体の接続状態、左右のポインターとトリガー、A/X・B/Yの操作 |
-| 計測用トラッカー | 本体・箱のModel表記、個数、ドングルの接続先。コントローラーと混同しない |
+| 計測用トラッカー | 5台同時取得、1台ずつ動かして役割照合、再接続・遮蔽・校正、左右の傾斜軸 |
 | 実表示・実音 | 両眼の日本語表示、3領域マーカー、440/660/880 Hz、快適な音量 |
 | パススルー | 周囲が見えること、表示の透明部分、アプリ中断・復帰後の再生成 |
-| 記録 | 詳細画面の保存先と、終了・中断後の記録。初期保存先はアプリ専用領域 |
+| 記録 | 記録ページの件数、終了・中断、Download/WheelchairSonificationExportsへZIP書出し、Windowsへのコピーとチェックサム |
 
 このデモでは実走行せず、座って確認する。走行中の視認性・遅延・計測精度は[本計測前の受入れ条件](../specifications/validation.md)で別途確認する。HMD追跡やフォーカスを失ったセッションは未完了として保持し、復帰だけで音やマーカーを自動再開しない。
 
@@ -118,9 +118,9 @@ Windowsで再ビルドする必要がある場合も同じNodeコマンドを使
 
 ## 確認状況
 
-Ubuntuで署名付きAPKを生成し、ARM64専用・非デバッグ設定・署名・OpenXRのManifestとネイティブライブラリ・ライセンス同梱を確認した。補助スクリプト44件、Unity Edit Mode 47件、Play Mode 14件のテストが成功し、既存のLinuxデスクトップ版もビルドできた。テスト内の準備完了状態は模擬したもので、実機の動作確認ではない。
+既存版はユーザーからFocus Visionでの起動報告がある。今回の画面・実測追加版は、Unityの実描画画像を確認し、計算・保存と画面のテストを実行する。署名付きAPKの生成・静的検証も行い、その結果はReleaseのbuild-info.jsonへ残す。画像には仮の視野角・背景とソースコミットを記載する。テストの準備完了状態は模擬したもので、実機確認とは区別する。
 
-Focus Visionへのインストール、実際の両眼表示・パススルー・コントローラー操作・実音・復帰は未確認。共用Windows PCでの再ビルドも未確認。まずReleasesのAPKを本体へ導入して確認する。
+**今回の版の本体インストール、レンズ越しの可読性、5台同時追跡、推定精度・実出力遅延、MediaStore書出しとWindowsコピー、90分稼働、屋外性能は未確認。G1–G6は未達のまま。** 停止・着座で動作を確認し、[検証計画](../specifications/validation.md)に従って進める。8の字の正式な所要時間は外部動画から採点する。
 
 ## 実装と出典
 

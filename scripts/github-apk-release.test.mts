@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
+import { validPreviewFixture } from './preview-test-fixture.mts';
 import { publishRelease, releaseRepository } from './github-apk-release.mts';
 
 function fixture(t: { after: (fn: () => void) => void }, scenario = '') {
@@ -32,14 +33,13 @@ function fixture(t: { after: (fn: () => void) => void }, scenario = '') {
     }
     if (args[1] === 'upload' && scenario === 'upload') return { status: 1, stdout: '', stderr: 'upload failed' };
     if (text.includes('--json assets')) return ok(JSON.stringify({ assets:
-      ['WheelchairSonification.apk', 'build-info.json', 'SHA256SUMS.txt'].map(name => ({ name,
-        size: name === 'build-info.json' ? Buffer.byteLength(JSON.stringify(info)) : 3 })) }));
+      ['WheelchairSonification.apk', 'build-info.json', 'ui-preview.zip', 'SHA256SUMS.txt'].map(name => ({ name, size: statSync(join(output, name)).size })) }));
     if (text.includes('--json url')) return ok('https://github.com/' + releaseRepository + '/releases/tag/v0.2.0');
     return ok();
   };
   const output = join(root, 'output');
   const info = { gitCommit: commit, gitDirty: false, version: '0.2.0', versionCode: 2, targetDevice: 'VIVE Focus Vision',
-    xrLoader: 'OpenXR', inputMode: 'simulated', validation: { signatureVerified: true, xrManifestVerified: true } };
+    xrLoader: 'OpenXR', inputMode: 'simulated-and-vive-ultimate-tracker', validation: { signatureVerified: true, xrManifestVerified: true } };
   const build = async (_: string, environment: NodeJS.ProcessEnv) => {
     built = true;
     assert.equal(environment.UNITY_BUILD_VERSION, '0.2.0');
@@ -51,10 +51,16 @@ function fixture(t: { after: (fn: () => void) => void }, scenario = '') {
     for (const name of ['WheelchairSonification.apk', 'SHA256SUMS.txt']) writeFileSync(join(output, name), 'apk');
     return output;
   };
-  return { root, env, run, build, calls, wasBuilt: () => built };
+  const preview = async () => {
+    if (scenario === 'preview') throw new Error('preview failed');
+    const directory = join(root, 'preview');
+    validPreviewFixture(directory, scenario === 'wrong-preview-commit' ? 'b'.repeat(40) : commit);
+    return directory;
+  };
+  return { root, env, run, build, preview, calls, wasBuilt: () => built };
 }
 
-test('Release publishes only after fresh build and all three assets are uploaded', async t => {
+test('Release publishes only after fresh build and all four assets are uploaded', async t => {
   const f = fixture(t);
   const url = await publishRelease('v0.2.0', '2', f);
   assert.match(url, /releases\/tag\/v0.2.0$/);
@@ -80,7 +86,7 @@ test('invalid version arguments, dirty source, unavailable commit and existing r
 });
 
 test('failed or mismatched build never creates a Release', async t => {
-  for (const scenario of ['build', 'mismatched-commit']) {
+  for (const scenario of ['build', 'mismatched-commit', 'preview', 'wrong-preview-commit']) {
     const f = fixture(t, scenario);
     await assert.rejects(publishRelease('v0.2.0', '2', f));
     assert.ok(!f.calls.some(call => call[2] === 'create'));

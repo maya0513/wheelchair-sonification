@@ -3,6 +3,6 @@
     "rootNamespace": "WheelchairSonification.XR",
     "references": ["WheelchairSonification.Core", "WheelchairSonification.Runtime", "UnityEngine.UI",
         "Unity.InputSystem", "Unity.XR.CoreUtils", "Unity.XR.Management", "Unity.XR.OpenXR",
-        "Unity.XR.Interaction.Toolkit", "VIVE.OpenXR"],
+        "Unity.XR.Interaction.Toolkit", "VIVE.OpenXR", "Unity.TextMeshPro", "Unity.RenderPipelines.Universal.Runtime", "Unity.RenderPipelines.Core.Runtime"],
     "includePlatforms": ["Android", "Editor"]
 }

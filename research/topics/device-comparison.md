@@ -15,7 +15,7 @@
 | [L27](../papers/L27-fathian-timing-2024.md)／[L28](../papers/L28-fathian-pattern-2025.md) 手IMU | 手装着、後者Xsens100 Hz | イベント検出、CWT＋分類器 | SMARTWheel参照／参加者単位LOSO | 接触時点の検証と被験者単位の評価。分類器の新規構築は追加負担 |
 | [L33](../papers/L33-kimura-2016.md) 国内装置 | FSR402×2、Uno、携帯電池 | 2入力→3状態→小型スピーカー、USBログ | 108 g、56 Hzの検証、ICC | 最も簡素なイベント音。手への転用では固定・閾値を改めて検証 |
 | [L52](../papers/L52-vandenberghe-2021.md) ランニング | LIS331×2、1000 Hz、Teensy | Java→OSC→Max/MSP、タブレット | 5歩平均→6段階ノイズ＋音楽 | 移動平均・離散化。音楽テンポ追従と1000 Hzは車いすに必須ではない |
-| 手元のVRトラッカー | 機種・個数・実測周期未確認 | PC/Unity→画面・有線音 | 校正と動画参照を新規に実施 | 既存機材を優先。接触と力は直接観測できない |
+| 手元のVRトラッカー | Ultimate 5台・ドングルあり（ユーザー確認）、実測周期・性能は未確認 | Focus Vision単体のOpenXR/Unity→画面・内蔵音 | 左右の傾斜軸・手とリムの校正、動画参照を新規に実施 | [D04](../papers/D04-vive-tracking-systems.md)の公式入力を使用。接触と力は直接観測できない |
 
 ## 導入負担と使える指標
 

@@ -43,7 +43,7 @@ function fixture(t: { after: (cleanup: () => void) => void }) {
     writeFileSync(join(staging, apkName), 'new APK');
     writeFileSync(join(staging, 'build-info.json'), JSON.stringify({ result: 'Succeeded', target: 'Android',
       unityVersion: '6000.6.4f1', development: false, customSigning: true, architecture: 'ARM64', scriptingBackend: 'IL2CPP',
-      targetDevice: 'VIVE Focus Vision', xrLoader: 'OpenXR', passthrough: true, inputMode: 'simulated',
+      targetDevice: 'VIVE Focus Vision', xrLoader: 'OpenXR', passthrough: true, inputMode: 'simulated-and-vive-ultimate-tracker',
       scenes: ['Assets/Scenes/FeedbackDemoXR.unity'], version: '0.2.0', versionCode: 2 }));
   };
   return { root, env, output, log, settings, renderSettings, complete };

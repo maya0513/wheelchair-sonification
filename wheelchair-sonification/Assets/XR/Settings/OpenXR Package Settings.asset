@@ -2431,7 +2431,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5b2125d5dc73694eaed34e97a0962e0, type: 3}
   m_Name: ViveEnterpriseCommand Android
   m_EditorClassIdentifier: VIVE.OpenXR::VIVE.OpenXR.Enterprise.ViveEnterpriseCommand
-  m_enabled: 1
+  m_enabled: 0
   nameUi: VIVE XR Enterprise Command
   version: 0.1
   featureIdInternal: vive.openxr.feature.enterprise.command
@@ -2633,7 +2633,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c0c983a6e70e9b04885eb94528d82f46, type: 3}
   m_Name: ViveXRTracker Android
   m_EditorClassIdentifier: VIVE.OpenXR::VIVE.OpenXR.Tracker.ViveXRTracker
-  m_enabled: 0
+  m_enabled: 1
   nameUi: VIVE XR Tracker (Beta)
   version: 1.0.6
   featureIdInternal: vive.openxr.feature.xrtracker

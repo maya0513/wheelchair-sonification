@@ -10,7 +10,7 @@ namespace WheelchairSonification.Core
         private readonly IFeedbackOutput output;
         private readonly IExperimentLog log;
         private readonly StudyGroup group;
-        private readonly double target;
+        private readonly double? target;
         private long sequence;
         private long strokeId;
         private bool contactOpen;
@@ -35,17 +35,17 @@ namespace WheelchairSonification.Core
         public bool HasOpenContact => contactOpen;
         public bool HasPendingFeedback => pending != null;
         public bool HasActiveFeedback => active != null;
-        public bool GaugeVisible => State == SessionState.Running && group == StudyGroup.Visual &&
+        public bool GaugeVisible => target.HasValue && State == SessionState.Running && group == StudyGroup.Visual &&
             Context.Phase == StudyPhase.Training && Context.Task == StudyTask.Straight;
         public event Action<ExperimentRecord> Recorded;
 
         public ExperimentEngine(IClock clock, IFeedbackOutput output, IExperimentLog log,
-            StudyGroup group, double targetDegrees)
+            StudyGroup group, double? targetDegrees)
         {
             this.clock = clock ?? throw new ArgumentNullException(nameof(clock));
             this.output = output ?? throw new ArgumentNullException(nameof(output));
             this.log = log ?? throw new ArgumentNullException(nameof(log));
-            if (!FeedbackProtocol.IsFinite(targetDegrees) || targetDegrees <= 0)
+            if (targetDegrees.HasValue && (!FeedbackProtocol.IsFinite(targetDegrees.Value) || targetDegrees <= 0))
                 throw new ArgumentException("A valid, fixed target is required.", nameof(targetDegrees));
             this.group = group;
             target = targetDegrees;
@@ -158,10 +158,15 @@ namespace WheelchairSonification.Core
                 Record("stroke_invalid", reason: reason, angle: input.AngleDegrees);
                 return;
             }
+            if (!target.HasValue)
+            {
+                Record("stroke_measured", angle: input.AngleDegrees);
+                return;
+            }
             var candidate = new Candidate
             {
                 Stroke = strokeId, Angle = input.AngleDegrees,
-                State = FeedbackProtocol.Classify(input.AngleDegrees, target)
+                State = FeedbackProtocol.Classify(input.AngleDegrees, target.Value)
             };
             Record("stroke_classified", candidate);
             reason = group == StudyGroup.NoFeedback ? "no_feedback_group" : Context.FeedbackBlockReason;

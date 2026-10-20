@@ -13,6 +13,7 @@ using UnityEngine.XR.OpenXR;
 using UnityEngine.XR.OpenXR.Features;
 using VIVE.OpenXR;
 using VIVE.OpenXR.Passthrough;
+using VIVE.OpenXR.Tracker;
 using WheelchairSonification.Runtime;
 using WheelchairSonification.XR;
 
@@ -49,7 +50,7 @@ namespace WheelchairSonification.Editor
             var settings = OpenXRSettings.GetSettingsForBuildTargetGroup(BuildTargetGroup.Android);
             if (settings == null) throw new InvalidOperationException("OpenXR設定を作成できません。");
             foreach (var feature in settings.GetFeatures<OpenXRFeature>())
-                feature.enabled = feature is VIVEFocus3Feature || feature is VIVEFocus3Profile || feature is VivePassthrough;
+                feature.enabled = feature is VIVEFocus3Feature || feature is VIVEFocus3Profile || feature is VivePassthrough || feature is ViveXRTracker;
             settings.renderMode = OpenXRSettings.RenderMode.SinglePassInstanced;
             PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android, false);
             PlayerSettings.SetGraphicsAPIs(BuildTarget.Android, new[] { GraphicsDeviceType.OpenGLES3 });
@@ -62,6 +63,8 @@ namespace WheelchairSonification.Editor
                 var serialized = new SerializedObject(pipeline);
                 var hdr = serialized.FindProperty("m_SupportsHDR");
                 if (hdr != null) hdr.boolValue = false;
+                serialized.FindProperty("m_RenderScale").floatValue = 1;
+                serialized.FindProperty("m_MSAA").intValue = 4;
                 serialized.ApplyModifiedPropertiesWithoutUndo();
             }
             EditorUtility.SetDirty(general);
@@ -95,8 +98,11 @@ namespace WheelchairSonification.Editor
                 !general.Manager.activeLoaders.Any(loader => loader is OpenXRLoader))
                 throw new InvalidOperationException("AndroidのOpenXR Loaderと手動初期化の設定が必要です。");
             if (settings == null || settings.GetFeature<VIVEFocus3Feature>()?.enabled != true ||
-                settings.GetFeature<VIVEFocus3Profile>()?.enabled != true || settings.GetFeature<VivePassthrough>()?.enabled != true)
-                throw new InvalidOperationException("VIVE XR Support・Focus 3 Controller・Passthroughを有効にしてください。");
+                settings.GetFeature<VIVEFocus3Profile>()?.enabled != true || settings.GetFeature<VivePassthrough>()?.enabled != true ||
+                settings.GetFeature<ViveXRTracker>()?.enabled != true)
+                throw new InvalidOperationException("VIVE XR Support・Controller・Passthrough・Ultimate Trackerを有効にしてください。");
+            if (Resources.Load<TMPro.TMP_FontAsset>("XrJapanese") == null)
+                throw new InvalidOperationException("日本語SDFフォントを準備してください。");
             if (!File.Exists(ScenePath) || PlayerSettings.GetUseDefaultGraphicsAPIs(BuildTarget.Android) ||
                 !PlayerSettings.GetGraphicsAPIs(BuildTarget.Android).SequenceEqual(new[] { GraphicsDeviceType.OpenGLES3 }))
                 throw new InvalidOperationException("XR SceneとOpenGLES3専用設定が必要です。");

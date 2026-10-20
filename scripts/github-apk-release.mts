@@ -1,10 +1,12 @@
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { apkName, buildRelease } from './unity-release.mts';
 import { repository } from './unity-xr-sdk.mts';
 import { signingEnvironment, signingVariables } from './android-signing.mts';
+import { runPreview, validatePreview, createPreviewArchive } from './unity-preview.mts';
 
 export const releaseRepository = 'maya0513/wheelchair-sonification';
 type Result = { status: number | null; stdout: string; stderr: string };
@@ -14,12 +16,12 @@ function execute(command: string, args: string[], cwd: string, env: NodeJS.Proce
 }
 
 export async function publishRelease(tag: string, code: string, options = {
-  root: repository, env: process.env, run: execute, build: buildRelease,
+  root: repository, env: process.env, run: execute, build: buildRelease, preview: runPreview,
 }) {
   if (!/^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[a-zA-Z0-9]+(?:[.-][a-zA-Z0-9]+)*)?$/.test(tag))
     throw new Error('タグはv0.2.0のような版番号にしてください。');
   if (!/^[1-9]\d*$/.test(code) || Number(code) > 2100000000) throw new Error('versionCodeは1〜2100000000の整数にしてください。');
-  const { root, run, build } = options;
+  const { root, run, build, preview } = options;
   const signing = signingEnvironment(root, options.env);
   const env = options.env; // GitHub/Git processes do not need the locally loaded signing passwords.
   if (signingVariables.some(name => !signing[name]) || !existsSync(resolve(root, signing.UNITY_ANDROID_KEYSTORE || '.missing-signing-key')))
@@ -42,21 +44,32 @@ export async function publishRelease(tag: string, code: string, options = {
     if (result.status === 0) throw new Error('指定タグまたはReleaseは既に存在します。上書きせず、新しい版を指定してください。');
     if (!result.stderr.includes('HTTP 404')) throw new Error('GitHubのタグ・Releaseの有無を確認できません。公開を停止しました。');
   }
+  const previewDirectory = await preview(root, 'capture', undefined, env);
+  const previewManifest = validatePreview(previewDirectory, commit);
+  if (previewManifest.source_dirty !== false) throw new Error('未コミット変更を含む画像は公開できません。');
   const output = await build(root, { ...signing, UNITY_BUILD_VERSION: tag.slice(1), UNITY_ANDROID_VERSION_CODE: code });
   const info = JSON.parse(readFileSync(join(output, 'build-info.json'), 'utf8'));
   if (info.gitCommit !== commit || info.gitDirty !== false || info.version !== tag.slice(1) || info.versionCode !== Number(code)
-    || info.targetDevice !== 'VIVE Focus Vision' || info.xrLoader !== 'OpenXR' || info.inputMode !== 'simulated'
+    || info.targetDevice !== 'VIVE Focus Vision' || info.xrLoader !== 'OpenXR' || info.inputMode !== 'simulated-and-vive-ultimate-tracker'
     || info.validation?.signatureVerified !== true || info.validation?.xrManifestVerified !== true)
     throw new Error('公開するビルドの版・コミット・検証情報を確認できません。');
   if (checked('git', ['rev-parse', 'HEAD']) !== commit || checked('git', ['status', '--porcelain']))
     throw new Error('ビルド中にソースが変更されました。公開を停止しました。');
-  const files = [apkName, 'build-info.json', 'SHA256SUMS.txt'];
+  const previewName = 'ui-preview.zip';
+  createPreviewArchive(previewDirectory, join(output, previewName));
+  info.uiPreview = { file: previewName, shots: previewManifest.shots.length, sourceCommit: commit, physicalDeviceMeasured: false };
+  writeFileSync(join(output, 'build-info.json'), JSON.stringify(info, null, 2) + '\n');
+  const hashedFiles = [apkName, 'build-info.json', previewName];
+  writeFileSync(join(output, 'SHA256SUMS.txt'), hashedFiles.map(file =>
+    createHash('sha256').update(readFileSync(join(output, file))).digest('hex') + '  ' + file).join('\n') + '\n');
+  const files = [...hashedFiles, 'SHA256SUMS.txt'];
   for (const file of files) if (!existsSync(join(output, file)) || statSync(join(output, file)).size === 0)
     throw new Error('公開するファイルがありません: ' + file);
   const notes = join(output, 'release-notes.md');
   writeFileSync(notes, `VIVE Focus Vision向けのAndroid / OpenXR単体実行用APKです。\n\n` +
-    `模擬入力デモ：パススルー上で、コントローラーから3状態の表示・音、詳細設定、記録を操作します。実トラッカーによる角度計測は含みません。\n\n` +
-    `**実機でのインストール・表示・操作は未確認です。最初は座った状態で確認してください。**\n\n` +
+    `大きなSDF文字・白黒の1枚の操作画面、模擬入力、Ultimate Tracker 5台の役割設定・3次元校正・接触候補推定・元データ記録・DownloadへのZIP取り出しを実装しています。\n\n` +
+    `**この版の実機インストール、5台同時追跡、推定角の精度、出力遅延、屋外条件、90分稼働は未確認です。本計測の受入れ条件は未達です。** 最初は停止・着座して確認してください。接触候補は位置姿勢による推定で、接触力は測定しません。\n\n` +
+    `ui-preview.zipを展開してindex.htmlを開くと、APKと共通UIのUnity描画・切り出し画像を確認できます。実機の光学系・パススルーを再現した画像ではありません。記録データはReleaseに含みません。\n\n` +
     `- Source: ${commit}\n- Version: ${info.version} / Android versionCode ${info.versionCode}\n` +
     `- Unity: ${info.unityVersion}\n- VIVE OpenXR: ${info.viveOpenXrVersion} / Unity OpenXR: ${info.unityOpenXrVersion}\n` +
     `- ARM64 / IL2CPP / 非Development Build / 署名検証済み\n- SHA-256: ${info.sha256}\n\n` +
@@ -65,7 +78,7 @@ export async function publishRelease(tag: string, code: string, options = {
   let draftCreated = false;
   try {
     checked('gh', ['release', 'create', tag, '--repo', releaseRepository, '--target', commit, '--draft', '--prerelease',
-      '--title', `Focus Vision demo ${tag}`, '--notes-file', notes]);
+      '--title', `Focus Vision ${tag}`, '--notes-file', notes]);
     draftCreated = true;
     checked('gh', ['release', 'upload', tag, '--repo', releaseRepository, ...files.map(file => join(output, file))]);
     const assets = JSON.parse(checked('gh', ['release', 'view', tag, '--repo', releaseRepository, '--json', 'assets'])).assets;

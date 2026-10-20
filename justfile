@@ -41,6 +41,18 @@ unity-test-play:
 unity-build:
     bash scripts/unity.sh build
 
+# 実際のXR UIから画面一覧・切り出しPNG・HTMLを生成
+unity-preview:
+    node scripts/unity-preview.mts capture
+
+# EditorでUnityのXR Interaction Simulatorを明示的に起動
+unity-preview-open:
+    node scripts/unity-preview.mts open
+
+# 元の位置姿勢・時刻・校正で推定と判定を再解析
+unity-replay session_directory:
+    node scripts/unity-preview.mts replay {{quote(session_directory)}}
+
 # 署名付きAndroid APKを作成（Windows/Linux、初回設定はdocs/development/android-build.md）
 unity-build-release:
     node scripts/unity-release.mts

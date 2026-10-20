@@ -8,9 +8,17 @@ namespace WheelchairSonification.Runtime
     {
         private readonly AudioClip[] clips = new AudioClip[3];
         private AudioSource source;
-        private GaugeView gauge;
+        private IFeedbackGauge gauge;
         public AudioSource AudioSource => source;
         public AudioClip Clip(FeedbackState state) => clips[(int)state];
+
+        public void BindGauge(IFeedbackGauge value)
+        {
+            Stop();
+            gauge?.SetVisible(false);
+            gauge = value;
+            gauge.SetVisible(false);
+        }
 
         public void Initialize(GaugeView gaugeView)
         {
