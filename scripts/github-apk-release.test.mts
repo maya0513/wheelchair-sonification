@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -105,4 +105,20 @@ test('failed uploads leave the Release as a draft and report the recovery locati
   await assert.rejects(publishRelease('v0.2.0', '2', f), /Draft.*GitHub Releases/);
   assert.ok(f.calls.some(call => call[2] === 'create'));
   assert.ok(!f.calls.some(call => call[2] === 'edit'));
+});
+
+test('early publication requires an explicit override and records the unfinished soak', async t => {
+  const f = fixture(t);
+  const soakValidation = () => { throw new Error('90 minute soak is incomplete'); };
+  await assert.rejects(publishRelease('v0.2.0', '2', { ...f, soakValidation }), /incomplete/);
+  assert.equal(f.wasBuilt(), false);
+  await publishRelease('v0.2.0', '2', { ...f, soakValidation,
+    env: { ...f.env, WHEELCHAIR_RELEASE_SKIP_SOAK: '1' } });
+  const info = JSON.parse(readFileSync(join(f.root, 'output/build-info.json'), 'utf8'));
+  assert.equal(info.soakValidation.status, 'incomplete');
+  assert.equal(info.soakValidation.reason, 'user-requested-early-release');
+  assert.equal(info.soakValidation.realElapsedSeconds, undefined);
+  const notes = readFileSync(join(f.root, 'output/release-notes.md'), 'utf8');
+  assert.match(notes, /中断し、未完了/);
+  assert.doesNotMatch(notes, /5400秒/);
 });

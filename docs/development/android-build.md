@@ -76,6 +76,8 @@ just release-apk v0.3.0 3
 
 毎回のpushで自動公開はしない。GitHub Actionsやクラウド用のUnity認証情報は不要。既存の公開物・タグは上書きしない。
 
+90分試験の終了を待たず先行公開すると明示的に判断した場合だけ、`WHEELCHAIR_RELEASE_SKIP_SOAK=1 just release-apk v0.3.0 3`を使う。Release本文とビルド情報へ試験未完了を記録し、成功した試験として扱わない。署名・内容・ソース一致・添付の検証は省略しない。実機の受入れ条件G1–G6も変わらない。
+
 アップロード途中で失敗した場合はDraftを残し、ローカルの成果物の場所を表示する。[Releases](https://github.com/maya0513/wheelchair-sonification/releases)でDraftを開いて添付を確認する。未公開Draftに不足ファイルを追加してから公開するか、そのDraftを整理して別の版で再実行する。添付が揃うまで公開しない。
 
 ### 公開せずAPKだけ作る

@@ -49,7 +49,9 @@ export async function publishRelease(tag: string, code: string, options: Publish
     if (result.status === 0) throw new Error('指定タグまたはReleaseは既に存在します。上書きせず、新しい版を指定してください。');
     if (!result.stderr.includes('HTTP 404')) throw new Error('GitHubのタグ・Releaseの有無を確認できません。公開を停止しました。');
   }
-  const soak = (options.soakValidation || completedSoak)(root);
+  const soak = env.WHEELCHAIR_RELEASE_SKIP_SOAK === '1'
+    ? { status: 'incomplete' as const, reason: 'user-requested-early-release', physicalDeviceMeasured: false }
+    : { status: 'completed' as const, ...(options.soakValidation || completedSoak)(root) };
   const previewDirectory = await preview(root, 'capture', undefined, env);
   const previewManifest = validatePreview(previewDirectory, commit);
   if (previewManifest.source_dirty !== false) throw new Error('未コミット変更を含む画像は公開できません。');
@@ -87,7 +89,9 @@ export async function publishRelease(tag: string, code: string, options: Publish
     `- Source: ${commit}\n- Version: ${info.version} / Android versionCode ${info.versionCode}\n` +
     `- Unity: ${info.unityVersion}\n- VIVE OpenXR: ${info.viveOpenXrVersion} / Unity OpenXR: ${info.unityOpenXrVersion}\n` +
     `- ARM64 / IL2CPP / 非Development Build / 署名検証済み\n- SHA-256: ${info.sha256}\n\n` +
-    `PC上のUnity＋操作サーバーでは、合成入力による来訪完了・ZIP回収と${Math.floor(soak.realElapsedSeconds)}秒の継続稼働を確認しました。Focus Vision本体の90分検証とは別です。\n\n` +
+    (soak.status === 'completed'
+      ? `PC上のUnity＋操作サーバーでは、合成入力による来訪完了・ZIP回収と${Math.floor(soak.realElapsedSeconds)}秒の継続稼働を確認しました。Focus Vision本体の90分検証とは別です。\n\n`
+      : `**90分継続稼働試験は利用者の指示で中断し、未完了のまま先行公開しています。** 合成入力による来訪完了・記録回収の確認結果と、残る検証は上記の導入資料・残作業表を参照してください。\n\n`) +
     `APKをダウンロードし、本体のDownloadへUSBでコピーしてファイルブラウザからインストールしてください。\n` +
     `[導入・操作手順](https://github.com/${releaseRepository}/blob/${tag}/docs/development/android-build.md)\n`);
   let draftCreated = false;
