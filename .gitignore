@@ -48,6 +48,7 @@ Thumbs.db
 
 # Research records and temporary embedded build identity
 **/ResearchSessions/
+**/ResearchVisits/
 **/DemoSessions/
 **/WheelchairSonificationExports/
 /wheelchair-sonification/Assets/Experiment/Resources/BuildIdentity.txt

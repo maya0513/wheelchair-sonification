@@ -28,3 +28,5 @@
 | 公式Wordの原本と取得条件 | [保存資料一覧](sources/INDEX.md) |
 
 研究計画の選択理由は[設計上の判断](../docs/decisions.md)、原発表の内容は[原資料](../docs/archive/README.md)を参照してください。参加者の映像・生ログは文献調査の資料に含めません。
+
+会場回線を使わず実施者のPCから操作するための技術的根拠は、[オフラインのローカル操作](topics/offline-local-control.md)を参照する。

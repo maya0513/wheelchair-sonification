@@ -11,5 +11,7 @@
 | Focus Vision用APKを入手・公開する | [Androidビルドと導入](docs/development/android-build.md) |
 | 画面画像・模擬操作で確認する | [Unityプレビュー](docs/development/xr-preview.md) |
 | 実トラッカーの校正・保存・取り出し | [計測の準備](docs/development/tracker-measurement.md)・[記録](docs/development/research-records.md) |
+| 実施者のPCから実験を進める | [PCコンソール](docs/development/experiment-console.md)・[残作業と確認証拠](docs/development/remaining-work.md) |
+| 被験者の操作をなくす設計 | [操作の分担と自動進行](docs/specifications/operation-flow.md)・[会場Wi-Fiなしの接続](docs/development/field-network.md) |
 | 実験アプリ | [Unityプロジェクト](wheelchair-sonification) |
 | 開発環境の起動スクリプト | [スクリプトの説明](scripts/README.md) |

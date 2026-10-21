@@ -13,6 +13,7 @@ namespace WheelchairSonification.Runtime
     {
         public string participant_id, visit_id, trial_id, phase, task, group, major_side, input_source;
         public int repetition;
+        public string replaces_trial_id;
         public string created_utc, clock_origin_utc, session_id;
         public string unity_version, application_version, build_guid, source_commit, operating_system;
         public string target_device = "VIVE Focus Vision", tracker_product = "VIVE Ultimate Tracker";

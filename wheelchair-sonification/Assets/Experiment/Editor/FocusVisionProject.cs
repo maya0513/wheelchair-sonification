@@ -56,6 +56,9 @@ namespace WheelchairSonification.Editor
             PlayerSettings.SetGraphicsAPIs(BuildTarget.Android, new[] { GraphicsDeviceType.OpenGLES3 });
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.LandscapeLeft;
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel29;
+            PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevel36;
+            PlayerSettings.Android.forceInternetPermission = true;
+            PlayerSettings.insecureHttpOption = InsecureHttpOption.AlwaysAllowed;
             PlayerSettings.Android.applicationEntry = AndroidApplicationEntry.Activity;
             var pipeline = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>("Assets/Settings/Mobile_RPAsset.asset");
             if (pipeline != null)
@@ -101,6 +104,9 @@ namespace WheelchairSonification.Editor
                 settings.GetFeature<VIVEFocus3Profile>()?.enabled != true || settings.GetFeature<VivePassthrough>()?.enabled != true ||
                 settings.GetFeature<ViveXRTracker>()?.enabled != true)
                 throw new InvalidOperationException("VIVE XR Support・Controller・Passthrough・Ultimate Trackerを有効にしてください。");
+            if (PlayerSettings.Android.targetSdkVersion != AndroidSdkVersions.AndroidApiLevel36 ||
+                !PlayerSettings.Android.forceInternetPermission || PlayerSettings.insecureHttpOption != InsecureHttpOption.AlwaysAllowed)
+                throw new InvalidOperationException("遠隔操作用にAndroid target SDK 36・Internet権限・ローカルHTTP設定が必要です。");
             if (Resources.Load<TMPro.TMP_FontAsset>("XrJapanese") == null)
                 throw new InvalidOperationException("日本語SDFフォントを準備してください。");
             if (!File.Exists(ScenePath) || PlayerSettings.GetUseDefaultGraphicsAPIs(BuildTarget.Android) ||

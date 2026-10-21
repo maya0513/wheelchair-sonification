@@ -5,7 +5,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { prepareXrSdk } from './unity-xr-sdk.mts';
 import { signingEnvironment, signingVariables } from './android-signing.mts';
-import { verifyApk } from './android-apk-validation.mts';
+import { verifyApk, certificateDigest } from './android-apk-validation.mts';
 import { editorPath } from './unity-editor.mts';
 import { snapshotUnitySettings } from './unity-state.mts';
 export { editorPath } from './unity-editor.mts';
@@ -78,9 +78,13 @@ export async function buildRelease(root = repository, env = process.env, runUnit
     if (info.result !== 'Succeeded' || info.target !== 'Android' || info.development !== false || info.unityVersion !== version
       || info.architecture !== 'ARM64' || info.scriptingBackend !== 'IL2CPP' || !info.customSigning
       || info.targetDevice !== 'VIVE Focus Vision' || info.xrLoader !== 'OpenXR' || info.passthrough !== true
-      || info.inputMode !== 'simulated-and-vive-ultimate-tracker' || info.scenes?.length !== 1 || info.scenes[0] !== 'Assets/Scenes/FeedbackDemoXR.unity'
+      || info.inputMode !== 'simulated-and-vive-ultimate-tracker' || info.operatorProtocol !== 1 || info.headsetUi !== 'participant-only' || info.androidTargetSdk !== 36 || info.scenes?.length !== 1 || info.scenes[0] !== 'Assets/Scenes/FeedbackDemoXR.unity'
       || !existsSync(apk) || statSync(apk).size === 0) throw new Error(`今回の署名付き非開発APKを確認できません。ログ: ${log}`);
     const validation = dependencies.verify(apk, editor, env, info);
+    if ('signerCertificateSha256' in validation && existsSync(join(output, apkName))) {
+      if (certificateDigest(join(output, apkName), editor, env) !== validation.signerCertificateSha256)
+        throw new Error('既存APKと署名鍵が異なります。更新互換性を確認できないため出力を置換しません。');
+    }
     const hash = createHash('sha256');
     for await (const chunk of createReadStream(apk)) hash.update(chunk);
     const sha256 = hash.digest('hex');

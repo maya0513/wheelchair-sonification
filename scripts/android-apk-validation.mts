@@ -29,6 +29,9 @@ export function checkApkReports(badging: string, manifest: string, entries: stri
   if (!manifest.includes('org.khronos.openxr.intent.category.IMMERSIVE_HMD') ||
       !manifest.includes('org.khronos.openxr.permission.OPENXR') || !manifest.includes('com.htc.ViveOpenXR.SdkVersion'))
     throw new Error('Focus Vision用のOpenXR Manifestを確認できません。');
+  if (!badging.includes("targetSdkVersion:'36'") || !manifest.includes('android.permission.INTERNET') ||
+      !manifest.includes('android.permission.ACCESS_NETWORK_STATE') || !/android:usesCleartextTraffic[^\r\n]*0xffffffff/i.test(manifest))
+    throw new Error('遠隔操作用のtarget SDK 36・通信権限・ローカルHTTP Manifestを確認できません。');
   const files = new Set(entries.split(/\r?\n/));
   for (const name of ['lib/arm64-v8a/libUnityOpenXR.so', 'lib/arm64-v8a/libopenxr_loader.so',
     'lib/arm64-v8a/libviveopenxr.so', 'assets/Noto-OFL.txt', 'assets/Liberation-OFL.txt', 'assets/HTC-OpenXR-LICENSE.txt'])
@@ -42,9 +45,19 @@ export function verifyApk(apk: string, editor: string, env: NodeJS.ProcessEnv, i
     if (result.status !== 0) throw new Error(`APK検証が失敗しました: ${args[0]}。Android SDKと署名・成果物を確認してください。`);
     return result.stdout;
   };
-  capture(tools.java, ['-jar', tools.signer, 'verify', '--verbose', apk]);
+  const certificate = capture(tools.java, ['-jar', tools.signer, 'verify', '--verbose', '--print-certs', apk]);
+  const signerCertificateSha256 = /certificate SHA-256 digest: ([a-f0-9]+)/i.exec(certificate)?.[1]?.toLowerCase();
+  if (!signerCertificateSha256) throw new Error('署名証明書のSHA-256を確認できません。');
   checkApkReports(capture(tools.aapt, ['dump', 'badging', apk]),
     capture(tools.aapt, ['dump', 'xmltree', apk, 'AndroidManifest.xml']), capture(tools.aapt, ['list', apk]), info);
   return { signatureVerified: true, arm64Only: true, debuggable: false, xrManifestVerified: true,
-    nativeLibrariesVerified: true, licenseFilesVerified: true, deviceInstallationTested: false };
+    nativeLibrariesVerified: true, licenseFilesVerified: true, localNetworkManifestVerified: true, targetSdk: 36, signerCertificateSha256, deviceInstallationTested: false };
+}
+
+export function certificateDigest(apk: string, editor: string, env: NodeJS.ProcessEnv) {
+  const tools = androidTools(editor, env);
+  const result = spawnSync(tools.java, ['-jar', tools.signer, 'verify', '--print-certs', apk], { env, encoding: 'utf8', shell: false });
+  const digest = /certificate SHA-256 digest: ([a-f0-9]+)/i.exec(result.stdout || '')?.[1]?.toLowerCase();
+  if (result.status !== 0 || !digest) throw new Error('既存APKの署名証明書を確認できません。');
+  return digest;
 }

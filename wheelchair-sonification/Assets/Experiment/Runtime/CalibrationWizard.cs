@@ -21,10 +21,10 @@ namespace WheelchairSonification.Runtime
             0 => "車体を水平・正面向きで静止させ、記録。",
             1 => Collecting ? "左車輪をゆっくり前進方向へ\n60°以上回してから、確定。" : "車体を動かさず、左車輪の\n回転収録を開始します。",
             2 => Collecting ? "右車輪をゆっくり前進方向へ\n60°以上回してから、確定。" : "車体を動かさず、右車輪の\n回転収録を開始します。",
-            3 => $"左手をリムの異なる3位置に添え、\n各位置で記録（{HandSamples}/3）。",
-            4 => $"右手をリムの異なる3位置に添え、\n各位置で記録（{HandSamples}/3）。",
-            5 => "車体を直進コースの開始線に置き、\n静止して記録。",
-            6 => "同じ向きのまま終了線（10 m）へ移動。\n静止して記録。",
+            3 => "車体を直進コースの開始線に置き、\n静止して記録。",
+            4 => "同じ向きのまま終了線（10 m）へ移動。\n静止して記録。",
+            5 => $"左手をリムの異なる3位置に添え、\n各位置で記録（{HandSamples}/3）。",
+            6 => $"右手をリムの異なる3位置に添え、\n各位置で記録（{HandSamples}/3）。",
             _ => "校正完了。再装着・会場変更時はやり直す。"
         };
         public string ActionLabel => Collecting ? "回転を止めて確定" : Step == 1 || Step == 2 ? "回転の記録を開始" : "この位置を記録";
@@ -35,6 +35,30 @@ namespace WheelchairSonification.Runtime
             Calibration = new TrackingCalibration { roles = bindings };
             Step = 0; HandSamples = 0; Collecting = false;
             positions.Clear(); rotations.Clear(); contacts.Clear();
+        }
+
+        public void UseSyntheticCalibration(TrackingCalibration calibration)
+        {
+            if (calibration.roles.Any(r => r.key == null || !r.key.StartsWith("synthetic-"))) throw new ArgumentException("合成入力専用です。");
+            Calibration = calibration; Step = 7; Collecting = false; HandSamples = 0;
+        }
+
+        public void BeginParticipant()
+        {
+            Calibration.left.contactReady = Calibration.right.contactReady = false;
+            contacts.Clear(); HandSamples = 0; Collecting = false;
+            if (Calibration.bodyReady && Calibration.courseReady && Calibration.left.geometryReady &&
+                Calibration.right.geometryReady && string.IsNullOrEmpty(Calibration.invalidReason)) Step = 5;
+            else Reset();
+        }
+
+        public void Assign(TrackerRole role, string key, int runtimeId)
+        {
+            var binding = Calibration.roles[(int)role];
+            if (binding.key == key && binding.runtimeDeviceId == runtimeId) return;
+            binding.key = key; binding.runtimeDeviceId = runtimeId;
+            if (role == TrackerRole.LeftWrist || role == TrackerRole.RightWrist) BeginParticipant();
+            else Reset();
         }
 
         public void Observe(PoseFrame frame)
@@ -78,10 +102,10 @@ namespace WheelchairSonification.Runtime
                 }
                 catch (ArgumentException e) { return e.Message; }
             }
-            if (Step == 3 || Step == 4)
+            if (Step == 5 || Step == 6)
             {
-                var hand = Calibration.Pose(frame, Step == 3 ? TrackerRole.LeftWrist : TrackerRole.RightWrist);
-                var wheel = Step == 3 ? Calibration.left : Calibration.right;
+                var hand = Calibration.Pose(frame, Step == 5 ? TrackerRole.LeftWrist : TrackerRole.RightWrist);
+                var wheel = Step == 5 ? Calibration.left : Calibration.right;
                 Vector3 offset = Calibration.ToBody(body, hand.position) - wheel.center;
                 contacts.Add(new Vector2(Vector3.ProjectOnPlane(offset, wheel.axle).magnitude, Vector3.Dot(offset, wheel.axle)));
                 HandSamples++;
@@ -93,8 +117,8 @@ namespace WheelchairSonification.Runtime
                 wheel.contactReady = true;
                 contacts.Clear(); HandSamples = 0; Step++; return null;
             }
-            if (Step == 5) { Calibration.courseStart = body.position; Step++; return null; }
-            if (Step == 6)
+            if (Step == 3) { Calibration.courseStart = body.position; Step++; return null; }
+            if (Step == 4)
             {
                 Vector3 delta = Vector3.ProjectOnPlane(body.position - Calibration.courseStart, Vector3.up);
                 if (delta.magnitude < 9.5f || delta.magnitude > 10.5f) return "開始・終了位置の距離が9.5–10.5 mに入りません。設営と追跡を確認してください。";

@@ -28,3 +28,12 @@ Unityの起動・ビルドにMCPサーバーは不要。`just check`はNodeとPy
 - `preview-test-fixture.mts`: 公開・ファイル検査のテスト専用データ。実描画の代用にはしない。
 
 Releaseは新しいUnity画像と署名APKの検証後、4ファイルを添付する。実機性能と画面の画像確認は別に記録する。
+
+## 実施者用コンソール
+
+- `just experiment-console`：Nodeのローカルサーバーとブラウザーを起動。ホットスポットは事前設定し、このコマンドから変更しない。
+- `just experiment-console-demo`：画面のデモ。確認番号123456。正規の来訪処理や実機を検証するものではない。
+- `just experiment-console-preview`：配布するフロントエンドをChromeで撮影し、画像・切り出し・閲覧HTMLを作成。
+- `just experiment-soak`：先に`just unity-build`を実行。開発用Linux playerとPCサーバーを接続し、規定時間を省略しない90分試験を行う。Androidには検証用起動入口を含めない。
+
+`experiment-console.mts`が通信と認証、`console/`が実施者画面、`console-integration.mts`が合成入力の実時間試験、`console-validation.mts`が公開前の証拠確認、`console-packaging.mts`が配布物を扱う。データは`.local/`以下へ分離する。実際の操作と未確認事項は[実施者向け資料](../docs/development/experiment-console.md)・[残作業](../docs/development/remaining-work.md)を参照する。

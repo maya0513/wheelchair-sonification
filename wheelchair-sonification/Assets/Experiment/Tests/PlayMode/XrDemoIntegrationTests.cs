@@ -35,9 +35,11 @@ namespace WheelchairSonification.Tests
             if (Directory.Exists(directory)) Directory.Delete(directory, true);
         }
         [UnityTest]
-        public IEnumerator StartsSilentWithOnePanelAndNoHeadLockedControlBar()
+        public IEnumerator StartsSilentWithoutParticipantControlsOrHeadLockedBar()
         {
             Assert.That(xr.Ready, Is.False);
+            Assert.That(xr.Panel.Visible, Is.False);
+            Assert.That(xr.TechnicianPreview, Is.False);
             Assert.That(xr.Gauge.Visible, Is.False);
             Assert.That(xr.App.Output.AudioSource.isPlaying, Is.False);
             Assert.That(xr.App.View.OperatorPanel.activeSelf, Is.False);
@@ -51,6 +53,7 @@ namespace WheelchairSonification.Tests
         [UnityTest]
         public IEnumerator AllPagesUseLargeSdfTextAndSingleVisiblePage()
         {
+            xr.EnableEditorPreview();
             foreach (XrPage page in Enum.GetValues(typeof(XrPage)))
             {
                 xr.Panel.Show(page); yield return null;
@@ -86,6 +89,7 @@ namespace WheelchairSonification.Tests
         [UnityTest]
         public IEnumerator NumericPadBuffersCancelsAndCommitsWithoutNativeInputField()
         {
+            xr.EnableEditorPreview();
             string value = "0.10";
             xr.Panel.OpenNumber("音量", value, next => value = next);
             xr.Panel.PressNumber("backspace"); xr.Panel.PressNumber("5");
@@ -101,6 +105,7 @@ namespace WheelchairSonification.Tests
         [UnityTest]
         public IEnumerator ExportLocationIsShownInFullOnTheSamePanel()
         {
+            xr.EnableEditorPreview();
             xr.Panel.Show(XrPage.Records, 1); yield return null;
             var label = xr.Panel.Root.GetComponentsInChildren<TMP_Text>().Single(x => x.name == "Export destination");
             Assert.That(label.text.Replace("\n", ""), Is.EqualTo(AndroidDownloadExport.RelativeDirectory));
@@ -110,6 +115,7 @@ namespace WheelchairSonification.Tests
         [UnityTest]
         public IEnumerator PanelStaysInWorldAndRecenterMovesItToFront()
         {
+            xr.EnableEditorPreview();
             var panel = xr.Panel.Root;
             Vector3 before = panel.position;
             xr.Rig.Camera.transform.rotation = Quaternion.Euler(0, 30, 0);

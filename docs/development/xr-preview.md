@@ -1,58 +1,68 @@
-# VR画面を実機なしで確認する
+# 実機前の画面画像・模擬操作
 
-APKと共通のUI・日本語SDFフォントをUnityで描画し、画像で配置を確認する。HTMLは撮影した画像の一覧であり、別のUI実装ではない。
+被験者用画面はAPKと共通のUnity UI・SDFフォント・提示処理から撮影する。実施者用画面は配布するHTML/CSS/JavaScriptをChromeで描画して撮影する。HTMLでHMD画面を描き直す方式は使わない。
 
-## 画像一覧を作る
-
-Unity Editorを閉じ、リポジトリ直下で実行する。
+## 画像を作る・開く
 
 ```sh
 just unity-preview
+just experiment-console-preview
 ```
 
-完了後に`.local/ui-preview/index.html`をブラウザーで開く。Unityなしでも閲覧でき、画像をクリックすると元の大きさで開く。`.local/ui-preview/contact-sheet.png`は全画面の一覧。見出し・操作ボタン・ゲージの切り出しは、元の画像の画素を保持する。生成物はGit管理外とし、配布用には画像・HTML・撮影条件だけをZIPにまとめる。
+Unity Editorは閉じてから実行する。実施者用の撮影にはこのPCのGoogle Chromeを使い、必要なら`CHROME_BIN`で実行ファイルを指定する。通常のブラウザープロファイルを変更せず、一時プロファイルで撮影する。
 
-起動、各ページ、校正、数値入力、視覚3状態、聴覚・無FBの無表示、開始前、追跡喪失、取り出し成功・失敗、頭部回転、再配置を確認する。`manifest.json`には撮影条件、Unity版、ソースコミット、未コミット変更の有無、検査結果を残す。古い成功画像は`.previous`へ退避し、今回失敗した画像を成功品として採用しない。
+| 出力 | 内容 |
+|---|---|
+| `.local/ui-preview/index.html` | 被験者用の全体画像・文字・ゲージの切り出し、拡大表示 |
+| `.local/ui-preview/contact-sheet.png` | Unity画像の一覧 |
+| `.local/ui-preview/manifest.json` | 仮の視野角・背景、ソース、文字溢れ等の検査結果 |
+| `.local/console-preview/index.html` | PC画面、主ボタン・文字の切り出し |
+| `.local/console-preview/overview.png` | PC画面の一覧 |
+| `.local/console-preview/manifest.json` | Chromeの画面寸法・ソース・合成入力の明示 |
 
-視野角は**垂直70°・90°という仮定**。1枚1440×1440、明暗の背景を使い、機器の実際の視野やカメラ映像を再現したとは扱わない。空間に固定された操作パネルが頭を30°回したとき視野から外れる例は意図的な確認で、初期状態・再配置後の見切れとは区別する。
+Releaseの`ui-preview.zip`には、入口の`index.html`と`headset/`・`operator/`を入れる。展開後の閲覧にはUnity・Node・ネット接続が不要である。実験記録や撮影用のログ・入力fixtureは画像ZIPへ含めない。
 
-## Editorで操作する
+## 見る画面
+
+| 被験者用：Unity | 実施者用：Chrome |
+|---|---|
+| 装着前の接続番号、停止中の短い待機表示 | 接続承認、実施前設定、研究用ID・入力・役割・校正 |
+| V群の3状態、ラベルだけの期間、A・N群の無表示 | 次の課題と主操作、10秒準備、走行中、目標・理解確認・割付 |
+| 8の字・評価・停止未確認時の無表示 | 質問紙、20分休憩、通信・追跡・保存異常、回収 |
+| 仮の垂直視野角70°／90°、明暗背景、頭部回転・正面 | 1440×1100と1024×800等のPC画面、スクロールを含む配置 |
+
+通常の被験者用画面には操作パネル、数値パッド、群名、ID、診断、保存先を出さない。ゲージ以外の追従ウィンドウも置かない。停止確認ができない異常では大きな診断画面を突然出さず、実施者が口頭で停止を指示する。
+
+画像は生成するだけでなく、見切れ、文字欠け、重なり、切り出し、選択状態、ボタンと次の操作の一致を目視する。自動検査の成功だけで可読性を合格にしない。
+
+## Editorで操作を試す
 
 ```sh
+just experiment-console
 just unity-preview-open
 ```
 
-公式のXR Interaction Simulatorを、この入口からだけ起動する。通常のAPKにはEditor用コードを含めず、実機の準備完了へ自動置換しない。
+Editor専用のXR Interaction Simulatorを明示的に起動する。PCコンソールで接続承認し、実機なしの確認では合成入力を明示的に選ぶ。頭・左右コントローラーの仮想入力はシミュレーターで動かせるが、研究の進行操作はPCへ分離する。通常のAndroid実行にシミュレーターを含めない。
 
-| キー | 操作 |
-|---|---|
-| H | 頭部の操作へ切替 |
-| [ / ] | 左／右コントローラーの操作へ切替 |
-| W/A/S/D・Q/E | 選択した機器の移動 |
-| Spaceを押しながらマウス | 選択した機器の向きを変える |
-| 左クリック | コントローラーのトリガー |
-| M / R | 操作欄の切替／正面への再配置 |
-| Backspace | シミュレーターの姿勢リセット |
+旧HMD設定パネルはEditorの技術確認にだけ残している。これを被験者へ使わせたり、本番の操作設計と混同したりしない。
 
-実測トラッカーが接続されていない状態では、接続済みとして表示しない。画像撮影時の5台は明示的な合成データで、実機取得の証拠にはならない。
+## 実機との差
 
-## テストと実機の差
-
-| 確認方法 | 分かること | 分からないこと |
+| 方法 | 確認する範囲 | 別途残る確認 |
 |---|---|---|
-| 固定入力・時刻のテスト | 判定、取消、欠測、記録の再現性 | 人の接触を正しく推定できるか |
-| 同じUIの描画画像 | 文字欠け、重なり、見切れ、色、状態表示 | レンズ越しの可読性・目への負担 |
-| XR Interaction Simulator | 頭・手の操作、ポインター、画面遷移 | 実際の遮蔽・無線・追跡誤差 |
-| 実機APK | 端末の描画、パススルー、音、処理負荷 | 別会場・全参加者での成立性 |
+| 固定時計・合成入力の自動テスト | 計算、判定、順序、取消、中断、保存 | 実測の誤差・実機の時間特性 |
+| Unityの実描画画像 | 配置、文字、色、視野の仮定に対する見切れ | レンズ越しの可読性、実視野、パススルー |
+| PC画面とEditor模擬操作 | 選択、画面遷移、接続、進行 | 追跡、実コントローラー、本体OS |
+| PCとLinux Unityの実時間通し | 規定時間、通信・保存・回収の継続 | Android性能、5台、Wi-Fi範囲、電池、実際の被験者 |
+| Focus Vision APK | 本体環境での成立 | 会場・走行中の精度、知覚、負担 |
 
-Editorと実機の差を一律に「何％」とは表せない。PCとAndroidでは描画経路・CPU/GPU・実行環境が異なる。実機では、今回のAPKの文字とポインターを座位で確認した後、現地の表示・計測・実出力と90分稼働を確認する。APKがビルドできても[研究用の受入れ](../specifications/validation.md)は未完了である。
-
-画像生成では文字の領域超過と正面のパネルの画角を検査する。生成後は実際に画像を開き、日本語・余白・ゲージを目視する。GPUやフォント処理の微差を考慮し、全画素の完全一致だけを品質基準にしない。
+差を一律の割合では表さない。パススルー映像の画質とUnityの文字描画も分ける。画像・PC通し試験は[実機の受入れ](../specifications/validation.md)や[予備実験](../operations/study-operations.md#本計測開始条件)の代わりにならない。
 
 ## 根拠
 
-公式資料の確認日：2026-10-20。Unity 6000.6.4f1、URP 17.6.0、XR Interaction Toolkit 3.4.1。
+確認日2026-10-21。Unity 6000.6.4f1、XR Interaction Toolkit 3.4.1、TextMeshProは固定されたUGUI依存を使う。撮影の寸法と背景は本プロジェクトの確認条件で、機器の視野・光学系を保証する仕様ではない。
 
-- [XR Interaction Simulator](https://docs.unity3d.com/Packages/com.unity.xr.interaction.toolkit@3.4/manual/xr-interaction-simulator-overview.html)：キーボード等から機器入力を模擬する。
-- [URPのRender Request](https://docs.unity3d.com/6000.6/Documentation/Manual/urp/User-Render-Requests.html)：同じカメラとUIをRenderTextureへ描画する方法。
-- [Profilerの対象](https://docs.unity3d.com/6000.6/Documentation/Manual/profiler-profiling-applications.html)：Editorと対象端末の性能測定を分ける。
+- [Unity：XR Interaction Simulator](https://docs.unity3d.com/Packages/com.unity.xr.interaction.toolkit@3.4/manual/xr-interaction-simulator-overview.html)
+- [Unity：URPのRender Requests](https://docs.unity3d.com/6000.6/Documentation/Manual/urp/User-Render-Requests.html)
+- [Chrome：Headless mode](https://developer.chrome.com/docs/automation-and-testing/headless)
+- [Unity：実行環境のProfiler確認](https://docs.unity3d.com/6000.6/Documentation/Manual/profiler-profiling-applications.html)

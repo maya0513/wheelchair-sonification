@@ -33,13 +33,13 @@ function fixture(t: { after: (fn: () => void) => void }, scenario = '') {
     }
     if (args[1] === 'upload' && scenario === 'upload') return { status: 1, stdout: '', stderr: 'upload failed' };
     if (text.includes('--json assets')) return ok(JSON.stringify({ assets:
-      ['WheelchairSonification.apk', 'build-info.json', 'ui-preview.zip', 'SHA256SUMS.txt'].map(name => ({ name, size: statSync(join(output, name)).size })) }));
+      ['WheelchairSonification.apk', 'build-info.json', 'ui-preview.zip', 'operator-console.zip', 'SHA256SUMS.txt'].map(name => ({ name, size: statSync(join(output, name)).size })) }));
     if (text.includes('--json url')) return ok('https://github.com/' + releaseRepository + '/releases/tag/v0.2.0');
     return ok();
   };
   const output = join(root, 'output');
   const info = { gitCommit: commit, gitDirty: false, version: '0.2.0', versionCode: 2, targetDevice: 'VIVE Focus Vision',
-    xrLoader: 'OpenXR', inputMode: 'simulated-and-vive-ultimate-tracker', validation: { signatureVerified: true, xrManifestVerified: true } };
+    operatorProtocol: 1, headsetUi: 'participant-only', androidTargetSdk: 36, xrLoader: 'OpenXR', inputMode: 'simulated-and-vive-ultimate-tracker', validation: { signatureVerified: true, xrManifestVerified: true } };
   const build = async (_: string, environment: NodeJS.ProcessEnv) => {
     built = true;
     assert.equal(environment.UNITY_BUILD_VERSION, '0.2.0');
@@ -57,10 +57,17 @@ function fixture(t: { after: (fn: () => void) => void }, scenario = '') {
     validPreviewFixture(directory, scenario === 'wrong-preview-commit' ? 'b'.repeat(40) : commit);
     return directory;
   };
-  return { root, env, run, build, preview, calls, wasBuilt: () => built };
+  const soakValidation = () => ({ report: 'fixture-only', realElapsedSeconds: 5400, runtimeSourceFingerprint: 'fixture', physicalDeviceMeasured: false });
+  const consolePreview = async () => {
+    const directory = join(root, 'operator-preview'); validPreviewFixture(directory, commit);
+    return directory;
+  };
+  const consolePackage = (_root: string, output: string) => writeFileSync(output, 'test console package');
+  const previewPackage = (_a: string, _b: string, output: string) => writeFileSync(output, 'test preview package');
+  return { root, env, run, build, preview, soakValidation, consolePreview, consolePackage, previewPackage, calls, wasBuilt: () => built };
 }
 
-test('Release publishes only after fresh build and all four assets are uploaded', async t => {
+test('Release publishes only after fresh build and all five assets are uploaded', async t => {
   const f = fixture(t);
   const url = await publishRelease('v0.2.0', '2', f);
   assert.match(url, /releases\/tag\/v0.2.0$/);

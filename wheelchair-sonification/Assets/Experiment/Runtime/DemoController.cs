@@ -93,7 +93,8 @@ namespace WheelchairSonification.Runtime
             DemoMode = mode;
         }
 
-        public bool QuickPush(StudyGroup group, float volume, FeedbackState state)
+        public bool QuickPush(StudyGroup group, float volume, FeedbackState state) => QuickError(group, volume, ((int)state - 1) * 10);
+        public bool QuickError(StudyGroup group, float volume, double error)
         {
             if (!PresentationReady) return false;
             if (DemoMode != "quick") SwitchMode("quick");
@@ -109,7 +110,7 @@ namespace WheelchairSonification.Runtime
                 View.Motion.value = (int)MotionState.Straight;
                 View.CentralArea.isOn = true;
             }
-            View.Angle.text = (60 + (int)state * 10).ToString(CultureInfo.InvariantCulture);
+            View.Angle.text = (target.TargetDegrees + error).ToString(CultureInfo.InvariantCulture);
             Contact(); Release();
             return Running;
         }

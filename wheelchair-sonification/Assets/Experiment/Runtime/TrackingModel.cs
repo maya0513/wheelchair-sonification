@@ -33,6 +33,16 @@ namespace WheelchairSonification.Runtime
         PoseFrame Read(double acquiredTime);
     }
 
+    // The XR owner keeps hardware actions registered for the lifetime of the OpenXR session.
+    public sealed class BorrowedPoseSource : IPoseSource
+    {
+        private readonly IPoseSource owner;
+        public BorrowedPoseSource(IPoseSource owner) { this.owner = owner; }
+        public string Kind => owner.Kind;
+        public PoseFrame Read(double time) => owner.Read(time);
+        public void Dispose() { }
+    }
+
     [Serializable]
     public sealed class RoleBinding
     {

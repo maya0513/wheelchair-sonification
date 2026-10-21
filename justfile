@@ -67,6 +67,22 @@ android-signing-init:
 release-apk tag version_code:
     node scripts/github-apk-release.mts {{quote(tag)}} {{quote(version_code)}}
 
+# 実施者用ブラウザーを起動（Wi-Fi設定は変更しない）
+experiment-console:
+    node scripts/experiment-console.mts
+
+# 実機なしで操作画面を試す（確認番号123456、UIデモ）
+experiment-console-demo:
+    node scripts/experiment-console.mts --demo
+
+# Unity合成入力とPCの実時間90分試験（先にunity-build）
+experiment-soak:
+    node scripts/console-integration.mts 5400
+
+# 実際のブラウザー画面・切り出し画像を生成
+experiment-console-preview:
+    node scripts/console-preview.mts
+
 # UnityとCodexをつなぐHTTPサーバーを起動（Ctrl+Cで終了）
 unity-mcp:
     mise exec -- node scripts/unity-mcp.mts

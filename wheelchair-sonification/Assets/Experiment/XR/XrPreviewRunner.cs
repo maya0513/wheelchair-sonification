@@ -57,12 +57,13 @@ namespace WheelchairSonification.Editor
             yield return null; yield return null;
             xr = FindAnyObjectByType<FocusVisionDemo>();
             if (xr == null) { Fail("XR Sceneがありません。"); yield break; }
-            xr.EnableEditorPreview();
+            xr.EnableEditorPreview(false);
             if (Interactive)
             {
                 gameObject.AddComponent<EditorXrSimulator>().Initialize(xr.Rig.Camera.transform);
                 xr.GetComponentInChildren<UnityEngine.XR.Interaction.Toolkit.UI.XRUIInputModule>().enableMouseInput = false;
-                xr.Notify("Editor模擬：H頭／[左／]右／Space視点／M欄／R正面");
+                xr.Link.EndpointOverride = "http://127.0.0.1:8765"; xr.Link.Begin();
+                Debug.Log("Editor模擬：PCコンソールで操作。H頭／[左／]右／Space視点。");
                 if (Environment.GetEnvironmentVariable("WHEELCHAIR_INTERACTIVE_SMOKE") == "1")
                 {
                     for (int i = 0; i < 12; i++) yield return null;
@@ -114,52 +115,48 @@ namespace WheelchairSonification.Editor
 
         private IEnumerator CaptureAll()
         {
-            xr.Panel.Show(XrPage.Quick); yield return null;
-            ShotImage("01-quick", "かんたん確認・90°・暗背景");
+            xr.ShowParticipantPreview("接続確認\n123456", true);
+            ShotImage("01-pairing", "装着前・実施者が読む接続確認番号");
+            xr.ShowParticipantPreview("準備中", true);
+            ShotImage("02-waiting", "停止中・短い共通の待機表示");
             xr.Rig.Camera.fieldOfView = 70; xr.Rig.Camera.backgroundColor = new Color32(210, 210, 210, 255);
-            ShotImage("02-quick-narrow", "かんたん確認・70°・明背景");
+            xr.ShowParticipantPreview("そのままお待ちください", true);
+            ShotImage("03-waiting-narrow", "待機表示・70度・明背景");
             xr.Rig.Camera.fieldOfView = 90; xr.Rig.Camera.backgroundColor = new Color32(50, 50, 50, 255);
-            xr.Panel.Show(XrPage.Devices); yield return null;
-            ShotImage("03-roles", "機器・手首と車体の役割");
-            xr.Panel.Show(XrPage.Devices, 1); yield return null;
-            ShotImage("04-wheel-roles", "機器・左右車輪の役割");
-            xr.Panel.Show(XrPage.Devices, 2); yield return null;
-            ShotImage("05-calibration", "校正・車体基準");
-            xr.Research.CaptureCalibration(); xr.Panel.Show(XrPage.Devices, 2); yield return null;
-            ShotImage("06-wheel-calibration", "校正・3次元の車輪回転軸");
-            xr.Panel.Show(XrPage.Settings); yield return null;
-            ShotImage("07-study-setup", "実験設定・研究用IDと群");
-            xr.Panel.Show(XrPage.Settings, 1); yield return null;
-            ShotImage("08-trial-setup", "実験設定・課題と時点");
-            xr.Panel.OpenNumber("音量（0–1）", "0.10", _ => { }); yield return null;
-            ShotImage("09-number-pad", "数値入力・独自キーパッド");
-            xr.Panel.CancelNumber();
             foreach (FeedbackState state in Enum.GetValues(typeof(FeedbackState)))
             {
-                xr.App.QuickPush(StudyGroup.Visual, .1f, state); xr.Panel.SetVisible(false); xr.App.Engine.Tick();
-                ShotImage("10-gauge-" + state.ToString().ToLowerInvariant(), "視覚・" + state);
+                xr.ShowParticipantPreview("", false);
+                xr.App.QuickPush(StudyGroup.Visual, .1f, state); xr.App.Engine.Tick();
+                ShotImage("04-visual-" + state.ToString().ToLowerInvariant(), "V群・" + state + "・90度");
+                xr.Rig.Camera.fieldOfView = 70; xr.Rig.Camera.backgroundColor = new Color32(210, 210, 210, 255);
+                ShotImage("05-visual-narrow-" + state.ToString().ToLowerInvariant(), "V群・" + state + "・70度");
                 xr.App.EndSession();
+                xr.Rig.Camera.fieldOfView = 90; xr.Rig.Camera.backgroundColor = new Color32(50, 50, 50, 255);
             }
-            xr.App.QuickPush(StudyGroup.NoFeedback, .1f, FeedbackState.Target); xr.Panel.SetVisible(false); xr.App.Engine.Tick();
-            ShotImage("11-no-feedback", "追加FBなし・ゲージなし"); xr.App.EndSession();
-            xr.App.QuickPush(StudyGroup.Auditory, .1f, FeedbackState.Target); xr.Panel.SetVisible(false); xr.App.Engine.Tick();
-            ShotImage("12-auditory", "聴覚条件・視覚ゲージなし"); xr.App.EndSession();
-            xr.Panel.ShowNotice("計測開始まで\n10秒"); yield return null;
-            ShotImage("13-countdown", "開始前・コントローラーを置く準備時間");
-            xr.Panel.ShowNotice("追跡を失いました。\n安全に停止してください。", () => { }); yield return null;
-            ShotImage("14-tracking-lost", "異常時・共通の停止確認");
-            xr.Panel.Show(XrPage.Records); xr.Notify("書き出し完了。Download内のExportsへ。"); yield return null;
-            ShotImage("15-records-export", "記録・取り出し完了");
-            xr.Panel.Show(XrPage.Records, 1); yield return null;
-            ShotImage("15-export-location", "記録・USBで取り出すフォルダー");
-            xr.Panel.Show(XrPage.Records); yield return null;
-            xr.Notify("保存失敗。元の記録は保持しています。"); yield return null;
-            ShotImage("16-export-error", "記録・取り出し失敗");
-            xr.Panel.Show(XrPage.Quick); xr.Recenter(); xr.Rig.Camera.transform.rotation = Quaternion.Euler(0, 30, 0);
-            yield return null;
-            ShotImage("17-head-turn", "右へ30°向いた場合・画面は空間内に固定", true);
-            xr.Recenter(); yield return null;
-            ShotImage("18-recenter", "ボタンで正面へ再配置");
+            foreach (StudyGroup group in new[] { StudyGroup.Auditory, StudyGroup.NoFeedback })
+            {
+                xr.ShowParticipantPreview("", false); xr.App.QuickPush(group, .1f, FeedbackState.Target); xr.App.Engine.Tick();
+                ShotImage("06-" + group.ToString().ToLowerInvariant(), group + "・画面には何も追加しない");
+                xr.Rig.Camera.fieldOfView = 70; xr.Rig.Camera.backgroundColor = new Color32(210, 210, 210, 255);
+                ShotImage("07-narrow-" + group.ToString().ToLowerInvariant(), group + "・70度・明背景");
+                xr.App.EndSession(); xr.Rig.Camera.fieldOfView = 90; xr.Rig.Camera.backgroundColor = new Color32(50, 50, 50, 255);
+            }
+            xr.ShowParticipantPreview("", false); xr.Gauge.SetVisible(false);
+            ShotImage("08-countdown", "開始準備・秒数や開始ボタンはPCだけに表示");
+            ShotImage("09-figure-eight", "8の字・操作画面もゲージもなし");
+            ShotImage("10-assessment", "全群の評価・成績や追加FBなし");
+            ShotImage("11-tracking-loss-moving", "追跡喪失・停止未確認・診断画面を出さない");
+            xr.ShowParticipantPreview("準備中", true);
+            ShotImage("12-stopped-after-loss", "実施者が安全停止を確認した後");
+            ShotImage("13-export-success", "回収成功の詳細はPCだけ・被験者は待機");
+            ShotImage("14-export-failure", "保存・回収失敗の詳細はPCだけ");
+            xr.ShowParticipantPreview("", false); xr.App.QuickPush(StudyGroup.Visual, .1f, FeedbackState.Target); xr.App.Engine.Tick();
+            xr.Rig.Camera.transform.rotation = Quaternion.Euler(0, 30, 0);
+            ShotImage("15-head-turn", "頭部を右30度・必要なゲージだけ追従");
+            xr.Rig.Camera.transform.rotation = Quaternion.identity; xr.Recenter();
+            ShotImage("16-recenter", "正面・操作用の追従ウィンドウなし");
+            xr.App.EndSession();
+            yield break;
         }
 
         private void CaptureError(string message, string trace, LogType type)
@@ -168,7 +165,7 @@ namespace WheelchairSonification.Editor
         private void ShotImage(string name, string title, bool offscreen = false)
         {
             Canvas.ForceUpdateCanvases();
-            foreach (var label in xr.Panel.Root.GetComponentsInChildren<TMP_Text>())
+            foreach (var label in xr.GetComponentsInChildren<TMP_Text>())
             {
                 label.ForceMeshUpdate();
                 if (label.isTextOverflowing) errors.Add(name + ": 文字が領域から溢れています: " + label.name + " / " + label.text);
@@ -195,6 +192,7 @@ namespace WheelchairSonification.Editor
                 var button = xr.Panel.Root.Find("Page body").GetComponentInChildren<Button>();
                 if (button != null) shot.crop_button = Crop(image, (RectTransform)button.transform, name + "-button.png");
             }
+            if (xr.WaitingLabel.gameObject.activeInHierarchy) shot.crop_title = Crop(image, xr.WaitingLabel.rectTransform, name + "-title.png");
             if (xr.Gauge.Visible) shot.crop_gauge = Crop(image, xr.Gauge.Root, name + "-gauge.png");
             Destroy(image); shots.Add(shot);
         }

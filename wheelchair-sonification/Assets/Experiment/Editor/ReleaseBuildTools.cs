@@ -135,6 +135,9 @@ namespace WheelchairSonification.Editor
             public string result, unityVersion, applicationId, version;
             public string target = "Android", architecture = "ARM64", scriptingBackend = "IL2CPP";
             public string application = "feedback-and-tracking-xr", inputMode = "simulated-and-vive-ultimate-tracker";
+            public string headsetUi = "participant-only", operatorControl = "offline-pc-browser-http";
+            public int operatorProtocol = 1, androidTargetSdk = 36;
+            public bool visitAutomation = true, participantControlsRequired = false;
             public string measurementValidation = "pending_five_trackers_video_accuracy_latency_and_field_validation";
             public string targetDevice = "VIVE Focus Vision", xrLoader = "OpenXR";
             public bool passthrough = true, deviceTested = false;

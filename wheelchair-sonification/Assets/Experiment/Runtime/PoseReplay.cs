@@ -58,14 +58,31 @@ namespace WheelchairSonification.Runtime
             using var engine = new ExperimentEngine(clock, sink, sink, group, settings.target_available ? settings.target_degrees : (double?)null);
             estimator.Received += engine.Process;
             using var poses = new RecordedPoseSource(Path.Combine(directory, "poses.csv"));
+            double windowEndFrame = double.PositiveInfinity;
+            string controls = Path.Combine(directory, "trials.csv");
+            if (File.Exists(controls))
+            {
+                var ending = File.ReadLines(controls).Skip(1).Select(RecordedPoseSource.Csv).FirstOrDefault(row => row.Count == 9 && row[7] == "training_window_ended");
+                if (ending != null)
+                {
+                    double actionTime = double.Parse(ending[0], CultureInfo.InvariantCulture);
+                    windowEndFrame = poses.Frames.LastOrDefault(f => f.time <= actionTime)?.time ?? double.PositiveInfinity;
+                }
+            }
+            var phase = (StudyPhase)Enum.Parse(typeof(StudyPhase), settings.phase);
+            var task = (StudyTask)Enum.Parse(typeof(StudyTask), settings.task);
             int count = 0;
             foreach (var frame in poses.Frames)
             {
                 if (frame.time <= startTime) continue;
                 clock.Now = frame.time;
-                estimator.Observe(frame, (StudyPhase)Enum.Parse(typeof(StudyPhase), settings.phase), (StudyTask)Enum.Parse(typeof(StudyTask), settings.task));
-                engine.Tick(); count++;
+                estimator.Observe(frame, frame.time > windowEndFrame ? StudyPhase.Preparation : phase, task);
+                engine.Tick();
+                if (frame.time == windowEndFrame) engine.Process(ExperimentInput.ChangeContext(frame.time, ExperimentContext.Preparation));
+                count++;
             }
+            if (count == 0) throw new InvalidDataException("開始後の位置姿勢がなく、推進判定を再解析できません。");
+            if (originals.Any(row => row[3] == "session_completed")) engine.EndSession();
             var expected = originals.Where(row => IsClassification(row[3])).ToList();
             var actual = sink.records.Where(r => IsClassification(r.Event)).ToList();
             bool match = expected.Count == actual.Count;

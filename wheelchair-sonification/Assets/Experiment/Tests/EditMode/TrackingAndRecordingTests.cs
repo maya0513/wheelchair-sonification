@@ -170,6 +170,33 @@ namespace WheelchairSonification.Tests
             Assert.That(File.ReadAllText(Path.Combine(log.DirectoryPath, "poses.csv")), Is.EqualTo(original));
             Assert.Throws<InvalidOperationException>(() => SessionExporter.CreateArchive(Path.Combine(root, "missing"), root));
         }
+        [TestCase(false)] [TestCase(true)]
+        public void ReplayPreservesWindowEndAndAnOpenContactAtNormalClose(bool windowEnds)
+        {
+            var c = Calibration(); var clock = new FrameDispatchClock(); var output = new TestOutput();
+            var settings = new ResearchSessionSettings { participant_id = "P001", phase = "Training", task = "Straight",
+                group = "Visual", major_side = "right", target_available = true, target_degrees = 70 };
+            var log = new ResearchSessionLog(root, settings, c);
+            var estimator = new PushEstimator(c, true);
+            using (var engine = new ExperimentEngine(clock, output, log, StudyGroup.Visual, 70))
+            {
+                estimator.Received += engine.Process;
+                for (int i = 1; i <= 75; i++)
+                {
+                    var f = Frame(c, i, i, !windowEnds || i < 71); clock.Now = f.time;
+                    log.Poses(f, c); estimator.Observe(f, windowEnds && i > 35 ? StudyPhase.Preparation : StudyPhase.Training, StudyTask.Straight); engine.Tick();
+                    if (windowEnds && i == 35)
+                    {
+                        engine.Process(ExperimentInput.ChangeContext(f.time, ExperimentContext.Preparation));
+                        log.Trial(f.time + .00001, "training_window_ended", "finish_safely_recording_continues");
+                    }
+                }
+                engine.EndSession();
+            }
+            var result = PoseReplay.Run(log.DirectoryPath, Path.Combine(root, "replay-window"));
+            Assert.That(result.original_classifications, Is.GreaterThan(0));
+            Assert.That(result.classifications_match, Is.True);
+        }
         [Test]
         public void FailedExportAndIncompleteLogDoNotEraseOriginals()
         {

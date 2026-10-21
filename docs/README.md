@@ -2,6 +2,8 @@
 
 走行中の推進動作フィードバックが、車いす初心者の平地での走行・旋回技能に与える影響を調べるための資料です。研究の全体像は[研究計画](study-plan.md)、発表用の説明は[中間発表資料](presentation.md)から読めます。
 
+操作は[被験者と実施者の操作設計](specifications/operation-flow.md)に従い、被験者はHMDのメニューを操作せず、実施者がPCのブラウザーを使う構成へ見直しています。PC操作・来訪進行と被験者用表示を実装しています。実機・現地の受入れは[残作業表](development/remaining-work.md)で分けて確認します。
+
 現在は実施準備の段階です。機器性能、現地の安全性、倫理手続きの確認状況は[実施運営の開始条件](operations/study-operations.md#本計測開始条件)で管理します。
 
 ## 目的に合わせて読む
@@ -15,6 +17,10 @@
 | 参加者を受け入れ、実施を準備する | [実施運営](operations/study-operations.md) | 対象・割付、募集・同意、安全、データ管理、開始条件、工程 |
 | 説明・理解確認・質問紙を使う | [参加者用資料](operations/participant-materials.md) | 読み上げ文、模擬提示の問題と採点、主観評価用紙 |
 | 実施内容を記録する | [記録様式](operations/record-forms.md) | セッション、評価試行、訓練・提示、条件確定の記録項目 |
+| 操作・進行を設計する | [被験者と実施者の操作設計](specifications/operation-flow.md) | 被験者の操作をなくし、PC操作と自動進行へ分ける |
+| PCから実験を進める | [実施者用コンソール](development/experiment-console.md) | 接続承認、進行、復旧、回収 |
+| 準備の完了状況を確認する | [残作業と証拠](development/remaining-work.md) | ソフト・実機・教員確認を分ける |
+| 会場回線なしでつなぐ | [会場ネットワーク](development/field-network.md) | このPCのホットスポット、実施前確認、未確認事項 |
 | フィードバックを実装する | [フィードバック仕様](specifications/feedback.md) | 個人目標、3状態判定、画面・音、提示・取消の規則 |
 | 計測値を採点する | [計測・採点の定義](specifications/measurement.md) | 計時、接触・経路誤り・完了、推進イベント、動画の確認方法 |
 | 装置と手順の成立性を確かめる | [検証計画](specifications/validation.md) | 精度・追跡・提示の受入れ基準と通し予備実験 |

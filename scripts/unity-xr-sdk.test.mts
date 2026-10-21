@@ -61,8 +61,9 @@ test('signing initialization refuses to replace an existing key profile', t => {
   assert.throws(() => initializeSigning(f.root, '/missing/editor', {}, () => assert.fail('no keytool')), /既にあります/);
 });
 
-const badging = "package: name='io.github.maya0513.wheelchairsonification' versionCode='2' versionName='0.2.0'\nnative-code: 'arm64-v8a'\n";
-const manifest = 'org.khronos.openxr.intent.category.IMMERSIVE_HMD org.khronos.openxr.permission.OPENXR com.htc.ViveOpenXR.SdkVersion';
+const badging = "package: name='io.github.maya0513.wheelchairsonification' versionCode='2' versionName='0.2.0'\ntargetSdkVersion:'36'\nnative-code: 'arm64-v8a'\n";
+const networkManifest = 'android.permission.INTERNET android.permission.ACCESS_NETWORK_STATE android:usesCleartextTraffic=(type 0x12)0xffffffff\n';
+const manifest = networkManifest + 'org.khronos.openxr.intent.category.IMMERSIVE_HMD org.khronos.openxr.permission.OPENXR com.htc.ViveOpenXR.SdkVersion';
 const entries = ['lib/arm64-v8a/libUnityOpenXR.so', 'lib/arm64-v8a/libopenxr_loader.so', 'lib/arm64-v8a/libviveopenxr.so',
   'assets/Noto-OFL.txt', 'assets/Liberation-OFL.txt', 'assets/HTC-OpenXR-LICENSE.txt'].join('\n');
 test('APK validation rejects wrong versions, debug flags, other ABIs, missing XR declarations and libraries', () => {

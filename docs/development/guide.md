@@ -23,7 +23,7 @@ Unityやハードウェア開発の経験が少ない人が、車いす推進の
 | Input System | `1.19.0`。キーボード等や対応デバイスの入力を扱うパッケージ |
 | Test Framework | `1.8.0`。判定処理と模擬入力版の統合テストを`just unity-test`で実行 |
 | XR関連SDK | VIVE OpenXR 2.5.1、Unity OpenXR 1.18.0、XR Interaction Toolkit 3.4.1、XR Management 4.5.4、XR Hands 1.6.3を固定。[Focus Vision向けの導入と公開](android-build.md) |
-| 手元の機器 | ゴーグルはVIVE Focus Vision。Ubuntuで作成・公開したAPKを本体で実行する。標準コントローラーで停止中に操作する。VIVE Ultimate Tracker 5台とドングル・接続部品ありとのユーザー確認。5台同時取得・実測性能は未確認 |
+| 手元の機器 | ゴーグルはVIVE Focus Vision。Ubuntuで作成・公開したAPKを本体で実行する。実施者のUbuntu PCのブラウザーで設定・進行する。被験者へコントローラーを渡さない。VIVE Ultimate Tracker 5台とドングル・接続部品ありとのユーザー確認。5台同時取得・実測性能は未確認 |
 
 最初に学ぶUnityの言葉は、**Scene**（場面の構成）、**GameObject**（画面やカメラ等を置く単位）、**Component**（それに付ける機能）、**Inspector**（設定を編集する画面）、**Prefab**（再利用する構成）、**MonoBehaviour**（Unityの実行周期に参加するC#の処理）で十分。まず小さい場面を一つ作り、ボタンで表示と音を切り替え、実行を止めて設定を変える流れに慣れる。
 
@@ -205,7 +205,7 @@ Unityの`.meta`ファイルは資産の識別子や取込設定を保持する�
 | H2 | [Wokwi：Welcome][H2]／Web現行 | 電子機器・マイコンのシミュレーション用途 |
 | H3 | [Wokwi：Supported Hardware][H3]／Web現行 | 対応ボード・入力部品等 |
 
-開発順序、ログ構成、T01–T16、実出力測定の組合せは、これらの公式機能と現行研究仕様を基にした**本研究への提案**。XRシミュレーターは明示起動のEditor用に導入済み。測定精度は実機確認待ちであり、メーカー資料だけから保証しない。
+開発順序、ログ構成、T01–T16、実出力測定の組合せは、これらの公式機能と現行研究仕様を基にした**本研究への提案**。XRシミュレーターは明示起動のEditor用に導入済み。遠隔操作、来訪管理、保存・復元は[PCコンソール](experiment-console.md)と[確認証拠](remaining-work.md)を参照する。測定精度は実機確認待ちであり、メーカー資料だけから保証しない。
 
 [U0]: https://docs.unity3d.com/6000.6/Documentation/Manual/test-framework/test-framework-introduction.html
 [U1]: https://docs.unity3d.com/6000.6/Documentation/Manual/test-framework/edit-mode-vs-play-mode-tests.html

@@ -43,7 +43,7 @@ function fixture(t: { after: (cleanup: () => void) => void }) {
     writeFileSync(join(staging, apkName), 'new APK');
     writeFileSync(join(staging, 'build-info.json'), JSON.stringify({ result: 'Succeeded', target: 'Android',
       unityVersion: '6000.6.4f1', development: false, customSigning: true, architecture: 'ARM64', scriptingBackend: 'IL2CPP',
-      targetDevice: 'VIVE Focus Vision', xrLoader: 'OpenXR', passthrough: true, inputMode: 'simulated-and-vive-ultimate-tracker',
+      operatorProtocol: 1, headsetUi: 'participant-only', androidTargetSdk: 36, targetDevice: 'VIVE Focus Vision', xrLoader: 'OpenXR', passthrough: true, inputMode: 'simulated-and-vive-ultimate-tracker',
       scenes: ['Assets/Scenes/FeedbackDemoXR.unity'], version: '0.2.0', versionCode: 2 }));
   };
   return { root, env, output, log, settings, renderSettings, complete };
@@ -106,15 +106,31 @@ test('a successful new APK is promoted with a matching hash and metadata', async
 
 test('failed Unity preserves the previous APK and removes incomplete output and lock', async t => {
   const f = fixture(t);
+  const resources = join(f.root, 'wheelchair-sonification/Assets/Experiment/Resources');
   await assert.rejects(buildRelease(f.root, f.env, async () => {
     writeFileSync(f.settings, 'Unity changed build settings\n');
     for (const path of f.renderSettings) writeFileSync(path, 'Unity changed render settings\n');
+    mkdirSync(resources, { recursive: true });
+    writeFileSync(join(resources, 'BuildIdentity.txt'), 'interrupted build');
+    writeFileSync(join(resources, 'BuildIdentity.txt.meta'), 'interrupted build metadata');
     return 7;
   }), /終了コード7/);
+  assert.equal(existsSync(join(resources, 'BuildIdentity.txt')), false);
+  assert.equal(existsSync(join(resources, 'BuildIdentity.txt.meta')), false);
   assert.equal(readFileSync(join(f.output, apkName), 'utf8'), 'previous APK');
   assert.equal(readFileSync(f.settings, 'utf8'), 'original settings\r\n');
   for (const path of f.renderSettings) assert.equal(readFileSync(path, 'utf8'), 'original render settings\r\n');
   assert.deepEqual(readdirSync(join(f.root, '.local/builds')), ['android-release']);
+});
+
+test('a failed build preserves a pre-existing identity file for review', async t => {
+  const f = fixture(t);
+  const resources = join(f.root, 'wheelchair-sonification/Assets/Experiment/Resources');
+  mkdirSync(resources, { recursive: true });
+  const identity = join(resources, 'BuildIdentity.txt');
+  writeFileSync(identity, 'existing identity to review');
+  await assert.rejects(buildRelease(f.root, f.env, async () => { rmSync(identity); return 7; }), /終了コード7/);
+  assert.equal(readFileSync(identity, 'utf8'), 'existing identity to review');
 });
 
 test('SDK preparation and APK validation failures cannot promote an artifact', async t => {
