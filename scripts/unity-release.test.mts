@@ -113,10 +113,17 @@ test('failed Unity preserves the previous APK and removes incomplete output and 
     mkdirSync(resources, { recursive: true });
     writeFileSync(join(resources, 'BuildIdentity.txt'), 'interrupted build');
     writeFileSync(join(resources, 'BuildIdentity.txt.meta'), 'interrupted build metadata');
+    const generated = join(f.root, 'wheelchair-sonification/Assets/Resources');
+    mkdirSync(generated, { recursive: true });
+    writeFileSync(generated + '.meta', 'generated folder metadata');
+    writeFileSync(join(generated, 'PerformanceTestRunInfo.json'), '{}');
+    writeFileSync(join(generated, 'PerformanceTestRunInfo.json.meta'), 'generated file metadata');
     return 7;
   }), /終了コード7/);
   assert.equal(existsSync(join(resources, 'BuildIdentity.txt')), false);
   assert.equal(existsSync(join(resources, 'BuildIdentity.txt.meta')), false);
+  assert.equal(existsSync(join(f.root, 'wheelchair-sonification/Assets/Resources')), false);
+  assert.equal(existsSync(join(f.root, 'wheelchair-sonification/Assets/Resources.meta')), false);
   assert.equal(readFileSync(join(f.output, apkName), 'utf8'), 'previous APK');
   assert.equal(readFileSync(f.settings, 'utf8'), 'original settings\r\n');
   for (const path of f.renderSettings) assert.equal(readFileSync(path, 'utf8'), 'original render settings\r\n');

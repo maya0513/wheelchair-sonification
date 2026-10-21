@@ -109,6 +109,8 @@ just unity-build-release
 
 一時的なPlayer SettingsはUnity側で戻し、Node側でも`ProjectSettings/ProjectSettings.asset`・`Assets/Settings/Mobile_RPAsset.asset`・`Assets/Settings/UniversalRenderPipelineGlobalSettings.asset`と、`Assets/XR/`・`Assets/XRI/`・`Assets/VIVE/`以下の設定asset、および実験Resources・TMP設定と動的フォントassetを元のバイト列へ戻す。SDKが作った空の番号付き設定フォルダーも整理する。ビルド中は同じプロジェクトを別のEditorで開かない。強制終了後は`git diff`と残ったロックを確認する。
 
+新しく生成されたビルド識別ファイルと`Assets/Resources/PerformanceTestRun*.json`・付随するmetaも終了時に整理する。開始前から存在したファイルは保持する。プレビューの一時テスト情報を、次のAPKやGitへ残さない。
+
 Windowsで再ビルドする必要がある場合も同じNodeコマンドを使える。Unity・Android Build Support・Node・just・署名設定・SDK取得が別途必要になるため、通常は配布済みAPKを使う。
 
 ## 機器情報と実機での確認
