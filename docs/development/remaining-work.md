@@ -13,7 +13,7 @@ PC上の実装・検証と、実機・予備実験・責任者の確認を分け
 | S5 | 来訪・試行の保存、ZIP回収と照合、USB用出力 | 合成入力の20試行をPCへ回収し、ZIP外側と内部143ファイルのSHA-256が一致。MediaStoreと実機コピーは下表の確認が必要 |
 | S6 | 実画面PNG、切り出し、画像一覧の目視 | Unityの被験者画面22件、Chromeの実施者画面18件を生成。文字・ゲージ・役割設定・小さいPC画面を目視確認。配布時に同じコミットから再生成 |
 | S7 | 実時間90分のUnity＋PC継続試験 | 模擬来訪と回収は完了。全20試行の再解析が一致。継続稼働は約84.5分で利用者の指示により中断。90分の成功証拠はなく、先行公開の明示指定で配布する |
-| S8 | 署名付きAPK、静的検証、commit・push・Release | 署名付きAPKと静的検証が成功。公開v0.2.0と署名が一致し、versionCode 2→3を確認。配布コンソールの単独起動を確認。Releaseは未公開 |
+| S8 | 署名付きAPK、静的検証、commit・push・Release | [v0.3.0プレリリース](https://github.com/maya0513/wheelchair-sonification/releases/tag/v0.3.0)を公開。APK・コンソール・画像・ビルド情報・チェックサムの5ファイルを添付。署名・静的検証が成功し、公開v0.2.0と署名が一致、versionCode 2→3を確認。配布コンソールの単独起動も確認 |
 
 補助スクリプトの結果は`.local/logs/`とテスト出力、Unityの結果は`unity-test-edit.xml`・`unity-test-play.xml`に残す。画像は`.local/ui-preview/`・`.local/console-preview/`、実時間試験は`.local/console-integration-*/result.json`に残す。早期確認を途中で止めた記録を、90分の成功として扱わない。
 
@@ -31,6 +31,7 @@ PC上の実装・検証と、実機・予備実験・責任者の確認を分け
 | 画像 | APKと共通のUnity UI 22件、Chromeの実施者画面18件を生成・目視。長い質問項目の見切れを修正して再生成 |
 | APK | ARM64・非デバッグ・OpenXR・対象SDK 36・通信権限・ライセンス・署名を検証。公開済みAPKとの証明書一致を確認 |
 | 配布コンソール | ZIPをリポジトリ外へ展開し、Node.jsのみでサーバー・HTML・JS・CSSを起動。Unity・Gitリポジトリへ依存しないことを確認 |
+| 公開ファイル | 5添付のサイズとGitHub側SHA-256がローカルと一致。APK・コンソール・画像のソースは`25ac33b`。90分試験未完了をRelease本文とビルド情報に明記 |
 
 再解析の集計は`.local/replay-verification-ca282bb.json`、配布物の照合は`.local/distribution-check-ca282bb/`、中断記録は`.local/console-integration-2026-10-21T05-43-57-898Z/failure.json`に残す。テスト用の参加者・位置姿勢は合成入力で、実験参加者の記録ではない。公開するAPK・コンソール・画像は、公開処理で同じコミットから生成する。
 
