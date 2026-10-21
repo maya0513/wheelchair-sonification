@@ -30,11 +30,12 @@ export async function captureConsole(output=join(root,'.local/console-preview'))
     await call('Page.navigate',{url:endpoint});await sleep(1500);
     await evaluate(`document.getElementById('pair-code').value='${demoCode}';document.getElementById('pair').click()`);await sleep(1500);
     const capture=async(name:string,title:string,page='progress',snapshot:any=demoSnapshot(),width=1440,height=1100,focus='')=>{
+      snapshot={...snapshot,primaryLabel:snapshot.running?(snapshot.countdownRemaining>0?'開始準備中':'終了・安全停止を確認'):snapshot.kind==='rest'?'20分休憩を開始／確認':snapshot.kind==='trial'?'この試行を開始':'確認して次へ'};
       demo.setSnapshot(snapshot);await sleep(1100);
       await call('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:false});
       await evaluate(`document.querySelector('[data-page="${page}"]').click()`);await evaluate('window.scrollTo(0,0)');await sleep(100);
       if(focus){await evaluate(`document.querySelector(${JSON.stringify(focus)}).scrollIntoView({block:'center'})`);await sleep(100);}
-      const issues=await evaluate(`Array.from(document.querySelectorAll('button,h1,.instruction')).filter(e=>e.getClientRects().length&&e.scrollWidth>e.clientWidth+2).map(e=>e.textContent)`);
+      const issues=await evaluate(`Array.from(document.querySelectorAll('button,h1,.instruction,#scales label')).filter(e=>e.getClientRects().length&&e.scrollWidth>e.clientWidth+2).map(e=>e.textContent)`);
       if(issues.length)throw new Error(name+': 文字が領域から溢れています: '+issues.join(','));
       const image=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});writeFileSync(join(output,name+'.png'),Buffer.from(image.data,'base64'));
       const crops:any={};

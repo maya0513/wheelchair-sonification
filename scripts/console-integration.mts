@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runtimeFingerprint } from './console-validation.mts';
@@ -20,6 +20,7 @@ const player=spawn(executable,['-batchmode','-nographics','-logFile',join(output
 let exited=false;player.on('exit',()=>{exited=true;});
 const started=performance.now();let paired=false,pending=false,lastStage='',commands=0,polls=0,finished=false,lastResult='',exported=false,lastProgress=0;
 const history:any[]=[];
+const checkedRecordings=new Set<string>();
 console.log('Unity + PCコンソール実時間試験: '+output);
 try{
   while((performance.now()-started)/1000<duration){
@@ -42,6 +43,14 @@ try{
     }
     const elapsed=(performance.now()-started)/1000;
     if(elapsed-lastProgress>=60){
+      const sessions=join(output,'fixture/ResearchSessions');
+      if(existsSync(sessions))for(const name of readdirSync(sessions)){
+        const folder=join(sessions,name);
+        if(!checkedRecordings.has(name)&&existsSync(join(folder,'completed.json'))){
+          if(readFileSync(join(folder,'events.csv'),'utf8').split('\n').some(line=>line.includes(',input_rejected,')&&line.includes(',invalid_input_time,')))throw new Error('正常な合成入力に時刻拒否があります: '+name);
+          checkedRecordings.add(name);
+        }
+      }
       lastProgress=elapsed;writeFileSync(join(output,'progress.json'),JSON.stringify({durationRequested:duration,elapsed,stage:lastStage,polls,commands,finished},null,2));
       console.log(Math.floor(elapsed)+'s 稼働継続・通信確認 '+polls+'回 / '+lastStage+(finished?' / 来訪完了・回収後':''));
     }
@@ -49,8 +58,12 @@ try{
   }
   const view=await api('state');
   const elapsed=(performance.now()-started)/1000;
-  const passed=paired&&polls>duration*.8&&(duration<2700||finished)&&(duration<2700||view.archives.length>0);
-  const report={passed,runtimeSourceFingerprint:sourceFingerprint,synthetic:true,physicalDeviceMeasured:false,realElapsedSeconds:elapsed,requestedSeconds:duration,polls,commands,finished,archives:view.archives,history,sourceCommit:(await import('node:child_process')).spawnSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).stdout.trim()};
+  const sessions=join(output,'fixture/ResearchSessions');
+  const folders=existsSync(sessions)?readdirSync(sessions).map(name=>join(sessions,name)):[];
+  const completedTrials=folders.filter(path=>existsSync(join(path,'completed.json'))).length;
+  const rejectedTimestamps=folders.reduce((sum,path)=>sum+readFileSync(join(path,'events.csv'),'utf8').split('\n').filter(line=>line.includes(',input_rejected,')&&line.includes(',invalid_input_time,')).length,0);
+  const passed=paired&&polls>duration*.8&&rejectedTimestamps===0&&(duration<2700||finished)&&(duration<2700||view.archives.length>0)&&(duration<2700||completedTrials===20);
+  const report={passed,runtimeSourceFingerprint:sourceFingerprint,synthetic:true,physicalDeviceMeasured:false,realElapsedSeconds:elapsed,requestedSeconds:duration,polls,commands,finished,completedTrials,rejectedTimestamps,archives:view.archives,history,sourceCommit:(await import('node:child_process')).spawnSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).stdout.trim()};
   writeFileSync(join(output,'result.json'),JSON.stringify(report,null,2));if(!passed)throw new Error('来訪の完了・回収条件を満たしません。');console.log('実時間試験に成功: '+elapsed.toFixed(1)+'秒');
 }catch(error){writeFileSync(join(output,'failure.json'),JSON.stringify({error:String(error),elapsed:(performance.now()-started)/1000,history},null,2));throw error;}
 finally{player.kill('SIGTERM');await new Promise(accept=>setTimeout(accept,1000));await app.close();}

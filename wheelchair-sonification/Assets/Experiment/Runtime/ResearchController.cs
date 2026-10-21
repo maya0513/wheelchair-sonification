@@ -251,7 +251,7 @@ namespace WheelchairSonification.Runtime
                     {
                         if (Phase == StudyPhase.Training)
                         {
-                            engine.Process(ExperimentInput.ChangeContext(clock.Now, ExperimentContext.Preparation));
+                            engine.Process(ExperimentInput.ChangeContext(dispatchClock.Now, ExperimentContext.Preparation));
                             Output.Stop(); Output.SetGaugeVisible(false); State = TrialRunState.Finishing;
                             log.Trial(clock.Now, "training_window_ended", "finish_safely_recording_continues");
                             Status = "2分終了。新しい走行・周回を始めず、安全停止を確認してください。";
