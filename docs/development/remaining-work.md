@@ -6,15 +6,15 @@
 
 | 対象 | PC上で確認した証拠 |
 |---|---|
-| 文書 | 管理対象のMarkdown 117件を検査。重複7文書を統合・削除し、相対リンクの欠落0件。現行仕様と発表本文を照合 |
-| 自動試験 | Unity Edit Mode 30件、Play Mode 11件、Node 62件が成功。欠測復帰・再生・過去試行の再回収・二重計時を含む。結果XMLと`review-unity-tests.log`・`review-node-tests.log`は`.local/logs/` |
+| 文書 | 管理対象のMarkdown 118件を検査。重複7文書を統合・削除し、相対リンクの欠落0件。現行仕様と発表本文を照合。概要にはテスト画像を掲載 |
+| 自動試験 | Unity Edit Mode 30件、Play Mode 11件、Node 63件が成功。欠測復帰・再生・過去試行の再回収・二重計時、概要ZIPの画像とリンクを含む。結果XMLと`review-unity-tests.log`・`overview-release-tests.log`は`.local/logs/` |
 | 実通信・保存 | Linux Unityの合成入力で18試行を手動操作の順に記録・回収。約76.3秒で完了し、20分待機なし。`.local/console-integration-2026-10-24T09-58-20-746Z/result.json` |
 | 回収照合 | 試行別18 ZIPの外側と内部126ファイルのSHA-256が一致。同ディレクトリの`archive-verification.json` |
 | 再生 | 保存した18試行・2225フレームの速度と提示値が一致。`.local/replay-reports/ResearchSessions-1792836078336/`。一時欠測と機器ID変更の区別も追加テストで確認 |
 | 画面 | 共通Unity Prefabから22件、Chromeから17件を撮影。欠けた左右文字の領域を修正して再生成。頭部回転後、再配置、小さいPC、設定・回答・保存を目視確認 |
 | PC時計 | Chrome上で準備音予約、開始後の計時、Spaceでの手動停止と試行ID付き保存、音声中断時の取消・表示、正常計時済み試行の再開始防止を確認。実音の発生は未測定 |
 | 音 | 共通処理から9 WAV（連続2分を含む）。左右分離、静止・欠測・停止時の無音、クリップ・不連続を検査。`.local/logs/audio-verification.json`。主観的な試聴は未確認 |
-| APK・配布 | 署名付きv0.4.0／code 4を生成。ARM64・非デバッグ・XR・通信・ライセンス・署名を検査し、既存鍵との証明書一致を確認。ローカル確認用の一式は`.local/builds/android-release/`。GitHub Releaseは未公開で、公開用はクリーンなソースから再生成する |
+| APK・配布 | 署名付きv0.4.0／code 4を生成。ARM64・非デバッグ・XR・通信・ライセンス・署名を検査し、既存鍵との証明書一致を確認。ローカル確認用の一式は`.local/builds/android-release/`。公開版と添付は[Releases](https://github.com/maya0513/wheelchair-sonification/releases)を参照。公開用はクリーンなソースから再生成する |
 
 配布ZIPをリポジトリ外へ展開し、NodeだけでHTML・JS・CSS・時計モジュールを起動できた。`.local/logs/distribution-verification.json`に梱包確認を保存。
 

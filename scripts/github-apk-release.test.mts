@@ -33,7 +33,7 @@ function fixture(t: { after: (fn: () => void) => void }, scenario = '') {
     }
     if (args[1] === 'upload' && scenario === 'upload') return { status: 1, stdout: '', stderr: 'upload failed' };
     if (text.includes('--json assets')) return ok(JSON.stringify({ assets:
-      ['WheelchairSonification.apk', 'build-info.json', 'ui-preview.zip', 'operator-console.zip', 'SHA256SUMS.txt'].map(name => ({ name, size: statSync(join(output, name)).size })) }));
+      ['WheelchairSonification.apk', 'build-info.json', 'ui-preview.zip', 'operator-console.zip', 'app-overview.zip', 'SHA256SUMS.txt'].map(name => ({ name, size: statSync(join(output, name)).size })) }));
     if (text.includes('--json url')) return ok('https://github.com/' + releaseRepository + '/releases/tag/v0.2.0');
     return ok();
   };
@@ -64,10 +64,11 @@ function fixture(t: { after: (fn: () => void) => void }, scenario = '') {
   };
   const consolePackage = (_root: string, output: string) => writeFileSync(output, 'test console package');
   const previewPackage = (_a: string, _b: string, output: string) => writeFileSync(output, 'test preview package');
-  return { root, env, run, build, preview, soakValidation, consolePreview, consolePackage, previewPackage, calls, wasBuilt: () => built };
+  const overviewPackage = (_root: string, output: string) => writeFileSync(output, 'test overview package');
+  return { root, env, run, build, preview, soakValidation, consolePreview, consolePackage, previewPackage, overviewPackage, calls, wasBuilt: () => built };
 }
 
-test('Release publishes only after fresh build and all five assets are uploaded', async t => {
+test('Release publishes only after fresh build and all assets including the illustrated overview are uploaded', async t => {
   const f = fixture(t);
   const url = await publishRelease('v0.2.0', '2', f);
   assert.match(url, /releases\/tag\/v0.2.0$/);
@@ -77,6 +78,10 @@ test('Release publishes only after fresh build and all five assets are uploaded'
   assert.ok(f.calls.find(call => call[2] === 'edit')!.includes('--draft=false'));
   assert.ok(f.calls.every(call => !call.includes('--clobber')));
   assert.ok(!JSON.stringify(f.calls).includes('private-password'));
+  const info = JSON.parse(readFileSync(join(f.root, 'output/build-info.json'), 'utf8'));
+  assert.equal(info.applicationOverview.file, 'app-overview.zip');
+  assert.equal(info.applicationOverview.sourceCommit, 'a'.repeat(40));
+  assert.match(readFileSync(join(f.root, 'output/release-notes.md'), 'utf8'), /画像でわかるアプリの概要/);
 });
 
 test('invalid version arguments, dirty source, unavailable commit and existing releases stop before building', async t => {

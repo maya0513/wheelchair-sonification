@@ -1,0 +1,48 @@
+{
+  "physicalDeviceMeasured": false,
+  "rendering": "Unity Editor and Chrome with synthetic input; original PNG bytes preserved",
+  "note": "Selected original test captures. Workspace state at capture is retained; Release previews run sequentially from committed source.",
+  "images": [
+    {
+      "file": "hmd-view.png",
+      "sourceImage": "03-bilateral.png",
+      "sourceCommit": "e8352400e612a658669d94821665e9daf1dcb00d",
+      "sourceDirtyAtManifestWrite": false,
+      "sha256": "72e7d9b57e18bfe68afe74aed791ced4ace03c71e1ba4a6a9c728204dbb2af66"
+    },
+    {
+      "file": "hmd-gauge.png",
+      "sourceImage": "03-bilateral-gauge.png",
+      "sourceCommit": "e8352400e612a658669d94821665e9daf1dcb00d",
+      "sourceDirtyAtManifestWrite": false,
+      "sha256": "6d6fd572c6159783602fe869873d9fb906d9e346e55154be2acbb0cfb9a087b4"
+    },
+    {
+      "file": "pc-timing.png",
+      "sourceImage": "17-timing-running.png",
+      "sourceCommit": "e8352400e612a658669d94821665e9daf1dcb00d",
+      "sourceDirtyAtManifestWrite": true,
+      "sha256": "74966b3623af978a388b2eb41a0eaecd56e8d9d816ab2fa2f2e36f4fe54ad3b6"
+    },
+    {
+      "file": "pc-settings.png",
+      "sourceImage": "07-settings.png",
+      "sourceCommit": "e8352400e612a658669d94821665e9daf1dcb00d",
+      "sourceDirtyAtManifestWrite": true,
+      "sha256": "6551d111026c7de3cf2dd2d259049d97cfcd2d75b70d7162a797c514a7bf49fe"
+    },
+    {
+      "file": "pc-records.png",
+      "sourceImage": "10-records.png",
+      "sourceCommit": "e8352400e612a658669d94821665e9daf1dcb00d",
+      "sourceDirtyAtManifestWrite": true,
+      "sha256": "ca198b2fab47c799fc545a611150e28d43f5e99f37ccea698abf1e7bb4010200"
+    }
+  ],
+  "operatorUiSourceSha256": {
+    "scripts/console/index.html": "58b619fa000e2d0e6ca3ce01b21600f2147eb1de404978b8882f0a51ad964e90",
+    "scripts/console/console.js": "05bee8baad44c0f565166c739d54498a78f0c69753b0c4eea76f1a192b2709c4",
+    "scripts/console/console.css": "8c86d1d84aa36c9da63b6a3a696b06fd6cab27bed33598797daad6fbadd96353",
+    "scripts/console/timing.mjs": "dfa61c2f59f2897dd506a218a9a026b6835d2188a4f319be41c8f66b382bfa2d"
+  }
+}

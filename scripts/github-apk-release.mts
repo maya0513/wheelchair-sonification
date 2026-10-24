@@ -9,7 +9,7 @@ import { signingEnvironment, signingVariables } from './android-signing.mts';
 import { runPreview, validatePreview } from './unity-preview.mts';
 import { completedSoak } from './console-validation.mts';
 import { captureConsole } from './console-preview.mts';
-import { validateConsolePreview, packageConsole, packagePreviewPair } from './console-packaging.mts';
+import { validateConsolePreview, packageConsole, packagePreviewPair, packageOverview } from './console-packaging.mts';
 
 export const releaseRepository = 'maya0513/wheelchair-sonification';
 type Result = { status: number | null; stdout: string; stderr: string };
@@ -19,7 +19,7 @@ function execute(command: string, args: string[], cwd: string, env: NodeJS.Proce
 }
 
 type PublishOptions = { root: string; env: NodeJS.ProcessEnv; run: typeof execute; build: typeof buildRelease; preview: typeof runPreview;
-  soakValidation?: typeof completedSoak; consolePreview?: typeof captureConsole; consolePackage?: typeof packageConsole; previewPackage?: typeof packagePreviewPair };
+  soakValidation?: typeof completedSoak; consolePreview?: typeof captureConsole; consolePackage?: typeof packageConsole; previewPackage?: typeof packagePreviewPair; overviewPackage?: typeof packageOverview };
 export async function publishRelease(tag: string, code: string, options: PublishOptions = {
   root: repository, env: process.env, run: execute, build: buildRelease, preview: runPreview,
 }) {
@@ -71,11 +71,14 @@ export async function publishRelease(tag: string, code: string, options: Publish
   (options.previewPackage || packagePreviewPair)(previewDirectory, operatorDirectory, join(output, previewName));
   const consoleName = 'operator-console.zip';
   (options.consolePackage || packageConsole)(root, join(output, consoleName), commit, info.version);
+  const overviewName = 'app-overview.zip';
+  (options.overviewPackage || packageOverview)(root, join(output, overviewName), commit);
   info.uiPreview = { file: previewName, headsetShots: previewManifest.shots.length, operatorShots: operatorManifest.shots.length, sourceCommit: commit, physicalDeviceMeasured: false };
   info.soakValidation = soak;
   info.operatorConsole = { file: consoleName, sourceCommit: commit, protocol: 2, localOnly: true };
+  info.applicationOverview = { file: overviewName, sourceCommit: commit, document: 'docs/app-overview.md' };
   writeFileSync(join(output, 'build-info.json'), JSON.stringify(info, null, 2) + '\n');
-  const hashedFiles = [apkName, 'build-info.json', previewName, consoleName];
+  const hashedFiles = [apkName, 'build-info.json', previewName, consoleName, overviewName];
   writeFileSync(join(output, 'SHA256SUMS.txt'), hashedFiles.map(file =>
     createHash('sha256').update(readFileSync(join(output, file))).digest('hex') + '  ' + file).join('\n') + '\n');
   const files = [...hashedFiles, 'SHA256SUMS.txt'];
@@ -83,6 +86,8 @@ export async function publishRelease(tag: string, code: string, options: Publish
     throw new Error('公開するファイルがありません: ' + file);
   const notes = join(output, 'release-notes.md');
   writeFileSync(notes, `VIVE Focus Vision向けのAndroid / OpenXR単体実行用APKです。\n\n` +
+    `[画像でわかるアプリの概要](https://github.com/${releaseRepository}/blob/${tag}/docs/app-overview.md) — 短い説明とテスト画像を掲載しています。オフラインで読む場合はapp-overview.zipを展開してください。\n\n` +
+    `![参加者用の左右速度ゲージ（Unityの合成入力テスト画像）](https://raw.githubusercontent.com/${releaseRepository}/${tag}/docs/images/app-overview/hmd-gauge.png)\n\n` +
     `被験者はアプリやコントローラーを操作しません。実施者のPCブラウザーから、5台の役割設定・3次元校正、手動の課題選択・開始合図とPC計時・理解確認・目安タイマー、元データ保存・ZIP回収を操作します。実測入力と明示した合成入力を備えます。\n\n` +
     `**この版の実機インストール、5台同時追跡、左右速度の精度、出力遅延、屋外条件、90分稼働は未確認です。本計測の受入れ条件は未達です。** 最初は停止・着座して確認してください。左右車輪の速度を連続提示する版で、接触区間や力は測定しません。\n\n` +
     `operator-console.zipを展開し、Node.js 24を準備した実施者用Ubuntu PCで sh start.sh を実行してください。PCのホットスポットにゴーグルを接続し、表示された確認番号をPCへ入力します。現地の外部回線は不要です。\n\nui-preview.zipには共通処理の音見本も含みます。展開してindex.htmlを開くと、被験者用のUnity描画と実施者用のブラウザー画像を確認できます。実機の光学系・パススルーを再現した画像ではありません。記録データはReleaseに含みません。\n\n` +

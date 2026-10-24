@@ -4,6 +4,7 @@
 
 | 内容 | 入口 |
 |---|---|
+| アプリを画像でざっと見る | [アプリの概要](docs/app-overview.md) |
 | 目的・実験手順・分析 | [研究資料](docs/README.md) |
 | 先行研究・根拠 | [文献調査](research/README.md) |
 | 現地でのPC操作 | [コンソール](docs/development/experiment-console.md) |

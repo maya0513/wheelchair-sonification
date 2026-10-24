@@ -4,6 +4,7 @@
 
 | 読みたいこと | 正本 |
 |---|---|
+| どんなアプリか、画像でざっと見る | [アプリの概要](app-overview.md) |
 | 目的・根拠・限界 | [研究計画](study-plan.md) |
 | 当日の手順・操作分担 | [実験手順](experiment-protocol.md) |
 | 提示する情報・音・ゲージの設定 | [FB仕様](specifications/feedback.md) |

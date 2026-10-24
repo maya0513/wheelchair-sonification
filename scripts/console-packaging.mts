@@ -17,3 +17,17 @@ export function packagePreviewPair(headset:string,operator:string,output:string)
   const script=`import pathlib,sys,zipfile\nwith zipfile.ZipFile(sys.argv[3],"x",zipfile.ZIP_DEFLATED) as z:\n for folder,prefix in [(sys.argv[1],"headset"),(sys.argv[2],"operator")]:\n  for p in sorted(pathlib.Path(folder).iterdir()):\n   if p.is_file() and not p.is_symlink() and (p.suffix in (".png",".wav") or p.name in ("index.html","manifest.json","audio-manifest.json")): z.write(p,prefix+"/"+p.name)\n z.writestr("index.html",'<!doctype html><html lang="ja"><meta charset="utf-8"><title>画面確認</title><h1>画面確認</h1><p><a href="headset/index.html">被験者用：Unityの描画</a></p><p><a href="operator/index.html">実施者用：Chromeの描画</a></p><p>合成入力での画面確認です。実機の光学系・パススルー・計測性能を再現した画像ではありません。</p></html>')\n`;
   const r=spawnSync('python3',['-c',script,headset,operator,output],{encoding:'utf8',shell:false});if(r.status!==0)throw new Error('画面一覧を梱包できません: '+r.stderr);
 }
+
+export function packageOverview(root:string,output:string,commit:string){
+  const document=readFileSync(join(root,'docs/app-overview.md'),'utf8');
+  const images=[...new Set([...document.matchAll(/\]\((images\/app-overview\/[A-Za-z0-9_-]+\.png)\)/g)].map(m=>m[1]))];
+  if(!images.length)throw new Error('アプリ概要にテスト画像がありません。');
+  const files=[...images,'images/app-overview/capture-info.json'];
+  for(const file of files)if(!existsSync(join(root,'docs',file)))throw new Error('概要資料の画像・撮影情報がありません: '+file);
+  // Keep images local in the ZIP; detailed documents remain readable through the immutable source commit.
+  const portable=document.replace(/\]\(((?:development|specifications)\/[^)]+\.md(?:#[^)]*)?)\)/g,
+    (_,path)=>`](https://github.com/maya0513/wheelchair-sonification/blob/${commit}/docs/${path})`);
+  const script=`import json,pathlib,sys,zipfile\nr=pathlib.Path(sys.argv[1])/"docs"\nwith zipfile.ZipFile(sys.argv[2],"x",zipfile.ZIP_DEFLATED) as z:\n z.writestr("app-overview.md",sys.argv[4])\n for name in json.loads(sys.argv[3]):\n  p=r/name\n  if p.is_symlink(): raise ValueError("links are not packaged")\n  z.write(p,name)\n`;
+  const r=spawnSync('python3',['-c',script,root,output,JSON.stringify(files),portable],{encoding:'utf8',shell:false});
+  if(r.status!==0)throw new Error('アプリ概要を梱包できません: '+r.stderr);
+}

@@ -61,6 +61,7 @@ async function startCue() {
     oscillator.connect(gain).connect(audio.destination); oscillator.start(at); oscillator.stop(at + duration); nodes.push(oscillator);
   }
   await saveEntry('cue_scheduled', { ...clock.result(), ...cueInfo, physicalAudioOnsetMeasured: false });
+  message('開始合図を予約しました。ゴールで計時終了を押してください。');
 }
 for (const button of document.querySelectorAll('[data-page]')) button.onclick = () => {
   for (const section of document.querySelectorAll('main>section')) section.hidden = section.id !== button.dataset.page;

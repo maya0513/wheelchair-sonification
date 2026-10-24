@@ -63,6 +63,7 @@ export async function captureConsole(output=join(root,'.local/console-preview'))
     await capture('16-preparing','PC開始合図・準備中','progress',{...ready,running:true,status:'記録中',trialId:'fixture-trial'});await sleep(2300);
     await capture('17-timing-running','PCの正式時計・手動停止前','progress',{...ready,running:true,status:'記録中',trialId:'fixture-trial'});
     if(!await evaluate(`parseFloat(document.getElementById('stopwatch').textContent)>0`))throw new Error('開始合図後にPC時計が開始していません。');
+    if(await evaluate(`document.getElementById('message').textContent.includes('取り消し')`))throw new Error('再予約後も取消メッセージが残っています。');
     await evaluate(`document.getElementById('time-stop').focus()`);
     await call('Input.dispatchKeyEvent',{type:'keyDown',key:' ',code:'Space',windowsVirtualKeyCode:32});
     await call('Input.dispatchKeyEvent',{type:'keyUp',key:' ',code:'Space',windowsVirtualKeyCode:32});await sleep(250);

@@ -8,7 +8,7 @@
 | `unity.sh` | Editor起動・コンパイル・Edit/Play Mode・Linux合成入力版 |
 | `unity-xr-sdk.mts` | HTC SDKの固定URL・ハッシュ・キャッシュ検証 |
 | `unity-release.mts` | 署名付きAPK、ARM64／XR／権限／ライセンス・更新署名の検証 |
-| `github-apk-release.mts` | 同じソースのAPK・コンソール・画像とWAVをDraft添付後に公開 |
+| `github-apk-release.mts` | 同じソースのAPK・コンソール・画像とWAV、画像付き概要資料をDraft添付後に公開 |
 | `android-signing.mts` | ローカル鍵の初回作成・読込み。秘密は出力しない |
 | `unity-preview.mts` | 共通Unity UIのPNG・WAV・閲覧HTML |
 | `console-preview.mts` | 実ブラウザーのPNG・切り出し・閲覧HTML |
