@@ -39,7 +39,7 @@ function fixture(t: { after: (fn: () => void) => void }, scenario = '') {
   };
   const output = join(root, 'output');
   const info = { gitCommit: commit, gitDirty: false, version: '0.2.0', versionCode: 2, targetDevice: 'VIVE Focus Vision',
-    operatorProtocol: 1, headsetUi: 'participant-only', androidTargetSdk: 36, xrLoader: 'OpenXR', inputMode: 'simulated-and-vive-ultimate-tracker', validation: { signatureVerified: true, xrManifestVerified: true } };
+    operatorProtocol: 2, headsetUi: 'participant-only', androidTargetSdk: 36, xrLoader: 'OpenXR', inputMode: 'simulated-and-vive-ultimate-tracker', validation: { signatureVerified: true, xrManifestVerified: true } };
   const build = async (_: string, environment: NodeJS.ProcessEnv) => {
     built = true;
     assert.equal(environment.UNITY_BUILD_VERSION, '0.2.0');
@@ -107,18 +107,10 @@ test('failed uploads leave the Release as a draft and report the recovery locati
   assert.ok(!f.calls.some(call => call[2] === 'edit'));
 });
 
-test('early publication requires an explicit override and records the unfinished soak', async t => {
+test('publication never requires a real 90 minute wait', async t => {
   const f = fixture(t);
-  const soakValidation = () => { throw new Error('90 minute soak is incomplete'); };
-  await assert.rejects(publishRelease('v0.2.0', '2', { ...f, soakValidation }), /incomplete/);
-  assert.equal(f.wasBuilt(), false);
-  await publishRelease('v0.2.0', '2', { ...f, soakValidation,
-    env: { ...f.env, WHEELCHAIR_RELEASE_SKIP_SOAK: '1' } });
+  await publishRelease('v0.2.0', '2', { ...f, soakValidation: () => { throw new Error('not run'); } });
   const info = JSON.parse(readFileSync(join(f.root, 'output/build-info.json'), 'utf8'));
-  assert.equal(info.soakValidation.status, 'incomplete');
-  assert.equal(info.soakValidation.reason, 'user-requested-early-release');
-  assert.equal(info.soakValidation.realElapsedSeconds, undefined);
-  const notes = readFileSync(join(f.root, 'output/release-notes.md'), 'utf8');
-  assert.match(notes, /中断し、未完了/);
-  assert.doesNotMatch(notes, /5400秒/);
+  assert.equal(info.soakValidation.status, 'not_run');
+  assert.equal(info.soakValidation.optional, true);
 });

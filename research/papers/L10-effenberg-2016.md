@@ -25,7 +25,7 @@ Effenberg AO; Fehse U; Schmitz G; Krueger B; Mechling H. Frontiers in neuroscien
 
 ## 本研究への示唆
 
-個人正規化、ゼロ近傍の発音抑制、出力の安定性を借りる。多変数化は初期版では抑える。
+ゼロ近傍の発音抑制と出力の安定性を参考にする。個人正規化や多変数の対応をそのまま採用せず、現行の対応付けは[FB仕様](../../docs/specifications/feedback.md)へ集約する。
 
 ## 確認位置
 

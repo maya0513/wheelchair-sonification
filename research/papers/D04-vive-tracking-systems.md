@@ -21,4 +21,4 @@ Focus系と旧Lighthouse Trackerの直接互換を仮定しない。異なる座
 - [公式のドングル接続](https://www.vive.com/jp/support/ultimate-tracker/category_howto/attaching-dongle-to-focus-vision-or-focus-3.html)は付属ケーブルと固定部品を使用。直挿し・USBハブの自己流構成を前提にしない。
 - [メーカー製品情報](https://business.vive.com/us/product/vive-ultimate-tracker/)は直射日光と低照度を推奨しない。屋外第一候補という研究側の予定から、屋外性能が保証されるとは推論しない。
 
-SDK入力時刻はUnity Input Systemのソフトウェア時刻であり、センサー測定時刻や実提示時刻とは区別する。接触を推定するには別途校正と動画参照が必要。スポーツ車いすのキャンバーを含む3次元の推定方式は本研究の設計で、メーカーによる妥当性検証ではない。[実装手順](../../docs/development/tracker-measurement.md)
+SDK入力時刻はUnity Input Systemのソフトウェア時刻であり、センサー測定時刻や実提示時刻とは区別する。今回、接触区間は推定しない。スポーツ車いすのキャンバーを含む左右独立の相対回転速度の計算は本研究の設計で、メーカーによる妥当性検証ではない。[実装手順](../../docs/development/tracker-measurement.md)

@@ -1,6 +1,6 @@
 # 保存PDFと取得条件
 
-取得日：2026-10-14。関連PDF32件（研究・ガイドライン31件、公式資料1件）を原ファイルのまま保存。SHA-256・容量・取得URLは[manifest.json](manifest.json)。公式Wordは[別一覧](../sources/INDEX.md)。
+関連PDF34件（研究・ガイドライン33件、公式資料1件）を原ファイルのまま保存。主な取得日は2026-10-14、L62・L64は2026-10-21に取得。各取得日・SHA-256・容量・取得URLは[manifest.json](manifest.json)。公式Wordは[別一覧](../sources/INDEX.md)。
 
 公開閲覧可能と自由な再配布は同一ではない。利用条件は各公開元・原文を確認する。
 
@@ -38,7 +38,10 @@
 | [L55](../papers/L55-pradon-2012.md) | [L55.pdf](L55.pdf) | 4 | 出版社公開版 | [公開元](https://www.medicaljournals.se/jrm/content_files/download.php?doi=10.2340/16501977-0919)。出版社公開版。出版社HTMLにCC BY-NC 4.0の表示。PDF原文の条件も参照。 |
 | [L58](../papers/L58-salm-2025.md) | [L58.pdf](L58.pdf) | 12 | 出版社公開版 | [公開元](https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0317504&type=printable)。出版社版。CC BY 4.0。 |
 | [L60](../papers/L60-haga-1996.md) | [L60.pdf](L60.pdf) | 9 | 出版社公開版 | [公開元](https://www.jstage.jst.go.jp/article/jje1965/32/2/32_2_71/_pdf)。J-STAGE出版社版。©日本人間工学会。フリー表示、個別ライセンスは原文参照。 |
+| [L62](../papers/L62-karner-2025.md) | [L62.pdf](L62.pdf) | 10 | 出版社版（大学公開） | [公開元](https://epub.uni-bayreuth.de/id/eprint/9381/1/sensors-25-04676.pdf)。大学リポジトリのPublished VersionとPDF先頭にCC BY 4.0を確認。取得日2026-10-21。 |
 
 ## 入手できなかったもの・代替経路
 
 L13の大会論文集はタイムアウトしたが、著者のKTHページからZenodoの個別版へ到達。L16・L25・L35・L45・L50等は公開XMLで本文を確認しPDFは未保存。L26・L56・L57の出版社PDFは403。L59は公開HTMLで本文を確認し、PDFリンクはHTML応答で保存できなかった。D08のNASA紙筆版PDFは再取得もタイムアウト。購読が必要な原著は[文献一覧](../catalog.md)で閲覧範囲を区別する。
+
+| [L64.pdf](L64.pdf) | Dyerら2017、出版社最終版・12頁 | CC BY 4.0、無改変 | [取得元](https://link.springer.com/content/pdf/10.1007/s00221-017-5047-8.pdf)、2026-10-21 |

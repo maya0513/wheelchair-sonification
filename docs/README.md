@@ -1,41 +1,22 @@
-# 研究資料
+# 研究・実施資料
 
-走行中の推進動作フィードバックが、車いす初心者の平地での走行・旋回技能に与える影響を調べるための資料です。研究の全体像は[研究計画](study-plan.md)、発表用の説明は[中間発表資料](presentation.md)から読めます。
+初心者15名、聴覚・視覚・追加FBなしの並行3群で、左右車輪の回転速度の連続フィードバックを比較する。被験者のアプリ操作はなく、実施者がPCで記録・計時する。1回来訪90分以内、20分休憩中はHMDを外す。
 
-操作は[被験者と実施者の操作設計](specifications/operation-flow.md)に従い、被験者はHMDのメニューを操作せず、実施者がPCのブラウザーを使う構成へ見直しています。PC操作・来訪進行と被験者用表示を実装しています。実機・現地の受入れは[残作業表](development/remaining-work.md)で分けて確認します。
+| 読みたいこと | 正本 |
+|---|---|
+| 目的・根拠・限界 | [研究計画](study-plan.md) |
+| 当日の手順・操作分担 | [実験手順](experiment-protocol.md) |
+| 提示する情報・音・ゲージの設定 | [FB仕様](specifications/feedback.md) |
+| 計測・主要時間の定義 | [計測仕様](specifications/measurement.md) |
+| 集計・統計 | [分析計画](analysis-plan.md) |
+| 検証方法 | [検証計画](specifications/validation.md) |
+| 募集・安全・開始条件 | [実施運営](operations/study-operations.md) |
+| 参加者向け説明 | [説明・質問項目](operations/participant-materials.md) |
+| PCから操作する | [操作コンソール](development/experiment-console.md) |
+| 装着と校正 | [トラッカー](development/tracker-measurement.md) |
+| 保存先・ファイル | [記録形式](development/research-records.md) |
+| 開発・配布・画像確認 | [開発](development/guide.md)・[APK](development/android-build.md)・[プレビュー](development/xr-preview.md) |
+| 実装・実機確認の状態 | [残作業と証拠](development/remaining-work.md) |
+| 発表用 | [12枚相当の発表本文](presentation.md) |
 
-現在は実施準備の段階です。機器性能、現地の安全性、倫理手続きの確認状況は[実施運営の開始条件](operations/study-operations.md#本計測開始条件)で管理します。
-
-## 目的に合わせて読む
-
-| 目的 | 文書 | 扱う内容 |
-|---|---|---|
-| 研究を理解する | [研究計画](study-plan.md) | 背景、問い、デザイン、評価の概要、結論の範囲 |
-| 研究を説明する | [中間発表資料](presentation.md) | 12枚相当の発表本文と説明・質疑用のメモ |
-| 設計の理由を確認する | [設計上の判断](decisions.md) | 採用した方法の理由、代替案、計画変更時の考え方 |
-| 当日の実験を進める | [実験手順](experiment-protocol.md) | コース設営、共通教示、90分の進行、再試行・中止 |
-| 参加者を受け入れ、実施を準備する | [実施運営](operations/study-operations.md) | 対象・割付、募集・同意、安全、データ管理、開始条件、工程 |
-| 説明・理解確認・質問紙を使う | [参加者用資料](operations/participant-materials.md) | 読み上げ文、模擬提示の問題と採点、主観評価用紙 |
-| 実施内容を記録する | [記録様式](operations/record-forms.md) | セッション、評価試行、訓練・提示、条件確定の記録項目 |
-| 操作・進行を設計する | [被験者と実施者の操作設計](specifications/operation-flow.md) | 被験者の操作をなくし、PC操作と自動進行へ分ける |
-| PCから実験を進める | [実施者用コンソール](development/experiment-console.md) | 接続承認、進行、復旧、回収 |
-| 準備の完了状況を確認する | [残作業と証拠](development/remaining-work.md) | ソフト・実機・教員確認を分ける |
-| 会場回線なしでつなぐ | [会場ネットワーク](development/field-network.md) | このPCのホットスポット、実施前確認、未確認事項 |
-| フィードバックを実装する | [フィードバック仕様](specifications/feedback.md) | 個人目標、3状態判定、画面・音、提示・取消の規則 |
-| 計測値を採点する | [計測・採点の定義](specifications/measurement.md) | 計時、接触・経路誤り・完了、推進イベント、動画の確認方法 |
-| 装置と手順の成立性を確かめる | [検証計画](specifications/validation.md) | 精度・追跡・提示の受入れ基準と通し予備実験 |
-| 結果を分析・報告する | [分析計画](analysis-plan.md) | 集約式、主要比較、副次評価、欠測、結果の示し方 |
-| 開発方法を学ぶ | [開発ガイド](development/guide.md) | Unity、模擬入力、自動テスト、実機確認の進め方 |
-| 模擬入力版を動かす | [起動と操作](development/feedback-demo.md) | デモの操作、ログ、自動テスト、Linuxビルド |
-| Focus Vision用APKを入手・公開する | [Androidビルドと導入](development/android-build.md) | Releasesから導入、Ubuntuで署名・ビルド・公開、実機確認 |
-| APKの画面を実機前に確認する | [画面画像と模擬操作](development/xr-preview.md) | 共通Unity UIからのPNG・切り出し・一覧とSimulator |
-| 5台を取り付け計測する | [機器・校正](development/tracker-measurement.md) | 役割、左右の傾斜軸、推定方式、現地確認 |
-| 実測データを保存・回収する | [実測記録](development/research-records.md) | ファイル定義、Downloadへの取り出し、再解析 |
-
-## 情報の置き場所
-
-研究計画と発表資料には、研究を理解するための概要を記載します。具体的な判定規則や数値の定義は`specifications/`、当日の手順は実験手順、集約・統計処理は分析計画にまとめます。説明用の概要を変更するときも、これらの定義に合わせます。
-
-`operations/`には実施者が使う用紙と運営上の確認事項、`development/`には実装方法と開発用の確認例を置きます。文書の改訂履歴はGitで管理します。
-
-文献の報告と閲覧範囲は[文献調査](../research/README.md)、原発表の内容は[原資料](archive/README.md)を参照してください。文献の数値や原資料の機器名を、手元の装置で確認済みの仕様として扱わないようにします。
+先行研究は[research/](../research/README.md)、原発表資料は[保存資料](archive/README.md)。実装済みであっても、本計測開始条件G1–G6を満たしたことにはならない。倫理手続き・正式保管先・現地での単独実施は責任者確認待ち。

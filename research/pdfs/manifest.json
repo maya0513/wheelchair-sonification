@@ -414,5 +414,31 @@
     "retrieved_on": "2026-10-14",
     "version": "出版社公開版",
     "license": "J-STAGE出版社版。©日本人間工学会。フリー表示、個別ライセンスは原文参照。"
+  },
+  {
+    "id": "L62",
+    "file": "pdfs/L62.pdf",
+    "title": "Validity of IMUs in Comparison to a Marker-Based-Motion Capture System for Spatio-Temporal Parameters During Wheelchair Propulsion",
+    "doi": "10.3390/s25154676",
+    "source_url": "https://epub.uni-bayreuth.de/id/eprint/9381/1/sensors-25-04676.pdf",
+    "retrieved_on": "2026-10-21",
+    "version": "出版社版（大学リポジトリ公開）",
+    "license": "CC BY 4.0。大学リポジトリとPDF先頭に表示。",
+    "pages": 10,
+    "bytes": 3115500,
+    "sha256": "02919fd3875ba9daee72d22fb4ed8ffdf2d8ca7f5d0f01ec47f06166be0be3b9"
+  },
+  {
+    "id": "L64",
+    "file": "pdfs/L64.pdf",
+    "title": "Advantages of melodic over rhythmic movement sonification in bimanual motor skill learning",
+    "doi": "10.1007/s00221-017-5047-8",
+    "source_url": "https://link.springer.com/content/pdf/10.1007/s00221-017-5047-8.pdf",
+    "retrieved_on": "2026-10-21",
+    "version": "publisher version of record",
+    "license": "CC BY 4.0; © The Author(s) 2017; unchanged",
+    "pages": 12,
+    "bytes": 1315583,
+    "sha256": "4eccb1840c5d0e3e9703792d3223c62d2d038061da68c1f243a2c613d75e1440"
   }
 ]

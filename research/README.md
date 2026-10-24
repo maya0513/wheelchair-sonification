@@ -9,11 +9,12 @@
 | 主な知見と研究上の限界を知る | [全体のまとめ](synthesis.md) |
 | 成績と保持の違いを理解する | [運動学習](topics/motor-learning.md) |
 | 情報の種類・時点・頻度を整理する | [情報フィードバック](topics/information-feedback.md) |
-| 音と表示の設計を比較する | [聴覚FB](topics/auditory-feedback.md)・[設計候補の比較](topics/feedback-design-alternatives.md) |
+| 返す動作情報と、音・表示への変換を比較する | [情報候補の比較：車輪・手首・車体など](topics/feedback-design-alternatives.md)・[聴覚FB](topics/auditory-feedback.md) |
 | 車いすで測る指標と課題を選ぶ | [推進指標](topics/wheelchair-propulsion.md)・[技能評価](topics/wheelchair-skill-assessment.md) |
 | 先行研究の装置と検証方法を調べる | [計測の読み方](topics/sensing-and-devices.md)・[装置比較](topics/device-comparison.md) |
+| 手元の装置で接触角・目標誤差を測れるか判断する | [推進角の計測可能性と先行研究との比較](topics/propulsion-angle-measurement-feasibility.md) |
 | 将来の脳波計測を検討する | [簡易EEG](topics/eeg.md)。本研究の測定には組み込まない |
-| 開発を進める | [開発ガイド](../docs/development/guide.md) |
+| 開発を進める | [入門解説](implementation/development-and-testing-guide.md)・[実行手順](../docs/development/guide.md) |
 
 ## 出典を確認する
 
@@ -27,6 +28,8 @@
 | 保存PDF、取得元、利用条件 | [PDF一覧](pdfs/INDEX.md)・[容量とハッシュ](pdfs/manifest.json) |
 | 公式Wordの原本と取得条件 | [保存資料一覧](sources/INDEX.md) |
 
-研究計画の選択理由は[設計上の判断](../docs/decisions.md)、原発表の内容は[原資料](../docs/archive/README.md)を参照してください。参加者の映像・生ログは文献調査の資料に含めません。
+研究計画の選択理由は[設計上の判断](../docs/study-plan.md)、原発表の内容は[原資料](../docs/archive/README.md)を参照してください。参加者の映像・生ログは文献調査の資料に含めません。
 
 会場回線を使わず実施者のPCから操作するための技術的根拠は、[オフラインのローカル操作](topics/offline-local-control.md)を参照する。
+
+左右提示・開始合図・連続音の快適性の追加根拠：[Dyer](papers/L64-dyer-2017.md)、[Bass](papers/L65-bass-2024.md)、[Dubus](papers/L66-dubus-bresin-2010.md)。

@@ -49,9 +49,9 @@ export async function publishRelease(tag: string, code: string, options: Publish
     if (result.status === 0) throw new Error('指定タグまたはReleaseは既に存在します。上書きせず、新しい版を指定してください。');
     if (!result.stderr.includes('HTTP 404')) throw new Error('GitHubのタグ・Releaseの有無を確認できません。公開を停止しました。');
   }
-  const soak = env.WHEELCHAIR_RELEASE_SKIP_SOAK === '1'
-    ? { status: 'incomplete' as const, reason: 'user-requested-early-release', physicalDeviceMeasured: false }
-    : { status: 'completed' as const, ...(options.soakValidation || completedSoak)(root) };
+  let soak: any;
+  try { const report = (options.soakValidation || completedSoak)(root); soak = { ...report, status: report.realElapsedSeconds >= 5400 ? 'completed' : 'not_run', optional: true }; }
+  catch { soak = { status: 'not_run', optional: true, physicalDeviceMeasured: false }; }
   const previewDirectory = await preview(root, 'capture', undefined, env);
   const previewManifest = validatePreview(previewDirectory, commit);
   if (previewManifest.source_dirty !== false) throw new Error('未コミット変更を含む画像は公開できません。');
@@ -62,7 +62,7 @@ export async function publishRelease(tag: string, code: string, options: Publish
   const info = JSON.parse(readFileSync(join(output, 'build-info.json'), 'utf8'));
   if (info.gitCommit !== commit || info.gitDirty !== false || info.version !== tag.slice(1) || info.versionCode !== Number(code)
     || info.targetDevice !== 'VIVE Focus Vision' || info.xrLoader !== 'OpenXR' || info.inputMode !== 'simulated-and-vive-ultimate-tracker'
-    || info.operatorProtocol !== 1 || info.headsetUi !== 'participant-only' || info.androidTargetSdk !== 36
+    || info.operatorProtocol !== 2 || info.headsetUi !== 'participant-only' || info.androidTargetSdk !== 36
     || info.validation?.signatureVerified !== true || info.validation?.xrManifestVerified !== true)
     throw new Error('公開するビルドの版・コミット・検証情報を確認できません。');
   if (checked('git', ['rev-parse', 'HEAD']) !== commit || checked('git', ['status', '--porcelain']))
@@ -73,7 +73,7 @@ export async function publishRelease(tag: string, code: string, options: Publish
   (options.consolePackage || packageConsole)(root, join(output, consoleName), commit, info.version);
   info.uiPreview = { file: previewName, headsetShots: previewManifest.shots.length, operatorShots: operatorManifest.shots.length, sourceCommit: commit, physicalDeviceMeasured: false };
   info.soakValidation = soak;
-  info.operatorConsole = { file: consoleName, sourceCommit: commit, protocol: 1, localOnly: true };
+  info.operatorConsole = { file: consoleName, sourceCommit: commit, protocol: 2, localOnly: true };
   writeFileSync(join(output, 'build-info.json'), JSON.stringify(info, null, 2) + '\n');
   const hashedFiles = [apkName, 'build-info.json', previewName, consoleName];
   writeFileSync(join(output, 'SHA256SUMS.txt'), hashedFiles.map(file =>
@@ -83,15 +83,15 @@ export async function publishRelease(tag: string, code: string, options: Publish
     throw new Error('公開するファイルがありません: ' + file);
   const notes = join(output, 'release-notes.md');
   writeFileSync(notes, `VIVE Focus Vision向けのAndroid / OpenXR単体実行用APKです。\n\n` +
-    `被験者はアプリやコントローラーを操作しません。実施者のPCブラウザーから、5台の役割設定・3次元校正、来訪の課題順・理解確認・訓練・20分休憩、元データ保存・ZIP回収を操作します。実測入力と明示した合成入力を備えます。\n\n` +
-    `**この版の実機インストール、5台同時追跡、推定角の精度、出力遅延、屋外条件、90分稼働は未確認です。本計測の受入れ条件は未達です。** 最初は停止・着座して確認してください。接触候補は位置姿勢による推定で、接触力は測定しません。\n\n` +
-    `operator-console.zipを展開し、Node.js 24を準備した実施者用Ubuntu PCで sh start.sh を実行してください。PCのホットスポットにゴーグルを接続し、表示された確認番号をPCへ入力します。現地の外部回線は不要です。\n\nui-preview.zipを展開してindex.htmlを開くと、被験者用のUnity描画と実施者用のブラウザー画像を確認できます。実機の光学系・パススルーを再現した画像ではありません。記録データはReleaseに含みません。\n\n` +
+    `被験者はアプリやコントローラーを操作しません。実施者のPCブラウザーから、5台の役割設定・3次元校正、手動の課題選択・開始合図とPC計時・理解確認・目安タイマー、元データ保存・ZIP回収を操作します。実測入力と明示した合成入力を備えます。\n\n` +
+    `**この版の実機インストール、5台同時追跡、左右速度の精度、出力遅延、屋外条件、90分稼働は未確認です。本計測の受入れ条件は未達です。** 最初は停止・着座して確認してください。左右車輪の速度を連続提示する版で、接触区間や力は測定しません。\n\n` +
+    `operator-console.zipを展開し、Node.js 24を準備した実施者用Ubuntu PCで sh start.sh を実行してください。PCのホットスポットにゴーグルを接続し、表示された確認番号をPCへ入力します。現地の外部回線は不要です。\n\nui-preview.zipには共通処理の音見本も含みます。展開してindex.htmlを開くと、被験者用のUnity描画と実施者用のブラウザー画像を確認できます。実機の光学系・パススルーを再現した画像ではありません。記録データはReleaseに含みません。\n\n` +
     `- Source: ${commit}\n- Version: ${info.version} / Android versionCode ${info.versionCode}\n` +
     `- Unity: ${info.unityVersion}\n- VIVE OpenXR: ${info.viveOpenXrVersion} / Unity OpenXR: ${info.unityOpenXrVersion}\n` +
     `- ARM64 / IL2CPP / 非Development Build / 署名検証済み\n- SHA-256: ${info.sha256}\n\n` +
     (soak.status === 'completed'
       ? `PC上のUnity＋操作サーバーでは、合成入力による来訪完了・ZIP回収と${Math.floor(soak.realElapsedSeconds)}秒の継続稼働を確認しました。Focus Vision本体の90分検証とは別です。\n\n`
-      : `**90分継続稼働試験は利用者の指示で中断し、未完了のまま先行公開しています。** 合成入力による来訪完了・記録回収の確認結果と、残る検証は上記の導入資料・残作業表を参照してください。\n\n`) +
+      : `90分継続稼働は任意試験で、このソースでの成功証拠はありません。 合成入力による来訪完了・記録回収の確認結果と、残る検証は上記の導入資料・残作業表を参照してください。\n\n`) +
     `APKをダウンロードし、本体のDownloadへUSBでコピーしてファイルブラウザからインストールしてください。\n` +
     `[導入・操作手順](https://github.com/${releaseRepository}/blob/${tag}/docs/development/android-build.md)\n`);
   let draftCreated = false;

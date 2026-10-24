@@ -1,79 +1,161 @@
-'use strict';
+import { TrialClock, spaceStops, audioInterruptsClock } from './timing.mjs';
 const $ = id => document.getElementById(id);
 const csrf = document.querySelector('meta[name=csrf]').content;
-let snapshot, state, busy = false, page = 'progress', previousQuestion = '', shownVisit = '', completedVisit = '';
-const text = (id, value) => { $(id).textContent = value ?? ''; };
-const seconds = value => `${Math.floor(Math.max(0, value || 0) / 60)}:${String(Math.floor(Math.max(0, value || 0) % 60)).padStart(2,'0')}`;
-function showPage(next) { page = next; document.querySelectorAll('.page').forEach(e => { e.hidden = e.id !== next; }); document.querySelectorAll('[data-page]').forEach(e => e.classList.toggle('selected', e.dataset.page === next)); }
+const clock = new TrialClock(), clockSession = crypto.randomUUID();
+let view, state, pendingId = '', pendingAt = 0, oldVisit = '', oldSourceKind = '', audio, nodes = [], cueInfo = {}, reminderEnd = 0, reminderName = '', lastClockState = 'idle';
+const message = text => { $('message').textContent = text; };
 async function api(path, body) {
-  const response = await fetch('/api/' + path, { method: body === undefined ? 'GET' : 'POST', headers: body === undefined ? {} : { 'Content-Type':'application/json','X-CSRF-Token':csrf }, body: body === undefined ? undefined : JSON.stringify(body), cache:'no-store' });
-  const value = await response.json(); if (!response.ok) throw new Error(value.error || '処理に失敗しました。'); return value;
+  const response = await fetch('/api/' + path, { method: body === undefined ? 'GET' : 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf }, body: body === undefined ? undefined : JSON.stringify(body) });
+  const data = await response.json(); if (!response.ok) throw new Error(data.error || '通信に失敗しました。'); return data;
 }
-async function command(action, value = '', number = 0, flag = false) {
-  if (busy && action !== 'abort') return; busy = true; text('message','');
-  try { await api('command',{ action,value,number,flag,visitId:state?.visitId || '', revision:state?.revision || 0 }); }
-  catch(error){ text('message',error.message); busy = false; }
+async function saveEntry(type, data) {
+  if (!state?.visitId) throw new Error('先に来訪を作成してください。');
+  const record = { visitId: state.visitId, entry: { id: crypto.randomUUID(), type, participantId: state.participantId, trialId: state.trialId, browserClockSession: clockSession, utc: new Date().toISOString(), ...data } };
+  const key = 'wheelchair-unsaved-' + record.entry.id;
+  localStorage.setItem(key, JSON.stringify(record));
+  try { await api('record', record); localStorage.removeItem(key); }
+  catch (e) { message('PC保存失敗。ブラウザーに未回収記録を保持：' + e.message); if (state.running) command('abort', 'pc_record_save_failure').catch(() => {}); throw e; }
 }
-function render(data) {
-  snapshot = data; state = data.state;
-  text('mode',data.demo ? '模擬モード · 実機計測不可' : '実機操作'); $('mode').classList.toggle('demo',data.demo);
-  $('pairing').hidden = data.paired; $('pair').disabled = data.candidates.length===0;
-  const select = $('candidate'), chosen = select.value;
-  select.replaceChildren(...data.candidates.map(c => { const o = document.createElement('option'); o.value=c.deviceId; o.textContent=c.name; return o; }));
-  if ([...select.options].some(o=>o.value===chosen)) select.value=chosen;
-  const live = data.connected && data.operatorConnected;
-  text('connection',live ? `接続中 · 更新 ${Math.round((data.staleMs || 0)/100)/10}秒前` : data.paired ? '通信が途絶えています。FB停止・未完了保存を確認し、口頭で安全停止させてください。' : '接続待ち · ゴーグルとPCを同じホットスポットへ接続してください。');
-  $('connection').classList.toggle('bad',!live);
-  if (data.result && data.pending===0) { busy=false; if (!data.result.ok) text('message',data.result.message); }
-  if (!state) { $('primary').disabled=true; return; }
-  text('participant',state.participantId ? `${state.participantId} · ${state.group === 'unallocated' ? '割付前' : state.group} · 主要側 ${state.majorSide==='left'?'左':'右'}` : '来訪未作成');
-  if(state.visitId&&state.visitId!==shownVisit){
-    shownVisit=state.visitId;$('major').value=state.majorSide||'right';$('group').value='';
-    for(let i=0;i<8;i++)$('scale-'+i).value='';
-    $('question-notes').value='';$('rest-seconds').value='';$('abort-reason').value='operator_stop';
+async function retryUnsaved() {
+  for (const key of Object.keys(localStorage).filter(k => k.startsWith('wheelchair-unsaved-'))) {
+    try { await api('record', JSON.parse(localStorage.getItem(key))); localStorage.removeItem(key); }
+    catch (e) { message('未保存のPC記録があります：' + e.message); break; }
   }
-  if(state.visitId&&['done','terminated'].includes(state.status)&&completedVisit!==state.visitId){completedVisit=state.visitId;$('participant-number').value=Number(state.participantId.replace('P',''))+1;$('enrollment-number').value=Number($('enrollment-number').value)+1;}
-  text('elapsed',`来訪 ${seconds(state.elapsed)} / 90:00`); text('title',state.title);
-  text('instruction',state.instruction); text('target',state.kind==='target'?(!state.targetAvailable?`基準量不足（${state.baselineFirstCount}本＋${state.baselineSecondCount}本）。目標は未算定です。正常な少数プッシュで追加走行は行いません。`:`有効角 ${state.baselineFirstCount}本＋${state.baselineSecondCount}本 · 基準 ${Number(state.baselineDegrees).toFixed(1)}° → 目標 ${Number(state.targetDegrees).toFixed(1)}°（増分 ${Number(state.incrementDegrees).toFixed(1)}°）`):''); text('timer',state.countdownRemaining>0 ? `準備 ${Math.ceil(state.countdownRemaining)}秒` : state.remaining>0 ? `残り ${seconds(state.remaining)}` : state.running ? `走行 ${seconds(state.trialElapsed)}` : '');
-  $('health').replaceChildren(...[['追跡',`${state.tracked}/5`,state.tracked===5],['校正',state.calibrated?'有効':'要確認',state.calibrated],['保存',state.saveHealthy?'正常':'停止',state.saveHealthy],['入力',state.sourceKind==='vive_ultimate_tracker'?'実測':state.sourceKind==='synthetic_pose_fixture'?'合成・技術確認':state.sourceKind,state.sourceKind==='vive_ultimate_tracker']].map(([name,value,ok])=>{const e=document.createElement('span');e.textContent=`${name} ${value}`;if(!ok)e.classList.add('bad');return e;}));
-  $('primary').textContent=state.primaryLabel || '接続を確認'; $('primary').disabled=!live||busy||!state.canStart;
-  $('use-saved-questionnaire').hidden=!state.questionnaireStored; $('save-questionnaire').disabled=!!state.questionnaireStored; $('skip-questionnaire').disabled=!!state.questionnaireStored; $('quiz').hidden=!state.quizAwaiting; $('allocation').hidden=state.kind!=='allocation'; $('questionnaire').hidden=state.kind!=='questionnaire';
-  text('quiz-title',`${state.quizModality==='Auditory'?'音':'表示'} ${state.quizQuestion}/10 · ${state.quizAttempt}回目の口頭回答`);
-  const question=`${state.visitId}/${state.quizModality}/${state.quizAttempt}/${state.quizQuestion}`;
-  if(previousQuestion!==question){$('answer-state').value='';$('answer-action').value='';previousQuestion=question;}
-  text('export-status',state.exportStatus); text('calibration',state.calibrationInstruction); text('record-counts',state.recordCounts); text('reason',state.lastReason || '中断理由なし');
-  text('save-location',`PC回収先：${data.dataDirectory}`);text('diagnostics',JSON.stringify(state,null,2));
-  const roles=$('roles');
-  if(!roles.children.length && state.devices){for(let i=0;i<5;i++){const row=document.createElement('div');row.className='role';const name=document.createElement('strong');name.textContent=['左手首','右手首','左車輪','右車輪','車体'][i];const field=document.createElement('select');field.id='role-'+i;const button=document.createElement('button');button.textContent='この機器を割当';button.onclick=()=>command('assignRole',field.value,i);row.append(name,field,button);roles.append(row);}}
-  for(let i=0;i<5;i++){const field=$('role-'+i);if(!field)continue;const remembered=field.value;const options=(state.devices||[]).map(d=>{const o=document.createElement('option');o.value=d.key;o.textContent=`${d.key} · ${d.valid?'追跡中':'無効'} · ${Math.round(d.speed*100)} cm/s`;return o;});field.replaceChildren(...options);const target=remembered||(state.bindings||[])[i];if([...field.options].some(o=>o.value===target))field.value=target;}
-  $('archives').replaceChildren(...data.archives.map(a=>{const row=document.createElement('div');row.className='archive';const link=document.createElement('a');link.href='/api/archive/'+a.id;link.textContent='回収済みZIPを保存';const note=document.createElement('p');note.textContent=`${a.name} · ${a.size} bytes · SHA-256 ${a.sha256}`;row.append(link,note);return row;}));
-  for(const element of document.querySelectorAll('#setup button,#setup input,#setup select')) element.disabled=!live||busy||state.running||state.busy;
-  for(const id of ['recover','review-stop-reason','retry','skip','verify-rest','terminate','export','export-usb','confirm-stopped','assign-group','answer','save-questionnaire','skip-questionnaire','use-saved-questionnaire']) $(id).disabled=!live||busy||state.busy||(['save-questionnaire','skip-questionnaire'].includes(id)&&state.questionnaireStored)||(id==='assign-group'&&!$('group').value)||(id==='retry'&&!state.canRetry)||(id==='skip'&&!state.canSkip)||(id==='export'&&state.running);
-  $('abort').disabled=!live;
 }
-async function poll(){try{await api('heartbeat',{});render(await api('state'));}catch(error){text('connection','通信エラー：'+error.message);$('connection').classList.add('bad');document.querySelectorAll('main button,#abort').forEach(e=>e.disabled=true);}finally{setTimeout(poll,500);}}
-for(const b of document.querySelectorAll('[data-page]'))b.onclick=()=>showPage(b.dataset.page);
-$('pair').onclick=async()=>{try{await api('pair',{deviceId:$('candidate').value,code:$('pair-code').value});text('message','');}catch(e){text('message',e.message);}};
-$('primary').onclick=()=>command(state.running?'finishTrial':'start');
-$('create').onclick=()=>command('createVisit',$('enrollment-number').value,Number($('participant-number').value));
-$('resume').onclick=()=>command('resumeVisit');
-$('abort').onclick=()=>command('abort',$('abort-reason').value);
-$('capture').onclick=()=>command('calibrate');$('reset-calibration').onclick=()=>command('resetCalibration');
-$('set-volume').onclick=()=>command('setVolume','',Number($('volume').value));
-$('set-major').onclick=()=>command('setMajor',$('major').value);
-$('set-input').onclick=()=>command('setInput',$('input-source').value);
-for(const b of document.querySelectorAll('[data-quick]'))b.onclick=()=>command('quick',$('quick-modality').value+':'+b.dataset.quick);
-$('assign-group').onclick=()=>command('assignGroup',$('group').value);
-$('answer').onclick=()=>{if(!$('answer-state').value||!$('answer-action').value){text('message','状態と次のこぎ方の両方を入力してください。');return;}command('answer',$('answer-state').value+':'+$('answer-action').value);};
-for(const [id,action] of [['recover','recover'],['retry','retry'],['skip','skip'],['confirm-stopped','confirmStopped'],['export','export'],['export-usb','exportUsb'],['terminate','terminate']])$(id).onclick=()=>command(action,'operator_confirmed');
-$('verify-rest').onclick=()=>command('verifyRest','',Number($('rest-seconds').value));
-const scaleNames=['知的・知覚的要求','身体的要求','時間的要求','作業成績（できなかったほど高い）','努力','フラストレーション','装着不快 0–10','疲労 0–10'];
-for(let i=0;i<scaleNames.length;i++){const label=document.createElement('label');label.textContent=scaleNames[i];const field=document.createElement('input');field.type='number';field.min='0';field.max=i<6?'100':'10';field.step=i<6?'5':'1';field.id='scale-'+i;label.append(field);$('scales').append(label);}
-$('save-questionnaire').onclick=()=>command('questionnaire',JSON.stringify({values:scaleNames.map((_,i)=>$('scale-'+i).value===''?0:Number($('scale-'+i).value)),present:scaleNames.map((_,i)=>$('scale-'+i).value!==''),notes:$('question-notes').value}));
-$('skip-questionnaire').onclick=()=>command('skipQuestionnaire','time_limit');
-showPage('progress');poll();
-
-$('use-saved-questionnaire').onclick=()=>command('useSavedQuestionnaire');
-$('terminate').onclick=()=>command('terminate',$('abort-reason').value);
-
-$('review-stop-reason').onclick=()=>command('reviewStopReason',$('abort-reason').value);
+async function command(action, value = '', number = 0) {
+  if (pendingId && action !== 'abort') throw new Error('前の操作の応答を待っています。');
+  pendingId = 'sending'; pendingAt = performance.now(); render();
+  try {
+    const result = await api('command', { visitId: state?.visitId || '', revision: state?.revision || 0, action, value, number }); pendingId = result.id;
+  } catch (e) { pendingId = ''; throw e; }
+}
+function safe(work) { return async () => { try { await work(); } catch (e) { message(e.message); } }; }
+function click(id, fn) { $(id).addEventListener('click', safe(fn)); }
+function cancelAudio() { for (const node of nodes) { try { node.stop(); } catch {} } nodes = []; }
+async function endClock(cancel = false, reason = '') {
+  const result = cancel ? clock.cancel(reason) : clock.stop();
+  if (!result) return; cancelAudio();
+  await saveEntry('timing', { ...result, ...cueInfo, physicalAudioOnsetMeasured: false });
+  message(cancel ? '計時を取り消し、理由を保存しました。' : '正式計時を保存しました。安全停止後に記録を終了してください。');
+}
+async function startCue() {
+  if (!view?.connected || !state?.running || state.phase === 'Training') throw new Error('評価の記録開始応答後に合図を出してください。');
+  if (clock.hasResultFor(state.trialId)) throw new Error('この試行は計時済みです。再試行は新しい記録として開始してください。');
+  if (!audio) {
+    audio = new AudioContext();
+    audio.addEventListener('statechange', () => {
+      if (audioInterruptsClock(clock.state, audio.state)) safe(() => endClock(true, 'pc_audio_' + audio.state))();
+    });
+  }
+  await audio.resume();
+  if (audio.state !== 'running') throw new Error('PCの音声出力を有効にしてください。');
+  if (['preparing', 'running'].includes(clock.state)) return;
+  cancelAudio();
+  const nowMs = performance.now(), audioNow = audio.currentTime, lead = .08;
+  clock.prepare((3 + lead) * 1000, state.trialId);
+  cueInfo = { audioContextScheduledStartSeconds: audioNow + lead + 3, audioContextSampleSeconds: audioNow, performanceSampleMs: nowMs, softwareCueReachedAtMs: null };
+  for (let i = 0; i < 4; i++) {
+    const oscillator = audio.createOscillator(), gain = audio.createGain(), at = audioNow + lead + i, duration = i === 3 ? .22 : .09;
+    oscillator.frequency.value = i === 3 ? 880 : 440;
+    gain.gain.setValueAtTime(0, at); gain.gain.linearRampToValueAtTime(.15, at + .01); gain.gain.setValueAtTime(.15, at + duration - .01); gain.gain.linearRampToValueAtTime(0, at + duration);
+    oscillator.connect(gain).connect(audio.destination); oscillator.start(at); oscillator.stop(at + duration); nodes.push(oscillator);
+  }
+  await saveEntry('cue_scheduled', { ...clock.result(), ...cueInfo, physicalAudioOnsetMeasured: false });
+}
+for (const button of document.querySelectorAll('[data-page]')) button.onclick = () => {
+  for (const section of document.querySelectorAll('main>section')) section.hidden = section.id !== button.dataset.page;
+  for (const tab of document.querySelectorAll('[data-page]')) tab.classList.toggle('selected', tab === button);
+};
+click('pair', async () => { const candidate = view.candidates[0]; if (!candidate) throw new Error('ゴーグルの接続を待ってください。'); await api('pair', { deviceId: candidate.deviceId, code: $('pair-code').value }); });
+click('create', () => command('createVisit', $('participant').value.trim()));
+click('apply-group', () => command('setGroup', $('group').value));
+const groupNames = { Auditory:'聴覚', Visual:'視覚', NoFeedback:'追加FBなし', unallocated:'未登録' };
+const phaseNames = { Preparation:'習熟', Baseline:'事前', Training:'訓練', ImmediateAssessment:'直後', Rest:'休憩', RetentionAssessment:'保持' };
+const taskNames = { FigureEight:'8の字', Straight:'直進10 m', None:'未選択' };
+const phases = ['Preparation','Baseline','Training','ImmediateAssessment','Rest','RetentionAssessment'], tasks = ['None','Straight','FigureEight'];
+click('apply-selection', () => command('setSelection', JSON.stringify({ phase: phases.indexOf($('phase').value), task: tasks.indexOf($('task').value), repetition: Number($('repetition').value) })));
+click('record-start', () => { cancelAudio(); clock.state = 'idle'; return command('start'); });
+click('cue', startCue); click('time-stop', () => endClock());
+click('record-end', async () => { if (['preparing','running'].includes(clock.state)) await endClock(true, 'record_ended_before_time_stop'); await command('finishTrial'); });
+click('training-end', () => command('trainingEnd'));
+click('abort', async () => { if (['preparing','running'].includes(clock.state)) await endClock(true, 'operator_abort'); await command('abort', 'operator_abort'); });
+click('set-input', () => command('setInput', $('input-kind').value));
+click('set-volume', () => command('setVolume', '', Number($('volume').value)));
+click('capture', () => command('calibrate')); click('reset-calibration', () => command('resetCalibration'));
+click('export', () => command('export')); click('export-usb', () => command('exportUsb'));
+click('training-timer', () => { reminderEnd = performance.now() + 120000; reminderName = '訓練'; });
+click('rest-timer', () => { reminderEnd = performance.now() + 1200000; reminderName = '休憩'; });
+click('timer-cancel', () => { reminderEnd = 0; });
+click('save-understanding', async () => { await saveEntry('understanding', { notes: $('understanding').value }); message('理解確認をPCへ保存しました。'); });
+const labels = ['精神的要求','身体的要求','時間的要求','達成度（低値が良）','努力','不満'];
+labels.forEach((label, i) => { const e = document.createElement('label'); e.textContent = label; const input = document.createElement('input'); input.type = 'number'; input.min = '0'; input.max = '100'; input.id = 'scale-' + i; e.append(input); $('scales').append(e); });
+click('save-questionnaire', async () => {
+  const values = labels.map((_, i) => $('scale-' + i).value === '' ? null : Number($('scale-' + i).value));
+  if (values.some(x => x !== null && (!Number.isFinite(x) || x < 0 || x > 100))) throw new Error('尺度は0–100、未回答は空欄にしてください。');
+  await saveEntry('questionnaire', { values, notes: $('question-notes').value }); message('質問紙をPCへ保存しました。');
+});
+for (const modality of ['Auditory','Visual']) {
+  const row = document.createElement('div'); row.className = 'row'; const name = document.createElement('strong'); name.textContent = modality === 'Auditory' ? '聴覚' : '視覚'; row.append(name);
+  for (const [label,l,r] of [['左だけ',.5,0],['右だけ',0,.5],['左が速い',.8,.3]]) { const b = document.createElement('button'); b.textContent = label; b.onclick = safe(async () => { await command('quick', `${modality}:${l}:${r}`); if (state.visitId) await saveEntry('example', { modality, leftRps:l, rightRps:r }); }); row.append(b); }
+  $('examples').append(row);
+}
+window.addEventListener('keydown', e => { if (spaceStops(e) && clock.tick() === 'running') { e.preventDefault(); safe(() => endClock())(); } });
+function render() {
+  if (!view) return;
+  $('mode').textContent = view.demo ? '模擬モード・実計測には使用不可' : view.state?.sourceKind?.startsWith('synthetic') ? '合成入力・実計測には使用不可' : view.state?.sourceKind === 'vive_ultimate_tracker' ? '実測入力' : '入力確認待ち';
+  $('connection').textContent = view.connected ? '接続中 ／ ' + (view.state?.devices?.filter(d=>d.valid).length || 0) + '/5台追跡' : 'ゴーグル未接続／通信の途絶';
+  $('pairing').hidden = view.paired;
+  $('data-path').textContent = 'PC保存先：' + view.dataDirectory;
+  state = view.state;
+  if (state && oldVisit !== state.visitId) { oldVisit = state.visitId; $('group').value = ['Auditory','Visual','NoFeedback'].includes(state.group) ? state.group : ''; $('phase').value = state.phase; $('task').value = state.task; $('repetition').value = state.repetition; $('understanding').value = ''; $('question-notes').value = ''; labels.forEach((_,i) => $('scale-' + i).value = ''); }
+  if (state && oldSourceKind !== state.sourceKind) { oldSourceKind = state.sourceKind; $('input-kind').value = state.sourceKind?.startsWith('synthetic') ? 'synthetic' : 'actual'; }
+  const busy = !!pendingId || !!view.pending, active = !!state?.running, usable = view.connected && !busy && !state?.transferring;
+  $('identity').textContent = state?.visitId ? `${state.participantId} ／ ${groupNames[state.group] || state.group} ／ 来訪 ${state.visitId}` : '来訪未作成';
+  $('selected').textContent = state ? `登録済み：${phaseNames[state.phase] || state.phase} ／ ${taskNames[state.task] || state.task} ／ ${state.repetition}回目` : '課題未登録';
+  $('record-state').textContent = state ? `${state.status} ／ 試行 ${state.trialId || '未作成'}` : '接続待ち';
+  $('record-start').disabled = !usable || active || !state?.visitId || !state?.calibrationReady || !state?.presentationReady;
+  $('cue').disabled = !usable || !active || state?.phase === 'Training' || ['preparing','running'].includes(clock.state) || clock.hasResultFor(state?.trialId);
+  $('time-stop').disabled = clock.tick() !== 'running';
+  $('record-end').disabled = !usable || !active;
+  $('training-end').disabled = !usable || !active || state?.phase !== 'Training' || state?.trainingEnded;
+  $('abort').disabled = !view.connected || !active;
+  for (const id of ['create','apply-group','apply-selection','set-input','set-volume','capture','reset-calibration','export','export-usb']) $(id).disabled = !usable || active;
+  for (const id of ['participant','group','phase','task','repetition','input-kind','volume']) $(id).disabled = active;
+  $('health').textContent = state ? `入力：${state.sourceKind} ／ 校正：${state.calibrationReady ? '有効' : '未完了'} ／ XR：${state.presentationReady ? '準備済み' : '未準備'}${state.error ? ' ／ ' + state.error : ''}` : '機器情報を待っています。';
+  $('calibration').textContent = state?.calibrationInstruction || '接続待ち';
+  $('export-state').textContent = state?.exportStatus || '未回収';
+  $('devices').replaceChildren(...(state?.devices || []).map(d => { const e = document.createElement('div'); e.textContent = `${d.valid ? '有効' : '欠測'}　${d.key}　${d.product || ''}`; return e; }));
+  $('setup-device-poses').replaceChildren(...(state?.devices || []).map(d => { const e = document.createElement('p'); const n = x => Number.isFinite(x) ? x.toFixed(2) : '—'; e.textContent = d.key + (d.valid ? `　位置 ${n(d.x)}, ${n(d.y)}, ${n(d.z)} ／ 姿勢 ${n(d.rx)}, ${n(d.ry)}, ${n(d.rz)}` : '　欠測・位置姿勢なし'); return e; }));
+  const bindingsKey = JSON.stringify([state?.devices?.map(d => d.key),state?.bindings]);
+  if ($('roles').dataset.key !== bindingsKey) {
+    $('roles').dataset.key = bindingsKey;
+    $('roles').replaceChildren(...['左手首','右手首','左車輪','右車輪','車体'].map((name,i) => {
+      const row = document.createElement('div'); row.className = 'row'; const label = document.createElement('label'); label.textContent = name;
+      const select = document.createElement('select'); for (const d of state?.devices || []) { const o = document.createElement('option'); o.value = o.textContent = d.key; select.append(o); } select.value = state?.bindings?.[i] || ''; label.append(select);
+      const b = document.createElement('button'); b.textContent = '割り当て'; b.onclick = safe(() => command('assignRole',select.value,i)); row.append(label,b); return row;
+    }));
+  }
+  for (const b of $('roles').querySelectorAll('button')) b.disabled = !usable || active;
+  $('archives').replaceChildren(...view.archives.map(a => { const link = document.createElement('a'); link.href = '/api/archive/' + a.id; link.textContent = `${a.name} ／ SHA-256 ${a.sha256.slice(0,16)}…`; return link; }));
+}
+async function poll() {
+  try {
+    await api('heartbeat', {}); view = await api('state');
+    if (pendingId && view.result?.id === pendingId) { message(view.result.ok ? '反映しました。' : view.result.message); pendingId = ''; }
+    if (clock.state === 'running' || clock.state === 'preparing') {
+      if (!view.connected || !view.state?.running) await endClock(true, 'hmd_or_connection_interrupted');
+    }
+    if (pendingId && performance.now() - pendingAt > 5000) { pendingId = ''; message('操作の応答を確認できません。最新の状態を確認してから操作してください。'); }
+    render();
+  } catch (e) { message('通信エラー：' + e.message); if (['running','preparing'].includes(clock.state)) { try { await endClock(true, 'pc_server_connection_lost'); } catch {} } }
+}
+setInterval(() => {
+  const cs = clock.tick();
+  if (cs === 'running' && lastClockState === 'preparing') cueInfo.softwareCueReachedAtMs = performance.now();
+  lastClockState = cs;
+  $('stopwatch').textContent = cs === 'cancelled' ? '計時取消' : cs === 'preparing' ? `開始まで ${Math.max(0,(clock.startedAt - performance.now()) / 1000).toFixed(1)} s` : `${clock.elapsed().toFixed(2)} s`;
+  $('time-stop').disabled = cs !== 'running';
+  $('reminder').textContent = reminderEnd ? (performance.now() >= reminderEnd ? `${reminderName}：目安時間です。終了は手動で操作してください。` : `${reminderName} ${Math.ceil((reminderEnd - performance.now()) / 1000)} s`) : '未開始';
+}, 50);
+document.querySelector('[data-page=progress]').click();
+await retryUnsaved(); await poll(); setInterval(poll, 500);

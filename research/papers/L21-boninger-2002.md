@@ -25,7 +25,7 @@ Boninger ML; Souza AL; Cooper RA; Fitzgerald SG; Koontz AM; Fay BT. Archives of 
 
 ## 本研究への示唆
 
-半円形を紹介する根拠。今回の1回実験ではパターンを主評価に増やさず、動画による補足観察に留める。
+半円形を紹介する背景の根拠。今回の1回実験では推進パターンの分類や動画観察を行わず、左右車輪速度と走行時間を扱う。[評価範囲](../../docs/analysis-plan.md)を参照。
 
 ## 確認位置
 

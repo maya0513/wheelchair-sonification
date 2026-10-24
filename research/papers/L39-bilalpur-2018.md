@@ -23,7 +23,7 @@ Maneesh Bilalpur; Mohan Kankanhalli; Stefan Winkler; Ramanathan Subramanian. Pro
 
 座位の知覚課題で、運動中の研究ではない。負荷ラベルは主観に依存。14chで使ったICAを1chへそのまま移せない。抄録の強い表現より条件別の結果を重視。
 
-## 本研究への示唆
+## 将来のEEG検討への示唆（今回は測定しない）
 
 脳波とソニフィケーションを直接つなぐ参考。音なら必ず低負荷という仮説を避け、主観指標を併用する。
 

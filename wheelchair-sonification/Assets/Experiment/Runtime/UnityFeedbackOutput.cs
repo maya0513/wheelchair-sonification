@@ -1,85 +1,35 @@
-using System;
 using UnityEngine;
 using WheelchairSonification.Core;
-
 namespace WheelchairSonification.Runtime
 {
-    public sealed class UnityFeedbackOutput : MonoBehaviour, IFeedbackOutput
+    [RequireComponent(typeof(AudioSource))]
+    public sealed class UnityFeedbackOutput : MonoBehaviour
     {
-        private readonly AudioClip[] clips = new AudioClip[3];
-        private AudioSource source;
-        private IFeedbackGauge gauge;
-        public AudioSource AudioSource => source;
-        public AudioClip Clip(FeedbackState state) => clips[(int)state];
-
-        public void BindGauge(IFeedbackGauge value)
+        sealed class AudioState { public BilateralFeedback value; public double volume; }
+        volatile AudioState state = new AudioState();
+        readonly StereoToneGenerator generator = new StereoToneGenerator();
+        IFeedbackGauge gauge; int sampleRate = 48000;
+        public float Volume { get; set; } = .1f;
+        public BilateralFeedback Last { get; private set; }
+        public void BindGauge(IFeedbackGauge value) { gauge = value; Stop(); }
+        void Awake()
         {
-            Stop();
-            gauge?.SetVisible(false);
-            gauge = value;
-            gauge.SetVisible(false);
+            sampleRate = AudioSettings.outputSampleRate;
+            var source = GetComponent<AudioSource>(); source.playOnAwake = false; source.loop = true;
+            source.spatialBlend = 0; source.panStereo = 0; source.dopplerLevel = 0; source.reverbZoneMix = 0;
+            source.bypassEffects = source.bypassListenerEffects = source.bypassReverbZones = true;
+            // A silent carrier keeps the callback active. Samples are produced by the shared generator.
+            source.clip = AudioClip.Create("Continuous stereo carrier", sampleRate, 2, sampleRate, false);
+            source.Play();
         }
-
-        public void Initialize(GaugeView gaugeView)
+        public void Apply(BilateralFeedback value)
         {
-            gauge = gaugeView;
-            source = gameObject.AddComponent<AudioSource>();
-            source.playOnAwake = false;
-            source.loop = false;
-            source.spatialBlend = 0;
-            source.panStereo = 0;
-            source.dopplerLevel = 0;
-            source.reverbZoneMix = 0;
-            source.bypassEffects = true;
-            source.bypassListenerEffects = true;
-            source.bypassReverbZones = true;
-            source.pitch = 1;
-            source.volume = 0.1f;
-            foreach (FeedbackState state in Enum.GetValues(typeof(FeedbackState)))
-            {
-                float[] samples = ToneGenerator.CreateStereo(state);
-                var clip = AudioClip.Create(state.ToString(), samples.Length / FeedbackProtocol.Channels,
-                    FeedbackProtocol.Channels, FeedbackProtocol.SampleRate, false);
-                if (!clip.SetData(samples, 0)) throw new InvalidOperationException("音データを初期化できませんでした。");
-                clips[(int)state] = clip;
-            }
-            SetGaugeVisible(false);
+            Last = value; state = new AudioState { value = value, volume = Volume };
+            bool visible = value.enabled && value.valid && value.group == StudyGroup.Visual;
+            gauge?.SetValues(visible ? value.left.normalized : 0, visible ? value.right.normalized : 0); gauge?.SetVisible(visible);
         }
-
-        public void SetVolume(float volume)
-        {
-            if (float.IsNaN(volume) || float.IsInfinity(volume) || volume < 0 || volume > 1)
-                throw new ArgumentOutOfRangeException(nameof(volume));
-            source.volume = volume;
-        }
-
-        public double? Begin(StudyGroup group, FeedbackState state)
-        {
-            Stop();
-            if (group == StudyGroup.Auditory)
-            {
-                source.clip = clips[(int)state];
-                double dspTime = AudioSettings.dspTime;
-                source.Play();
-                return dspTime;
-            }
-            if (group == StudyGroup.Visual) gauge.ShowMarker(state);
-            return null;
-        }
-
-        public void Stop()
-        {
-            if (source != null) source.Stop();
-            gauge?.HideMarker();
-        }
-
-        public void SetGaugeVisible(bool visible) => gauge?.SetVisible(visible);
-
-        private void OnDestroy()
-        {
-            Stop();
-            foreach (var clip in clips)
-                if (clip != null) Destroy(clip);
-        }
+        public void Stop() => Apply(default);
+        void OnAudioFilterRead(float[] data, int channels) { var s = state; generator.Render(data, channels, sampleRate, s.value, s.volume); }
+        void OnDisable() { Stop(); }
     }
 }

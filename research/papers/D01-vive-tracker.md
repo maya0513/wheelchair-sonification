@@ -11,7 +11,7 @@ Tracker 2018/3.0のSteamVRベースステーション対応、PCへのUSB・ド�
 
 ## 本研究での利用
 
-旧型・3.0・Ultimateは同一機種ではない。手元の型番・ドングル数・ベースステーションを先に確認。仕様表を計測精度の検証の代用にしない。
+旧型・3.0・Ultimateは同一機種ではない。手元はUltimate Tracker 5台・既存ドングルとのユーザー確認に基づく。旧Lighthouse方式の要件を混ぜず、実接続と性能は[機器手順](../../docs/development/tracker-measurement.md)で確認する。仕様表を計測精度の検証の代用にしない。
 
 参照：[フィードバック仕様](../../docs/specifications/feedback.md)、[EEGの品質と解釈](../topics/eeg.md)。
 

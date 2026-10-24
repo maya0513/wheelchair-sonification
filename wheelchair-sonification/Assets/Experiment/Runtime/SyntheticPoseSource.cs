@@ -1,52 +1,34 @@
 using System;
 using UnityEngine;
-
 namespace WheelchairSonification.Runtime
 {
-    // Explicit technical fixture. Never chosen automatically after a real-device failure.
+    // Explicit fixture. Never a fallback for hardware failure.
     public sealed class SyntheticPoseSource : IPoseSource
     {
         public string Kind => "synthetic_pose_fixture";
-        public bool Moving;
-        private double started = double.NaN, stoppedTime;
-        private Vector3 heldPosition;
-        private Quaternion heldRotation = Quaternion.identity;
-        public PoseFrame Read(double acquiredTime)
+        public double LeftRps = .4, RightRps = .6;
+        public bool Moving = true;
+        public PoseFrame Read(double time)
         {
-            if (Moving && double.IsNaN(started)) started = acquiredTime - stoppedTime;
-            double t = Moving ? acquiredTime - started : stoppedTime;
-            Vector3 body = heldPosition; Quaternion heading = heldRotation;
-            if (Moving)
-            {
-                float leg = Mathf.Repeat((float)t, 24);
-                body = new Vector3(0, 0, leg <= 12 ? leg * (10f / 12) : 20 - leg * (10f / 12));
-                heading = Quaternion.Euler(0, leg <= 12 ? 0 : 180, 0);
-                heldPosition = body; heldRotation = heading; stoppedTime = t;
-            }
-            else started = double.NaN;
-            float wheelAngle = (float)t * 120;
-            Quaternion spin = Quaternion.AngleAxis(wheelAngle, Vector3.right);
-            var frame = new PoseFrame { time = acquiredTime };
-            float phase = Mathf.Repeat((float)t, 1.2f);
-            Vector3 radial = spin * Vector3.up * .3f;
+            var frame = new PoseFrame { time = time }; var heading = Quaternion.Euler(0, (float)(time * 8), 0);
             for (int i = 0; i < 5; i++)
             {
-                Vector3 local = i == 4 ? Vector3.zero : new Vector3(i % 2 == 0 ? -.32f : .32f, .35f, 0);
-                if (i < 2) local += radial + (phase < .6f ? Vector3.zero : Vector3.right * .15f);
+                double rps = i == 2 ? LeftRps : RightRps;
+                var axis = Quaternion.Euler(0, 0, i == 2 ? -12 : 12) * Vector3.right;
                 frame.poses.Add(new TrackerPose { key = "synthetic-" + i, product = "SYNTHETIC ONLY", runtimeDeviceId = 900 + i,
-                    acquiredTime = acquiredTime, valid = true, position = body + heading * local,
-                    rotation = i == 2 || i == 3 ? heading * spin : heading });
+                    acquiredTime = time, inputSystemTime = time, valid = true,
+                    position = new Vector3((float)(Math.Sin(time * .1)), .4f, (float)(Math.Cos(time * .1))) + heading * new Vector3(i % 2 == 0 ? -.3f : .3f, 0, 0),
+                    rotation = heading * (i == 2 || i == 3 ? Quaternion.AngleAxis((float)(time * rps * 360 * (Moving ? 1 : 0)), axis) : Quaternion.identity) });
             }
             return frame;
         }
         public static TrackingCalibration Calibration()
         {
-            var c = new TrackingCalibration { bodyReady = true, courseReady = true, courseEnd = Vector3.forward * 10, createdUtc = DateTime.UtcNow.ToString("O") };
+            var c = new TrackingCalibration { bodyReady = true, createdUtc = DateTime.UtcNow.ToString("O") };
             for (int i = 0; i < 5; i++) { c.roles[i].key = "synthetic-" + i; c.roles[i].runtimeDeviceId = 900 + i; }
-            c.left = Wheel(-.32f); c.right = Wheel(.32f); return c;
+            c.left = new WheelCalibration { ready = true, axle = Quaternion.Euler(0, 0, -12) * Vector3.right };
+            c.right = new WheelCalibration { ready = true, axle = Quaternion.Euler(0, 0, 12) * Vector3.right }; return c;
         }
-        private static WheelCalibration Wheel(float x) => new WheelCalibration { center = new Vector3(x, .35f, 0), axle = Vector3.right,
-            radialInTracker = Vector3.up, sign = 1, contactRadius = .3f, contactPlane = 0, geometryReady = true, contactReady = true };
         public void Dispose() { }
     }
 }

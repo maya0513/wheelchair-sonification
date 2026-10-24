@@ -75,7 +75,7 @@ experiment-console:
 experiment-console-demo:
     node scripts/experiment-console.mts --demo
 
-# Unity合成入力とPCの実時間90分試験（先にunity-build）
+# 任意：Unity合成入力とPCの継続稼働（先にunity-build）
 experiment-soak:
     node scripts/console-integration.mts 5400
 
@@ -91,3 +91,9 @@ unity-mcp:
 tools-update:
     mise lock --bump --platform linux-x64
     just setup
+
+# 短時間のUnity＋PC統合確認（実際の20分待機なし）
+experiment-integration:
+    node scripts/console-integration.mts 180
+
+alias console-preview := experiment-console-preview

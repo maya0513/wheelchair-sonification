@@ -25,7 +25,7 @@ Van den Berghe P; Lorenzoni V; Derie R; Six J; Gerlo J; Leman M; De Clercq D. Sc
 
 ## 本研究への示唆
 
-マイコン→イベント検出→数イベント平均→離散音量という構成を参考にする。音楽再生環境を組む必要はなく、純音へ簡素化できる。
+マイコンから音出力までの実装経路を参考にする。今回はイベント平均・離散音量・音楽再生を採用せず、左右車輪速度を連続した音高へ対応付ける。[FB仕様](../../docs/specifications/feedback.md)を参照。
 
 ## 確認位置
 

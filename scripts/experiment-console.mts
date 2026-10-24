@@ -5,7 +5,7 @@ import { pipeline } from 'node:stream/promises';
 import { dirname, join, resolve, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn, spawnSync } from 'node:child_process';
-import { networkInterfaces } from 'node:os';
+import { networkInterfaces, homedir } from 'node:os';
 
 export const consolePort = 8765;
 const here = dirname(fileURLToPath(import.meta.url));
@@ -35,7 +35,7 @@ type Command = { id: string; visitId: string; revision: number; action: string; 
 export function createConsoleServer(options: { dataDirectory?: string; demo?: boolean; now?: () => number; port?: number } = {}) {
   const now = options.now || Date.now;
   const port = options.port ?? consolePort;
-  const directory = options.dataDirectory || join(root, '.local', 'experiment-data');
+  const directory = options.dataDirectory || join(homedir(), 'WheelchairSonificationData');
   const candidates = new Map<string, Candidate>();
   const csrf = randomBytes(32).toString('hex');
   const browserToken = randomBytes(32).toString('hex');
@@ -69,6 +69,17 @@ export function createConsoleServer(options: { dataDirectory?: string; demo?: bo
     if (!activeOperator()) pending = [];
     pending = pending.filter(c => now() - c.created < 3000);
   }
+  function persistOperator(visitId: string, entry: any) {
+    if (!/^[A-Za-z0-9_-]{1,64}$/.test(visitId) || !/^[A-Za-z0-9_-]{1,80}$/.test(entry?.id || '') || JSON.stringify(entry).length > 100000)
+      throw new Error('記録形式が不正です。');
+    const folder = join(directory, visitId); mkdirSync(folder, { recursive: true, mode: 0o700 });
+    const file = join(folder, 'operator.json');
+    const saved = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : { format: 2, visitId, entries: [] };
+    if (saved.format !== 2) throw new Error('旧形式の記録を上書きしません。');
+    if (!saved.entries.some((item:any) => item.id === entry.id)) saved.entries.push({ ...entry, pcSavedUtc: new Date(now()).toISOString() });
+    writeFileSync(file + '.partial', JSON.stringify(saved, null, 2) + '\n', { mode: 0o600 }); renameSync(file + '.partial', file);
+    return { saved: true, file };
+  }
   const handler = async (request: any, response: any) => {
     try {
       const url = new URL(request.url, 'http://127.0.0.1:' + port);
@@ -77,6 +88,7 @@ export function createConsoleServer(options: { dataDirectory?: string; demo?: bo
         if (options.demo && !isLocal) return send(response, 403, { error: '模擬コンソールへ実機は接続できません。' });
         if (url.pathname === '/device/hello' && request.method === 'POST') {
           const data = await json(request);
+          if (data.schema !== 2) return send(response, 409, { error: '通信形式が異なります。v0.4.0以降の対応するAPKとコンソールを組み合わせてください。' });
           if (!/^[a-f0-9]{32}$/.test(data.deviceId) || !/^[a-f0-9]{64}$/.test(data.codeHash)) return send(response, 400, { error: '接続識別が不正です。' });
           let candidate = candidates.get(data.deviceId);
           if (!candidate || candidate.codeHash !== data.codeHash) {
@@ -84,14 +96,20 @@ export function createConsoleServer(options: { dataDirectory?: string; demo?: bo
             candidates.set(data.deviceId, candidate);
           }
           candidate.seen = now();
-          return send(response, 200, { pairToken: approved === candidate ? candidate.token : '', operatorConnected: activeOperator(), operatorLeaseSeconds: Math.max(0, (3000 - (now() - browserSeen)) / 1000), demo: !!options.demo });
+          return send(response, 200, { schema: 2, pairToken: approved === candidate ? candidate.token : '', operatorConnected: activeOperator(), operatorLeaseSeconds: Math.max(0, (3000 - (now() - browserSeen)) / 1000), demo: !!options.demo });
         }
         if (!deviceAuthorized(request)) return send(response, 401, { error: '装着前にPCで接続承認してください。' });
         if (url.pathname === '/device/exchange' && request.method === 'POST') {
-          const body = await json(request); latestState = body.state; stateSeen = now();
-          if (body.result?.id) { result = body.result; pending = pending.filter(c => c.id !== body.result.id); }
+          const body = await json(request);
+          if (body.state?.schema !== 2) return send(response, 409, { error: '旧アプリの通信形式を拒否しました。' });
+          latestState = body.state; stateSeen = now();
+          if (body.result?.id) {
+            const command = pending.find(c => c.id === body.result.id);
+            if (command && body.state?.visitId) persistOperator(body.state.visitId, { id: command.id, type: 'operator_command', trialId: body.state.trialId || '', action: command.action, value: command.value, number: command.number, requestedPcUtc: new Date(command.created).toISOString(), result: body.result });
+            result = body.result; pending = pending.filter(c => c.id !== body.result.id);
+          }
           clearExpired();
-          return send(response, 200, { operatorConnected: activeOperator(), operatorLeaseSeconds: Math.max(0, (3000 - (now() - browserSeen)) / 1000), command: pending[0] || null });
+          return send(response, 200, { schema: 2, operatorConnected: activeOperator(), operatorLeaseSeconds: Math.max(0, (3000 - (now() - browserSeen)) / 1000), command: pending[0] || null });
         }
         if (url.pathname === '/device/export' && request.method === 'PUT') {
           if (!activeOperator() || latestState?.running) return send(response, 409, { error: '停止中に取り出してください。' });
@@ -124,8 +142,8 @@ export function createConsoleServer(options: { dataDirectory?: string; demo?: bo
           'Set-Cookie': 'operator=' + browserToken + '; HttpOnly; SameSite=Strict; Path=/',
           'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'" }); response.end(page); return;
       }
-      if (url.pathname === '/console.js' || url.pathname === '/console.css') {
-        response.writeHead(200, { 'Content-Type': url.pathname.endsWith('.js') ? 'text/javascript; charset=utf-8' : 'text/css; charset=utf-8' });
+      if (['/console.js','/console.css','/timing.mjs'].includes(url.pathname)) {
+        response.writeHead(200, { 'Content-Type': !url.pathname.endsWith('.css') ? 'text/javascript; charset=utf-8' : 'text/css; charset=utf-8' });
         response.end(readFileSync(join(publicDirectory, url.pathname.slice(1)))); return;
       }
       if (!String(request.headers.cookie || '').split(';').some((s: string) => s.trim() === 'operator=' + browserToken)) return send(response, 401, { error: '操作ページを開き直してください。' });
@@ -145,10 +163,14 @@ export function createConsoleServer(options: { dataDirectory?: string; demo?: bo
         approved = candidate; approved.token ||= randomBytes(32).toString('hex');
         return send(response, 200, { approved: true });
       }
+      if (url.pathname === '/api/record' && request.method === 'POST') {
+        const body = await json(request);
+        return send(response, 200, persistOperator(body.visitId, body.entry));
+      }
       if (url.pathname === '/api/command' && request.method === 'POST') {
         if (!approved || !activeOperator() || now() - stateSeen >= 3000) return send(response, 409, { error: '最新の接続状態を確認できません。' });
         const body = await json(request);
-        const allowed = ['createVisit','resumeVisit','start','finishTrial','abort','reviewStopReason','recover','retry','skip','terminate','assignGroup','answer','questionnaire','skipQuestionnaire','useSavedQuestionnaire','verifyRest','assignRole','calibrate','resetCalibration','confirmStopped','setVolume','setMajor','export','exportUsb','quick','setInput'];
+        const allowed = ['createVisit','setInput','setGroup','setSelection','start','finishTrial','trainingEnd','abort','assignRole','calibrate','resetCalibration','setVolume','export','exportUsb','quick'];
         if (!allowed.includes(body.action) || typeof body.visitId !== 'string' || !Number.isInteger(body.revision)) return send(response, 400, { error: '操作形式が不正です。' });
         const command: Command = { id: randomUUID(), visitId: body.visitId, revision: body.revision, action: body.action,
           value: String(body.value || '').slice(0, 4000), number: Number.isFinite(body.number) ? body.number : 0, flag: body.flag === true, created: now() };

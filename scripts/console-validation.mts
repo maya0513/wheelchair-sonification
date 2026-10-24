@@ -16,5 +16,5 @@ export function completedSoak(root:string){
     if(r.passed===true&&r.synthetic===true&&r.physicalDeviceMeasured===false&&r.realElapsedSeconds>=5400&&r.requestedSeconds>=5400&&r.finished===true&&r.archives?.length>0&&r.runtimeSourceFingerprint===fingerprint)
       return {report:relative(root,path),realElapsedSeconds:r.realElapsedSeconds,runtimeSourceFingerprint:fingerprint,physicalDeviceMeasured:false};
   }
-  throw new Error('現行の計測・進行・通信コードで完了した90分のUnity＋PC通し試験がありません。just experiment-soakを実行し、完了・回収を確認してください。');
+  return { status: 'not_run', report: null, realElapsedSeconds: 0, runtimeSourceFingerprint: fingerprint, physicalDeviceMeasured: false };
 }

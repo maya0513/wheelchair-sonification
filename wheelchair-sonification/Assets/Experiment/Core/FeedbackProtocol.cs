@@ -1,96 +1,37 @@
 using System;
-using System.Collections.Generic;
-
 namespace WheelchairSonification.Core
 {
     public static class FeedbackProtocol
     {
-        public const double MaximumIncreaseDegrees = 10;
-        public const double IncreaseCapDegrees = 95;
-        public const double ToleranceDegrees = 5;
-        public const double DurationSeconds = 0.300;
-        public const double FadeSeconds = 0.010;
-        public const double FlushIntervalSeconds = 0.5;
-        public const int SampleRate = 48000;
-        public const int Channels = 2;
-
-        public static int Frequency(FeedbackState state)
+        public const int Format = 2;
+        public const double FlushIntervalSeconds = .5;
+        public static double Clamp(double x, double low, double high) => Math.Max(low, Math.Min(high, x));
+        public static bool Finite(double x) => !double.IsNaN(x) && !double.IsInfinity(x);
+    }
+    // The same sample generator runs in Unity's audio callback and offline WAV export.
+    public sealed class StereoToneGenerator
+    {
+        double leftPhase, rightPhase, leftGain, rightGain, leftFrequency = 220, rightFrequency = 220;
+        public void Render(float[] buffer, int channels, int sampleRate, BilateralFeedback value, double volume, double fadeSeconds = .02)
         {
-            switch (state)
+            if (channels < 1 || sampleRate <= 0 || buffer.Length % channels != 0) throw new ArgumentException("音声バッファが不正です。");
+            double step = 1 / (sampleRate * fadeSeconds), alpha = 1 - Math.Exp(-1 / (sampleRate * fadeSeconds));
+            bool audible = value.enabled && value.valid && value.group == StudyGroup.Auditory;
+            double targetLeft = audible && value.left.active ? 1 : 0;
+            double targetRight = audible && value.right.active ? 1 : 0;
+            for (int i = 0; i < buffer.Length; i += channels)
             {
-                case FeedbackState.Short: return 440;
-                case FeedbackState.Target: return 660;
-                case FeedbackState.Long: return 880;
-                default: throw new ArgumentOutOfRangeException(nameof(state));
+                leftGain = Move(leftGain, targetLeft, step); rightGain = Move(rightGain, targetRight, step);
+                if (value.left.frequencyHz > 0) leftFrequency += alpha * (value.left.frequencyHz - leftFrequency);
+                if (value.right.frequencyHz > 0) rightFrequency += alpha * (value.right.frequencyHz - rightFrequency);
+                float l = (float)(Math.Sin(leftPhase) * leftGain * FeedbackProtocol.Clamp(volume, 0, .3)), r = (float)(Math.Sin(rightPhase) * rightGain * FeedbackProtocol.Clamp(volume, 0, .3));
+                buffer[i] = channels == 1 ? (l + r) * .5f : l;
+                if (channels > 1) buffer[i + 1] = r;
+                for (int c = 2; c < channels; c++) buffer[i + c] = 0;
+                leftPhase = (leftPhase + 2 * Math.PI * leftFrequency / sampleRate) % (2 * Math.PI);
+                rightPhase = (rightPhase + 2 * Math.PI * rightFrequency / sampleRate) % (2 * Math.PI);
             }
         }
-
-        public static bool IsFinite(double value) => !double.IsNaN(value) && !double.IsInfinity(value);
-
-        public static FeedbackState Classify(double angle, double target)
-        {
-            if (!IsFinite(angle) || angle <= 0 || !IsFinite(target) || target <= 0)
-                throw new ArgumentException("Angles must be finite and positive.");
-            if (angle < target - ToleranceDegrees) return FeedbackState.Short;
-            if (angle > target + ToleranceDegrees) return FeedbackState.Long;
-            return FeedbackState.Target;
-        }
-
-        public static TargetResult CalculateTarget(IReadOnlyList<double> first, IReadOnlyList<double> second)
-        {
-            if (first == null || second == null || first.Count < 1 || second.Count < 1 ||
-                first.Count + second.Count < 4)
-                return TargetResult.Failure("各反復1本以上、合計4本以上の有効角が必要です。");
-            var angles = new List<double>(first.Count + second.Count);
-            foreach (var value in first) angles.Add(value);
-            foreach (var value in second) angles.Add(value);
-            foreach (var value in angles)
-                if (!IsFinite(value) || value <= 0)
-                    return TargetResult.Failure("基準角には正の有限値だけを入力してください。");
-            angles.Sort();
-            int middle = angles.Count / 2;
-            double baseline = angles.Count % 2 == 1 ? angles[middle] :
-                angles[middle - 1] / 2 + angles[middle] / 2;
-            double increment = Math.Min(MaximumIncreaseDegrees, Math.Max(0, IncreaseCapDegrees - baseline));
-            return new TargetResult(true, baseline, baseline + increment, increment, null);
-        }
-    }
-
-    public readonly struct TargetResult
-    {
-        public readonly bool Success;
-        public readonly double BaselineDegrees;
-        public readonly double TargetDegrees;
-        public readonly double IncrementDegrees;
-        public readonly string Error;
-        public TargetResult(bool success, double baseline, double target, double increment, string error)
-        {
-            Success = success;
-            BaselineDegrees = baseline;
-            TargetDegrees = target;
-            IncrementDegrees = increment;
-            Error = error;
-        }
-        public static TargetResult Failure(string error) => new TargetResult(false, 0, 0, 0, error);
-    }
-
-    public static class ToneGenerator
-    {
-        public static float[] CreateStereo(FeedbackState state)
-        {
-            int frames = (int)Math.Round(FeedbackProtocol.SampleRate * FeedbackProtocol.DurationSeconds);
-            int fadeFrames = (int)Math.Round(FeedbackProtocol.SampleRate * FeedbackProtocol.FadeSeconds);
-            var data = new float[frames * FeedbackProtocol.Channels];
-            double frequency = FeedbackProtocol.Frequency(state);
-            for (int i = 0; i < frames; i++)
-            {
-                double envelope = Math.Min(1, Math.Min((double)i / fadeFrames,
-                    (double)(frames - 1 - i) / fadeFrames));
-                float sample = (float)(Math.Sin(2 * Math.PI * frequency * i / FeedbackProtocol.SampleRate) * envelope);
-                data[i * 2] = sample;
-                data[i * 2 + 1] = sample;
-            }
-            return data;
-        }
+        static double Move(double current, double target, double step) => current < target ? Math.Min(target, current + step) : Math.Max(target, current - step);
     }
 }

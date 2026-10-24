@@ -21,6 +21,7 @@ namespace WheelchairSonification.Editor
                 throw new InvalidOperationException("Unity HubでAndroid Build Support、SDK & NDK Tools、OpenJDKを追加してください。");
             if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.Android)
                 throw new InvalidOperationException("-buildTarget Androidを指定して起動してください。");
+            ParticipantUiAssets.Prepare();
             FocusVisionProject.Validate();
             string directory = Required("WHEELCHAIR_BUILD_DIRECTORY");
             string keystore = Required("UNITY_ANDROID_KEYSTORE");
@@ -134,11 +135,11 @@ namespace WheelchairSonification.Editor
         {
             public string result, unityVersion, applicationId, version;
             public string target = "Android", architecture = "ARM64", scriptingBackend = "IL2CPP";
-            public string application = "feedback-and-tracking-xr", inputMode = "simulated-and-vive-ultimate-tracker";
+            public string application = "bilateral-wheel-speed-xr", inputMode = "simulated-and-vive-ultimate-tracker";
             public string headsetUi = "participant-only", operatorControl = "offline-pc-browser-http";
-            public int operatorProtocol = 1, androidTargetSdk = 36;
-            public bool visitAutomation = true, participantControlsRequired = false;
-            public string measurementValidation = "pending_five_trackers_video_accuracy_latency_and_field_validation";
+            public int operatorProtocol = 2, androidTargetSdk = 36;
+            public bool visitAutomation = false, participantControlsRequired = false;
+            public string measurementValidation = "pending_wheel_speed_accuracy_latency_and_field_validation";
             public string targetDevice = "VIVE Focus Vision", xrLoader = "OpenXR";
             public bool passthrough = true, deviceTested = false;
             public string viveOpenXrVersion = "2.5.1", unityOpenXrVersion = "1.18.0";

@@ -77,3 +77,40 @@ L53はEurope PMCのDOI検索0件のためJ-STAGE原記録とPDFで同定。L54�
 |---|---|---|
 | [L17出版最終版、10.1049/htl.2016.0056](https://ietresearch.onlinelibrary.wiley.com/doi/10.1049/htl.2016.0056)／[UCL受理稿](https://discovery.ucl.ac.uk/id/eprint/1524165/1/HTL.2016.0056.pdf) | §2.3、§3・Table 1、§4、受理稿Table 1 | 回復期の言語FBを再確認。角度の版差・最終版内のピーク力の不一致を[L17ノート](papers/L17-symonds-sensewheel-2016.md)へ注記。保存受理稿は保持 |
 | [Hopewell et al., CONSORT 2025説明文書、10.1136/bmj-2024-081124](https://pmc.ncbi.nlm.nih.gov/articles/PMC11995452/) | Item 14、21c、21dの関連節のみ | 集約・時点・欠測・追加解析の事前定義の参考として[分析計画](../docs/analysis-plan.md)へ反映。車いす介入の効果文献としての追加採択ではなく、方法上の補助資料。全文精読・新規PDF取得は行っていない |
+
+## 接触角の測定可能性の追加照合（2026-10-21）
+
+手元のVIVE位置姿勢から推定する接触角・目標誤差を、先行研究と同等に扱えるかの探索。網羅的レビューではなく、検索結果の全件数や選別母数は集計していない。
+
+| 検索式・経路 | 確認・判断 |
+|---|---|
+| `wheelchair propulsion contact angle kinematic wrist markers force threshold validation contact release` | 力で区間を決める研究と、位置・回転から推定する研究を区別するために検索 |
+| `wheelchair propulsion contact angle estimation wearable inertial sensors validation` | [L62](papers/L62-karner-2025.md)を追加採用。大学リポジトリの出版社PDFを取得し、方法・Table 3・限界を確認 |
+| `VIVE Ultimate Tracker wheelchair kinematic contact angle measurement accuracy` | Ultimate Tracker単体の追跡精度研究等がヒット。同じ取付・接触検出法・車体の検証は確認できず。不在の証明とはしない |
+| `"Validity of IMUs in Comparison" "2025" Sensors`、`"Validity of IMUs" "push angle" "markers"` | PubMed→出版社／大学リポジトリ→PDFでL62の書誌・方法・数値を照合。出版社HTMLは429、PMC直接閲覧はブラウザー確認画面だったため、大学公開版を使用 |
+| `"Fathian" "2024" "wheelchair" "contact" "SMARTWheel"` | 既存[L27](papers/L27-fathian-timing-2024.md)を[PubMed](https://pubmed.ncbi.nlm.nih.gov/38814765/)の抄録で再確認。23名、SMARTWheel参照、時間誤差とSD。本文を読んだとは扱わない |
+| `"handrim" "contact angle" "wrist" "Vive"` | VIVEの現行方式そのものの検証を探索 |
+| `"WISP, Wearable Inertial Sensor" contact angle mdpi`、`"WISP" "4221" "FSR" "validation"`、`"WISP, Wearable Inertial" "contact" "RMSE"` | [WISP 2022](https://doi.org/10.3390/s22114221)は推進ジェスチャーの検出。接触参照にFSRを用いる関連節が検索公開本文で得られたが、接触角精度を比較する中核文献としては追加採用しない |
+| `"10.1109/JSEN.2026.3657180" full pdf` | Ultimate Trackerのロボット参照による追跡精度研究。出版社直接ページはブラウザー確認で本文未閲覧。2024年のarXiv版と2026年の出版論文を同一の版として混ぜず、今回は接触角の検証文献として追加採用しない |
+| [L14原著Methods](https://link.springer.com/article/10.1186/s12984-021-00936-x)、[HTC公式入力](https://developer.vive.com/resources/openxr/unity/tutorials/tracker-overview/vivexrtracker/) | 全評価でのSMARTWheel使用、APIで取得する位置・姿勢・追跡状態とAndroidの5台対応を確認 |
+
+比較と研究上の判断は[推進角の計測可能性](topics/propulsion-angle-measurement-feasibility.md)に整理。L62の1.75±4.14°を手元の装置のMAEや単一プッシュの精度として転用しない。L62追加後の採択一覧・保存PDF件数は[文献一覧](catalog.md)・[PDF一覧](pdfs/INDEX.md)で管理する。
+
+## 動きそのものを返す情報候補の追加照合（2026-10-21）
+
+接触区間を測れないという仮定の下で、車輪・手首・車体の情報を比較する探索。候補間の効果を順位づける体系的レビューではなく、手元の取付・計算・運用を踏まえた設計判断を含む。
+
+| 検索式・経路 | 確認・採否 |
+|---|---|
+| `"Sonification as Catalyst" wheelchair speed rotation Gref`、`"Sonification as Catalyst" "velocity"`、`"Sonification as Catalyst" "speed" "pitch"`、`"Sonification as Catalyst" Gref filetype:pdf`、`"Sonification as Catalyst" site:diva-portal.org` | 既存[L13](papers/L13-gref-2016.md)の車いす動作の直接音化を参照。大会論文集の検索公開本文で書誌を再確認。今回のZenodo・大会PDFの直接取得は安定せず、本文を新たに精読したとは扱わない |
+| `"Sonification of Arm Movements" "position" 2016`、[L11出版社HTML](https://www.frontiersin.org/journals/neurology/articles/10.3389/fneur.2016.00106/full) | Sonification Training、Figure 1、Resultsの関連節で位置と音の対応を再確認。図説明と本文には軸・音量方向の記述差があるため、今回の候補表で原著の全3軸マッピングを処方として転記しない |
+| `"Musical Sonification of Arm Movements" 2019 benefits`、[L49出版社HTML](https://www.frontiersin.org/journals/neuroscience/articles/10.3389/fnins.2019.01378/full) | Experimental Setup、Abstract、Discussionで位置の音化と限定的な効果を確認。腕を返せば必ず有効という説明にしない |
+| `"Temporal parameters estimation for wheelchair propulsion" 2014 wrist`、`"Temporal Parameters Estimation" "PMC" Ojeda Ding`、`"Temporal Parameters Estimation for Wheelchair Propulsion Using Wearable Sensors" "2014" "645284" PMC` | [L25 PubMed](https://pubmed.ncbi.nlm.nih.gov/25105133/)の抄録、PMC・出版社の検索公開本文で推進回数・頻度の推定と誤差を照合。接触なしの周期推定と接触角計測を区別 |
+| `wheelchair kinematics inertial sensors angular velocity validation van der Slikke 2015 camber`、`"Real-Life Wheelchair Mobility Metrics from IMUs" "validation" "2023"` | [L63](papers/L63-de-vries-2023.md)を追加採用。出版社・PMCの抄録と検索公開本文§2.4.1–2.4.2・結論を確認。直接HTMLの取得が安定しないため、全文精読として扱わない。2015年の3 IMU構成の研究等は関連候補にとどめ、新規の詳細要約へ数値を転記しない |
+| [HTC公式入力資料](https://developer.vive.com/resources/openxr/unity/tutorials/tracker-overview/vivexrtracker/)のGolden Sample・Binding | `devicePosition`、`deviceRotation`、`isTracked`、`trackingState`とAndroidの5台対応を確認。候補に必要な速度や左右差は、これらから計算する設計案として区別 |
+
+比較は[FB情報の候補](topics/feedback-design-alternatives.md)に集約。L63追加後は63件の研究等＋9件の公式資料。L63は抄録・公開本文抜粋で、本文重点確認件数は増やさない。既存の研究条件、FBの正式仕様、アプリは今回の比較では変更していない。
+
+## 2026-10-21：左右速度・合図採時・聴取負担
+
+GrefのTable 1を再確認し左右の和と独立提示を区別。Dyer2017（DOIから原著Methods、左右定位）、Bass2024（PMC MethodsのWheelchair performance tests、3秒合図後の手動採時）、Dubus2010（公式プロシーディングと著者公開の§4.3–4.4、純音と使用感）を追跡。L64–L66を関連節の根拠として採用し、車いす初心者の左右連続FB・8の字採時の妥当性を直接検証していないことを記録。公式PDFを取得できなかった文献の閲覧範囲を全文精読に格上げしない。

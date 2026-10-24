@@ -13,7 +13,7 @@ namespace WheelchairSonification.Runtime
     {
         public static string CreateResearchBundle(string sessionsRoot, string visitsRoot, string outputDirectory)
         {
-            var roots = new[] { (path: sessionsRoot, name: "ResearchSessions"), (path: visitsRoot, name: "ResearchVisits") };
+            var roots = new[] { (path: sessionsRoot, name: File.Exists(Path.Combine(sessionsRoot, "session.json")) ? "ResearchSessions/" + Path.GetFileName(sessionsRoot) : "ResearchSessions"), (path: visitsRoot, name: "ResearchVisits") };
             if (!roots.Any(r => Directory.Exists(r.path) && Directory.GetFiles(r.path, "*", SearchOption.AllDirectories).Length > 0))
                 throw new InvalidOperationException("取り出せる記録がありません。");
             Directory.CreateDirectory(outputDirectory);
@@ -53,6 +53,12 @@ namespace WheelchairSonification.Runtime
                 File.Move(temporary, final); return final;
             }
             catch { if (File.Exists(temporary)) File.Delete(temporary); throw; }
+        }
+
+        public static string CreateTrialArchive(string trialDirectory, string outputDirectory)
+        {
+            if (!File.Exists(Path.Combine(trialDirectory, "session.json"))) throw new InvalidOperationException("試行記録がありません。");
+            return CreateResearchBundle(trialDirectory, Path.Combine(outputDirectory, "nonexistent-visits"), outputDirectory);
         }
 
         public static string CreateArchive(string root, string outputDirectory, string activeDirectory = null)

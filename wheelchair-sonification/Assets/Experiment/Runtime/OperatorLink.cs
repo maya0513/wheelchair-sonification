@@ -18,8 +18,8 @@ namespace WheelchairSonification.Runtime
         public string EndpointOverride { get; set; }
         private string deviceId, token, endpoint;
         private bool active, uploading;
-        [Serializable] private sealed class Hello { public string deviceId, codeHash; }
-        [Serializable] private sealed class Reply { public string pairToken; public bool operatorConnected; public double operatorLeaseSeconds; public OperatorCommand command; }
+        [Serializable] private sealed class Hello { public int schema = 2; public string deviceId, codeHash; }
+        [Serializable] private sealed class Reply { public int schema; public string pairToken; public bool operatorConnected; public double operatorLeaseSeconds; public OperatorCommand command; }
         [Serializable] private sealed class Exchange { public OperatorSnapshot state; public OperatorResult result; }
         [Serializable] private sealed class UploadReply { public bool saved; public string sha256; }
         public void Begin()
@@ -38,6 +38,7 @@ namespace WheelchairSonification.Runtime
                 string next = EndpointOverride ?? AndroidLanGateway.Endpoint();
                 if (next != endpoint) { endpoint = next; token = null; }
                 if (endpoint == null) { Status = "PCのホットスポットへ接続してください。"; yield return new WaitForSecondsRealtime(.5f); continue; }
+                bool reportedStopped = Paired && !Host.Research.Active;
                 string body = Paired ? JsonUtility.ToJson(new Exchange { state = Host.Snapshot(), result = lastResult }) :
                     JsonUtility.ToJson(new Hello { deviceId = deviceId, codeHash = Hash(deviceId + ":" + PairingCode) });
                 using (var request = Json(endpoint + (Paired ? "/device/exchange" : "/device/hello"), body))
@@ -52,6 +53,7 @@ namespace WheelchairSonification.Runtime
                         catch (Exception e) { Status = "PC応答の形式を確認できません：" + e.Message; }
                         if (reply != null)
                         {
+                            if (reply.schema != 2) { Status = "通信形式が異なります。対応するAPKとコンソールを使ってください。"; Host.Suspend("operator_protocol_mismatch"); active = false; yield break; }
                             if (!string.IsNullOrEmpty(reply.pairToken)) token = reply.pairToken;
                             Host.ObserveOperator(reply.operatorConnected, Math.Max(0, reply.operatorLeaseSeconds - (Time.realtimeSinceStartupAsDouble - requestStart)));
                             if (reply.command != null && !string.IsNullOrEmpty(reply.command.id)) lastResult = Host.Execute(reply.command);
@@ -64,7 +66,7 @@ namespace WheelchairSonification.Runtime
                         if (request.responseCode == 401) token = null;
                     }
                 }
-                if (Host.ExportPath != null && !uploading && Paired && !Host.Research.Active) StartCoroutine(Upload(Host.ExportPath));
+                if (Host.ExportPath != null && !uploading && Paired && reportedStopped && !Host.Research.Active) StartCoroutine(Upload(Host.ExportPath));
                 yield return new WaitForSecondsRealtime(.5f);
             }
         }
@@ -84,14 +86,14 @@ namespace WheelchairSonification.Runtime
                 if (request.result == UnityWebRequest.Result.Success)
                 {
                     var result = JsonUtility.FromJson<UploadReply>(request.downloadHandler.text);
-                    if (result.saved && result.sha256 == digest) { Host.ExportTransferred(); Status = "PCへ回収・チェックサム照合済み。元記録は保持。"; }
+                    if (result.saved && result.sha256 == digest) { Host.TransferFinished(true, "sha256_verified"); Status = "PCへ回収・チェックサム照合済み。元記録は保持。"; }
                     else Status = "回収の照合に失敗。元記録を保持しています。";
                 }
                 else { Status = "PCへの回収失敗。USBでの取り出しも利用できます。"; }
             }
             uploading = false;
             // Failed transfers require the operator to request another export, never an endless automatic retry.
-            if (Host.ExportPath == path) Host.MarkExportFailed(Status);
+            if (Host.ExportPath == path) Host.TransferFinished(false, Status);
         }
         private static UnityWebRequest Json(string url, string body)
         {
@@ -100,7 +102,7 @@ namespace WheelchairSonification.Runtime
         }
         private static string Hash(string text) { using var sha = SHA256.Create(); return Hex(sha.ComputeHash(Encoding.UTF8.GetBytes(text))); }
         private static string Hex(byte[] bytes) => BitConverter.ToString(bytes).Replace("-", "").ToLowerInvariant();
-        private void OnDisable() { active = false; StopAllCoroutines(); if (Host != null) Host.Disconnect(); }
+        private void OnDisable() { active = false; StopAllCoroutines(); if (Host != null) Host.Suspend("operator_link_disabled"); }
     }
 
     public static class AndroidLanGateway

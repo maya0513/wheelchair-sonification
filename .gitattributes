@@ -1,0 +1,7 @@
+# Preserve source documents as binary files without line-ending conversion.
+*.pdf binary
+*.pptx binary
+
+# Unity writes a space after the colon for empty serialized fields.
+*.prefab whitespace=-blank-at-eol
+*.meta whitespace=-blank-at-eol

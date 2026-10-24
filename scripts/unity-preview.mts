@@ -13,7 +13,7 @@ export type PreviewManifest = { passed: boolean; physical_device_measured: boole
   shots: Shot[]; errors: string[]; source_dirty?: boolean; source_fingerprint?: string };
 const escape = (s: unknown) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 
-export function gallery(manifest: PreviewManifest) {
+export function gallery(manifest: PreviewManifest, audio?: any) {
   return '<!doctype html><html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>XR画面確認</title>' +
     '<style>body{font:18px/1.7 sans-serif;background:#eee;color:#111;margin:24px}main{max-width:1500px;margin:auto}h1{font-size:32px}code{overflow-wrap:anywhere}' +
     '.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:24px}article{background:white;padding:20px;border:1px solid #777}' +
@@ -23,7 +23,7 @@ export function gallery(manifest: PreviewManifest) {
     'レンズ越しの可読性、パススルー画質、実機速度・遅延を再現したものではありません。サムネイルを押すと元画像を開きます。</p>' +
     `<p>Unity ${escape(manifest.unity_version)} ／ Source <code>${escape(manifest.source_commit)}</code> ／ 未コミット変更 ${manifest.source_dirty ? 'あり' : 'なし'}</p>` +
     '<p><a href="contact-sheet.png">一覧PNG</a> ／ <a href="manifest.json">撮影条件・検査結果</a>　<button onclick="document.body.classList.toggle(\'hide-crops\')">切り出し画像を切替</button></p><div class="grid">' +
-    manifest.shots.map(shot => `<article><h2>${escape(shot.title)}</h2><p>仮の垂直視野角 ${shot.assumed_vertical_fov_degrees}° ／ ${shot.light_background ? '明' : '暗'}背景` +
+    (audio?.samples?.length ? '<h2>共通音生成処理の音見本</h2><p>左右を確認できる環境で小音量から試聴してください。実機の聴取確認は未実施です。</p>' + audio.samples.map((s:any) => `<p>${escape(s.title)} (${s.seconds}秒) <audio controls preload=none src="${escape(s.file)}"></audio> <a href="${escape(s.file)}">WAV</a></p>`).join('') : '') + manifest.shots.map(shot => `<article><h2>${escape(shot.title)}</h2><p>仮の垂直視野角 ${shot.assumed_vertical_fov_degrees}° ／ ${shot.light_background ? '明' : '暗'}背景` +
       (shot.intentional_world_panel_offscreen ? ' ／ 頭部回転で画面が視野を外れる状態を意図的に撮影' : '') + '</p>' +
       `<a href="${escape(shot.file)}" target="_blank"><img loading="lazy" src="${escape(shot.file)}" alt="${escape(shot.title)}"></a><div class="crops">` +
       (['title', 'button', 'gauge'] as const).map(kind => {
@@ -50,7 +50,7 @@ export function validatePreview(directory: string, commit?: string) {
 
 export function createPreviewArchive(directory: string, output: string) {
   validatePreview(directory);
-  const script = 'import pathlib,sys,zipfile\np=pathlib.Path(sys.argv[1])\nwith zipfile.ZipFile(sys.argv[2],"x",zipfile.ZIP_DEFLATED) as z:\n for f in sorted(p.iterdir()):\n  if f.is_file() and (f.suffix==".png" or f.name in ("index.html","manifest.json")):\n   z.write(f,f.name)\n';
+  const script = 'import pathlib,sys,zipfile\np=pathlib.Path(sys.argv[1])\nwith zipfile.ZipFile(sys.argv[2],"x",zipfile.ZIP_DEFLATED) as z:\n for f in sorted(p.iterdir()):\n  if f.is_file() and (f.suffix in (".png",".wav") or f.name in ("index.html","manifest.json","audio-manifest.json")):\n   z.write(f,f.name)\n';
   const r = spawnSync('python3', ['-c', script, directory, output], { encoding: 'utf8', shell: false });
   if (r.status !== 0) throw new Error('画面確認ZIPを作れませんでした: ' + r.stderr);
 }
@@ -109,7 +109,7 @@ export async function runPreview(root = repository, mode = 'capture', source?: s
       const manifest = validatePreview(staging, commit);
       manifest.source_dirty = dirty; manifest.source_fingerprint = fingerprint(root);
       writeFileSync(join(staging, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
-      writeFileSync(join(staging, 'index.html'), gallery(manifest));
+      writeFileSync(join(staging, 'index.html'), gallery(manifest, JSON.parse(readFileSync(join(staging, 'audio-manifest.json'), 'utf8'))));
       const output = join(root, '.local/ui-preview');
       rmSync(output + '.previous', { recursive: true, force: true });
       if (existsSync(output)) renameSync(output, output + '.previous');

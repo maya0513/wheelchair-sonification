@@ -25,7 +25,7 @@ Guo L; Kwarciak AM; Rodriguez R; Sarkar N; Richter WM. Rehabilitation research a
 
 ## 本研究への示唆
 
-センサー→校正→区間分割→数ストローク平均→目標表示の構成を参考にする。力・パワーを出すには力センサーが必要。
+この研究の対象・装置・提示情報と、本研究の左右速度FBを区別する。報告された接触・力・目標等の指標を、位置トラッカーで直接取得できるとはみなさない。現行の採用条件は[研究計画](../../docs/study-plan.md)、性能確認は[検証計画](../../docs/specifications/validation.md)へ集約する。
 
 ## 確認位置
 

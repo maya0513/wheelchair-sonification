@@ -23,7 +23,7 @@ Gramfort A; Luessi M; Larson E; Engemann DA; Strohmeier D; Brodbeck C; Goj R; Ja
 
 抄録中心。2013年の論文を現在のAPI仕様の根拠としない。ソース推定等は少数電極に適するとは限らない。
 
-## 本研究への示唆
+## 将来のEEG検討への示唆（今回は測定しない）
 
 CSV等の生データ→区間注釈→PSD→参加者集約という小さいオフライン解析に利用。現行APIはD06で確認。
 

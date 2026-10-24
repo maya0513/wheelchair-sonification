@@ -1,6 +1,6 @@
 # 文献・公式資料一覧
 
-**61件の研究・方法論・ガイドライン＋9件の公式資料＝70件**。書誌のみ2件を含む。本文重点確認29件、関連節・抄録・公開抜粋を区別し、全70件を全文精読したとはしない。L20は公式ガイドラインの推進関連の推奨を確認した。
+**66件の研究・方法論・ガイドライン＋9件の公式資料**。本文重点確認・関連節・抄録・書誌のみを区別する。全件の全文精読を意味しない。
 
 本文は公開PDF・XML・HTML等。D09は公式Wordの関連節。閲覧範囲の詳細は各ノートを参照。
 
@@ -67,6 +67,11 @@
 | [L59](papers/L59-rice-2010.md) | 2010 | Hand rim wheelchair propulsion training using biomechanical real-time visual feedback based on motor learning theory principles | 課題・研究方法・FB設計 | 本文重点確認 | 未保存 |
 | [L60](papers/L60-haga-1996.md) | 1996 | 日本語版NASA-TLXによるメンタルワークロード測定：各種室内実験課題の困難度に対するワークロード得点の感度 | 課題・研究方法・FB設計 | 本文関連節 | [PDF](pdfs/L60.pdf) |
 | [L61](papers/L61-manrique-2007.md) | 2007 | Using an Obstacle Sensing System in Power Wheelchair Training of Children: A Pilot Study | 課題・研究方法・FB設計 | 抄録・公開本文抜粋 | 未保存 |
+| [L62](papers/L62-karner-2025.md) | 2025 | Validity of IMUs in Comparison to a Marker-Based-Motion Capture System for Spatio-Temporal Parameters During Wheelchair Propulsion | 計測・妥当性 | 本文重点確認 | [PDF](pdfs/L62.pdf) |
+| [L63](papers/L63-de-vries-2023.md) | 2023 | Real-Life Wheelchair Mobility Metrics from IMUs | 計測・移動指標 | 抄録・検索公開本文抜粋 | 未保存 |
+| [L64](papers/L64-dyer-2017.md) | 2017 | Dyer et al. Advantages of melodic over rhythmic movement sonification | 左右の聴覚提示 | 本文関連節 | [PDF](pdfs/L64.pdf) |
+| [L65](papers/L65-bass-2024.md) | 2024 | Bass et al. Upper limb muscle strength and wheelchair-related abilities | 開始合図・手動採時 | 本文関連節 | 公開HTML |
+| [L66](papers/L66-dubus-bresin-2010.md) | 2010 | Dubus & Bresin. Sonification of sculler movements | 音の実装・快適性 | 本文関連節 | 未保存 |
 
 ## 公式資料
 

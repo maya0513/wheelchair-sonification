@@ -52,7 +52,7 @@ namespace WheelchairSonification.XR
             Pose(cameraObject, "<XRHMD>/centerEyePosition", "<XRHMD>/centerEyeRotation", "<XRHMD>/trackingState");
 
             new GameObject("XR Interaction Manager", typeof(XRInteractionManager)).transform.SetParent(parent, false);
-            var events = parent.GetComponentInChildren<EventSystem>();
+            var events = UnityEngine.Object.FindAnyObjectByType<EventSystem>();
             if (events == null) throw new InvalidOperationException("EventSystemがありません。");
             foreach (var module in events.GetComponents<BaseInputModule>())
             {

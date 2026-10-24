@@ -11,7 +11,7 @@ test('operator distribution contains only the runtime and offline frontend, neve
  const file=join(output,'operator.zip');packageConsole(resolve('.'),file,'a'.repeat(40),'0.3.0');
  const inspect=spawnSync('python3',['-c','import sys,zipfile,json\nwith zipfile.ZipFile(sys.argv[1]) as z:\n print(json.dumps({"files":z.namelist(),"start":z.read("start.sh").decode(),"info":json.loads(z.read("console-build-info.json"))}))',file],{encoding:'utf8'});
  assert.equal(inspect.status,0,inspect.stderr);const result=JSON.parse(inspect.stdout);
- assert.equal(result.files.length,8);assert.equal(result.info.sourceCommit,'a'.repeat(40));assert.match(result.start,/node scripts\/experiment-console.mts/);
+ assert.equal(result.files.length,9);assert.equal(result.info.sourceCommit,'a'.repeat(40));assert.match(result.start,/node scripts\/experiment-console.mts/);
  assert.ok(result.files.every((p:string)=>!p.includes('.local')&&!p.endsWith('.keystore')&&!p.includes('ResearchSessions')&&!p.endsWith('.test.mts')));
 });
 test('combined image archive includes both actual viewers and excludes fixtures and private subdirectories',t=>{

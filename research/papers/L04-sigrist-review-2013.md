@@ -25,7 +25,7 @@ Sigrist R; Rauter G; Riener R; Wolf P. Psychonomic bulletin & review. 2013.
 
 ## 本研究への示唆
 
-聴覚と視覚の実験条件で、変数・目標・頻度・提示時点・練習量を揃える。
+この研究の対象・装置・提示情報と、本研究の左右速度FBを区別する。報告された接触・力・目標等の指標を、位置トラッカーで直接取得できるとはみなさない。現行の採用条件は[研究計画](../../docs/study-plan.md)、性能確認は[検証計画](../../docs/specifications/validation.md)へ集約する。
 
 ## 確認位置
 

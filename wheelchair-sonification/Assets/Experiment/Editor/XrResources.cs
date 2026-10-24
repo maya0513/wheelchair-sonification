@@ -35,6 +35,7 @@ namespace WheelchairSonification.Editor
                 EditorUtility.SetDirty(font);
             }
             AssetDatabase.SaveAssets();
+            ParticipantUiAssets.Prepare();
             FocusVisionProject.Configure();
             Debug.Log("XR resources prepared.");
         }

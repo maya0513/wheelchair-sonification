@@ -23,7 +23,7 @@ Debener S; Minow F; Emkes R; Gandras K; de Vos M. Psychophysiology. 2012.
 
 抄録確認。専用キャップとの組合せであり、前額部の小型1ch機器とは異なる。
 
-## 本研究への示唆
+## 将来のEEG検討への示唆（今回は測定しない）
 
 運動しながらのEEGが可能な場合はあるが、機器と方法への依存を明記。
 
