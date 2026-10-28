@@ -30,7 +30,7 @@ just unity-build-release
 版を指定する例：
 
 ```sh
-UNITY_BUILD_VERSION=0.4.0 UNITY_ANDROID_VERSION_CODE=4 just unity-build-apk
+UNITY_BUILD_VERSION=0.5.0 UNITY_ANDROID_VERSION_CODE=5 just unity-build-apk
 ```
 
 出力は`.local/builds/android-release/`。署名、ARM64、IL2CPP、非デバッグ、XR Manifest、ローカルHTTP・権限、SDK・ライセンスを検査する。前のAPKと証明書が違えば更新互換性を認めない。実機動作は別途確認する。
