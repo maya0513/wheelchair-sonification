@@ -1,48 +1,101 @@
 {
   "physicalDeviceMeasured": false,
   "rendering": "Unity Editor and Chrome with synthetic input; original PNG bytes preserved",
-  "note": "Selected original test captures. Workspace state at capture is retained; Release previews run sequentially from committed source.",
+  "note": "Selected original test captures; source hashes record the actual UI. Release previews are regenerated from the release commit.",
   "images": [
     {
       "file": "hmd-view.png",
       "sourceImage": "03-bilateral.png",
-      "sourceCommit": "e8352400e612a658669d94821665e9daf1dcb00d",
-      "sourceDirtyAtManifestWrite": false,
-      "sha256": "72e7d9b57e18bfe68afe74aed791ced4ace03c71e1ba4a6a9c728204dbb2af66"
+      "sourceCommit": "10f2cfb1259436371a8813fb2e766afb0c6fce40",
+      "sourceDirtyAtManifestWrite": true,
+      "sha256": "4c16607133da14838e96823dc579428daa917b1f86aebf4b06c82aa779ace291"
     },
     {
       "file": "hmd-gauge.png",
       "sourceImage": "03-bilateral-gauge.png",
-      "sourceCommit": "e8352400e612a658669d94821665e9daf1dcb00d",
-      "sourceDirtyAtManifestWrite": false,
-      "sha256": "6d6fd572c6159783602fe869873d9fb906d9e346e55154be2acbb0cfb9a087b4"
+      "sourceCommit": "10f2cfb1259436371a8813fb2e766afb0c6fce40",
+      "sourceDirtyAtManifestWrite": true,
+      "sha256": "e4b8cea9082622509e41ea981cda446ef9e7317f9df5bfe8495adf434f01b87c"
+    },
+    {
+      "file": "hmd-preparation.png",
+      "sourceImage": "23-prep-home.png",
+      "sourceCommit": "10f2cfb1259436371a8813fb2e766afb0c6fce40",
+      "sourceDirtyAtManifestWrite": true,
+      "sha256": "67e369974e622f1c91103841263273cf9c5d0ee89d5b6c33f6e156e319340576"
     },
     {
       "file": "pc-timing.png",
-      "sourceImage": "17-timing-running.png",
-      "sourceCommit": "e8352400e612a658669d94821665e9daf1dcb00d",
+      "sourceImage": "18-laptop.png",
+      "sourceCommit": "10f2cfb1259436371a8813fb2e766afb0c6fce40",
       "sourceDirtyAtManifestWrite": true,
-      "sha256": "74966b3623af978a388b2eb41a0eaecd56e8d9d816ab2fa2f2e36f4fe54ad3b6"
+      "sha256": "ae55546292d71616560fe4ce618daa3d306cf855f8d7b6bc1da165d503a7142e"
     },
     {
       "file": "pc-settings.png",
-      "sourceImage": "07-settings.png",
-      "sourceCommit": "e8352400e612a658669d94821665e9daf1dcb00d",
+      "sourceImage": "19-preparation-home.png",
+      "sourceCommit": "10f2cfb1259436371a8813fb2e766afb0c6fce40",
       "sourceDirtyAtManifestWrite": true,
-      "sha256": "6551d111026c7de3cf2dd2d259049d97cfcd2d75b70d7162a797c514a7bf49fe"
+      "sha256": "e6c733787bc9db117f45645da51a352e9774d0f735ebb342feb94ef031773ef2"
     },
     {
       "file": "pc-records.png",
       "sourceImage": "10-records.png",
-      "sourceCommit": "e8352400e612a658669d94821665e9daf1dcb00d",
+      "sourceCommit": "10f2cfb1259436371a8813fb2e766afb0c6fce40",
       "sourceDirtyAtManifestWrite": true,
-      "sha256": "ca198b2fab47c799fc545a611150e28d43f5e99f37ccea698abf1e7bb4010200"
+      "sha256": "0d74eb75af923ab31d00ebee385d0924a1efe39f3ae802acc1c5fbb8d11a7dd2"
     }
   ],
   "operatorUiSourceSha256": {
-    "scripts/console/index.html": "58b619fa000e2d0e6ca3ce01b21600f2147eb1de404978b8882f0a51ad964e90",
-    "scripts/console/console.js": "05bee8baad44c0f565166c739d54498a78f0c69753b0c4eea76f1a192b2709c4",
-    "scripts/console/console.css": "8c86d1d84aa36c9da63b6a3a696b06fd6cab27bed33598797daad6fbadd96353",
-    "scripts/console/timing.mjs": "dfa61c2f59f2897dd506a218a9a026b6835d2188a4f319be41c8f66b382bfa2d"
+    "scripts/console/index.html": "7eed905140a14626b068bbf51987c57ddf31af04c9426ecc634efa6cfe620b90",
+    "scripts/console/console.js": "abcbe1ad5a38490596f9df4879e26cc94896ddf2a74b6330cce6c96167d72249",
+    "scripts/console/console.css": "f7ac3fdc90d0425006b5fe61886378739f21da4806339333c005d0999c3d1991",
+    "scripts/console/timing.mjs": "ef8125183ed410f40349c09398f9371540df596f628db4dae0444b09520a203e",
+    "scripts/console/preparation-fixtures.json": "981b596d4baf1b8fa4e2243c621fa8cc0f04ddf2ae5cba0d3c62093966ee5398"
+  },
+  "headsetSourceSha256": {
+    "wheelchair-sonification/Assets/Experiment/Core/ExperimentEngine.cs": "3563c2b21d871fc8241d0e566a76c6759ad7cbd1589905d8f5cfacf78a745509",
+    "wheelchair-sonification/Assets/Experiment/Core/ExperimentModel.cs": "1691eacdb19bcbcb90237326f2674752bec36b4243f6492d5497b930ccd087d3",
+    "wheelchair-sonification/Assets/Experiment/Core/FeedbackProtocol.cs": "64f80b1d81a2f4ddf2da283930bcd551aaebfbe90a42e47f9a290f5dedc5fb6c",
+    "wheelchair-sonification/Assets/Experiment/Core/VisitProtocol.cs": "623c339deea6621c68900df3f9fe3d4d432210f1b16543b6bc0edf439217060f",
+    "wheelchair-sonification/Assets/Experiment/Editor/ConsoleAndroidManifest.cs": "de253cd05947f158135d171e9214e4af2de7765918d33d20a761cc3e6080db3a",
+    "wheelchair-sonification/Assets/Experiment/Editor/DemoBuildTools.cs": "064b48e41fb51ae9fcc9a84fa62419955ebf4661387f785ea4341fcc595b6e15",
+    "wheelchair-sonification/Assets/Experiment/Editor/FocusVisionProject.cs": "a3918f9535ed3399cb3a9d3b1c9fe11647e1a26a63019a38f79eff69fed27833",
+    "wheelchair-sonification/Assets/Experiment/Editor/ParticipantUiAssets.cs": "be75cfd5bb12b2310f68985289dfadb804b16feec1fa23889c563a08749abc92",
+    "wheelchair-sonification/Assets/Experiment/Editor/ReleaseBuildTools.cs": "00100ddb299fad1d1e6d752ba3194ce0a2eab964bccd05b99773a5369627f314",
+    "wheelchair-sonification/Assets/Experiment/Editor/XrPreviewTools.cs": "37bf6efb9bc3c9e606eee852e0df1962a28e85716cbf1c05decba305469bf344",
+    "wheelchair-sonification/Assets/Experiment/Editor/XrResources.cs": "ec9362be2d5b6a97ad3eb4839630038ba0f4c83a11c7c5978bc83283812d551f",
+    "wheelchair-sonification/Assets/Experiment/Runtime/AndroidDownloadExport.cs": "9b9510d23509f72bd8410c113123163455a2c48932dfcb1a7888391cf0f96053",
+    "wheelchair-sonification/Assets/Experiment/Runtime/CalibrationWizard.cs": "76279592c55facb4e7bb47e436e5df9336a20d7cbc1797a5b401e2d541d2f93e",
+    "wheelchair-sonification/Assets/Experiment/Runtime/DemoController.cs": "b61cd6158340a19eb5574a9df2ba7a77bb49803bc60f724002198a7b70daaf7d",
+    "wheelchair-sonification/Assets/Experiment/Runtime/DeviceCheckLog.cs": "3acba7868cf14fafa646ad9f869920d297abb1f5e693988193aff8b30ec7969e",
+    "wheelchair-sonification/Assets/Experiment/Runtime/FileStorage.cs": "534c2edaba90e53e840d743c9fa8630752ceb7d9926fce493561e27c756f453a",
+    "wheelchair-sonification/Assets/Experiment/Runtime/IFeedbackGauge.cs": "6cc51aa2043eb68e05743553a4db03cb432b39c16e533998d994f772dfcf549d",
+    "wheelchair-sonification/Assets/Experiment/Runtime/OperatorLink.cs": "3e2915ed8fc1b6b965b36ad0e01d0c3488b9562aa353e552c6a8524a526f69a1",
+    "wheelchair-sonification/Assets/Experiment/Runtime/PoseReplay.cs": "aa9a0df9130362a67bd9d330bb42a12e21ea65aca534c8057d3450f4ceb51e6a",
+    "wheelchair-sonification/Assets/Experiment/Runtime/PreparationInference.cs": "d3b0d3b368038ec9b377421d9391c2b5dc559d383602c770568e304a3be1d7e5",
+    "wheelchair-sonification/Assets/Experiment/Runtime/PreparationWorkflow.cs": "4e0ea5bca54df6240c789728943d0528dea679811c1a01e3e1f0a5e51eacb636",
+    "wheelchair-sonification/Assets/Experiment/Runtime/ResearchController.cs": "e5a5aa763e49d81a17ba1c158c8edf03fa22af688bdb727e25983ae2573ee9b9",
+    "wheelchair-sonification/Assets/Experiment/Runtime/ResearchSessionLog.cs": "f17de2a96cb48cde06040459b17e7c65884f5735b1565788e404f6f0e6732a57",
+    "wheelchair-sonification/Assets/Experiment/Runtime/ResearchVisitHost.cs": "d491d97b8c6fc25b346b02a994b87d045f67ce754d60238797b169c92fd97cd9",
+    "wheelchair-sonification/Assets/Experiment/Runtime/SessionExporter.cs": "ee2165000ac4a571656305204e109cfb255426dfd7e7b2934e54021b9254e3e1",
+    "wheelchair-sonification/Assets/Experiment/Runtime/SyntheticPoseSource.cs": "80e155d6dd6040f9284c85b204f97b37d778ebd177427c1b81212e949404a87e",
+    "wheelchair-sonification/Assets/Experiment/Runtime/TrackingModel.cs": "fb1833713dfb19eeb167685dbaf67257bbff3250c3e4dfada56ce589eba5f3bf",
+    "wheelchair-sonification/Assets/Experiment/Runtime/UnityFeedbackOutput.cs": "e5720ec5b3e66a035baa337fdcb8191e230e9b206d217cef8fe72eb6c39996cd",
+    "wheelchair-sonification/Assets/Experiment/Runtime/WheelSpeedEstimator.cs": "6719f5bf65786394bfaecd8f55ea1255bba5cae74e7f03321930a7e7e1e4a205",
+    "wheelchair-sonification/Assets/Experiment/Tests/EditMode/PreparationTests.cs": "8cae7c2406abd3ac1daddfe4b22bf24080ac1e3f67f7ec7bbee7f92f993ee9bf",
+    "wheelchair-sonification/Assets/Experiment/Tests/EditMode/SpeedFeedbackTests.cs": "c5fab39f62dc2c0ac82c89990e00621a885d85253cc15578fea6898ee598613d",
+    "wheelchair-sonification/Assets/Experiment/Tests/EditMode/WheelMeasurementTests.cs": "c010fb20f9b6d497e6342e989eb7afa5a212bab7521378e2b848013877f8108b",
+    "wheelchair-sonification/Assets/Experiment/Tests/PlayMode/OperatorIntegrationTests.cs": "42611d704a1d356fc659dba9488a2cbb7729b5bb3f2cb7d42ee5469b8b108690",
+    "wheelchair-sonification/Assets/Experiment/Tests/PlayMode/ParticipantUiTests.cs": "817fd799421be3f02d3750572b6f73a30e37872aa832d3ff5687194bc2085688",
+    "wheelchair-sonification/Assets/Experiment/XR/AudioSampleExporter.cs": "3fc6f4d8019b3f8f3a976317745890123ed4bd1c30610f5b3091dfe13313a312",
+    "wheelchair-sonification/Assets/Experiment/XR/EditorXrSimulator.cs": "b4268e63f043d3534c6bf26daacf373fa7226ce0e45b69e4cdf539be5d5440ac",
+    "wheelchair-sonification/Assets/Experiment/XR/FocusVisionDemo.cs": "ac9363538b6031d1c279d77dce93410810813ceb8384996cd3a5b3efad0f641f",
+    "wheelchair-sonification/Assets/Experiment/XR/FocusVisionRig.cs": "2bafa19159499dc11831484d54adb27a9ce44965c8e42fde195d3e6de19fea7b",
+    "wheelchair-sonification/Assets/Experiment/XR/PreparationView.cs": "55c18f8a4788eaa4eafe2072288681ecd66f82493262efd9bab912fd1851cc33",
+    "wheelchair-sonification/Assets/Experiment/XR/UltimatePoseSource.cs": "c17f7c609a8aefb1fa3b246fa5d7992879d1c96b4cad2d9d91adf52131fc03ec",
+    "wheelchair-sonification/Assets/Experiment/XR/XrGauge.cs": "f9ab61d2384e208034a7df8ddf895422170075ead976665819a6992eaa9ee35e",
+    "wheelchair-sonification/Assets/Experiment/XR/XrPreviewRunner.cs": "687e608e30a2de6beddaea600c0fd9bcd0f2c1c7db496ea8394fce391b93c038",
+    "wheelchair-sonification/Assets/Experiment/XR/XrUi.cs": "482a272a8c64df9d8b9e757ab4452576f8349fbfc08fc6a47a51e0f9d9d993b8"
   }
 }

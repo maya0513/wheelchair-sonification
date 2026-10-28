@@ -1,14 +1,14 @@
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync, rmSync, renameSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createConsoleServer } from './experiment-console.mts';
-import { demoSnapshot, startDemoDevice, demoCode } from './console-demo.mts';
+import { demoSnapshot, startDemoDevice, demoCode, preparationFixture } from './console-demo.mts';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export async function captureConsole(output=join(root,'.local/console-preview')) {
-  mkdirSync(output,{recursive:true});
+  const finalOutput=output;mkdirSync(dirname(finalOutput),{recursive:true});output=mkdtempSync(join(dirname(finalOutput),'.console-preview-'));
   const fixtureRecords=join(output,'fixture-recovered-records');
   rmSync(fixtureRecords,{recursive:true,force:true}); // Do not let records from a previous capture satisfy today's checks.
   const app=createConsoleServer({demo:true,port:18765,dataDirectory:fixtureRecords});await app.listen();
@@ -42,7 +42,7 @@ export async function captureConsole(output=join(root,'.local/console-preview'))
       if(issues.length)throw new Error(name+': 文字が領域から溢れています: '+issues.join(','));
       const image=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});writeFileSync(join(output,name+'.png'),Buffer.from(image.data,'base64'));
       const crops:any={};
-      for(const [kind,selector] of [['title','h1'],['button',page==='setup'?'#capture':page==='records'?'#export':page==='answers'?'#save-questionnaire':'#record-start']] as const){
+      for(const [kind,selector] of [['title','h1'],['button',page==='setup'?'#guide-actions button':page==='records'?'#export':page==='answers'?'#save-questionnaire':'#record-start']] as const){
         const rect=await evaluate(`(()=>{const e=document.querySelector('#${page} ${selector}');if(!e||!e.getClientRects().length)return null;const r=e.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,scale:1};})()`);
         if(rect&&rect.width>0&&rect.y>=0&&rect.y+rect.height<=height){const crop=await call('Page.captureScreenshot',{format:'png',clip:rect,captureBeyondViewport:false});crops[kind]=name+'-'+kind+'.png';writeFileSync(join(output,crops[kind]),Buffer.from(crop.data,'base64'));}
       }
@@ -80,6 +80,20 @@ export async function captureConsole(output=join(root,'.local/console-preview'))
     await capture('12-interrupted','通信・中断後の手動判断','progress',{...ready,status:'未完了',error:'operator_connection_lost'});
     await capture('13-export-failure','回収失敗・元データを保持','records',{...ready,exportStatus:'転送失敗。元データは保持。再回収できます。'});
     await capture('14-export-success','試行別コピー・照合済み','records',{...ready,exportStatus:'PCへコピー・SHA-256照合済み。元記録を保持。'});
+    const laptop={...ready,running:true,status:'記録中',trialId:'laptop-live-trial'};
+    await capture('18-laptop','ノートPC・主操作が画面内','progress',laptop,1366,768);
+    shots.pop(); // The final image below is the evidence for this viewport, after the cue starts.
+    await evaluate(`document.getElementById('cue').click()`);await sleep(3300);
+    await capture('18-laptop','ノートPC・計時中の主操作が画面内','progress',laptop,1366,768);
+    const offscreen=await evaluate(`['cue','time-stop','record-end','abort'].filter(id=>{const e=document.getElementById(id);if(!e.getClientRects().length)return false;const r=e.getBoundingClientRect();return r.bottom>innerHeight||r.left<0||r.right>innerWidth;})`);
+    if(offscreen.length)throw new Error('ノートPCで主操作が見切れます: '+offscreen.join(','));
+    await evaluate(`document.getElementById('time-stop').click()`);
+    for(const [index,stage] of ['Home','Forward','Candidate','Manual','Paused','Result'].entries())await capture((19+index)+'-preparation-'+stage.toLowerCase(),'準備・'+stage,'setup',{...ready,preparation:preparationFixture(stage)},1366,900);
+    app.options.demo=false;const orphan={...ready,running:true,trialId:'reloaded-unowned-trial'};demo.setSnapshot(orphan);
+    await call('Page.reload');await sleep(1400);
+    await capture('25-reloaded','再読込後の時計を誤って再開しない','progress',orphan,1366,768);
+    if(!await evaluate(`document.getElementById('cue').disabled&&document.getElementById('record-end').disabled&&document.getElementById('next-action').textContent.includes('引き継げません')`))throw new Error('再読込後の時計が継続できるように見えます。');
+    app.options.demo=true;
     await evaluate(`document.getElementById('scale-0').value='95';document.getElementById('question-notes').value='previous participant fixture'`);
     demo.setSnapshot({...ready,visitId:'second-fixture-visit',participantId:'P002'});await sleep(1100);
     if(!await evaluate(`document.getElementById('scale-0').value===''&&document.getElementById('question-notes').value===''`))throw new Error('次の参加者へ回答が残っています。');
@@ -93,7 +107,8 @@ export async function captureConsole(output=join(root,'.local/console-preview'))
     await call('Emulation.setDeviceMetricsOverride',{width:1440,height:2200,deviceScaleFactor:1,mobile:false});await sleep(300);
     const overview=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});writeFileSync(join(output,'overview.png'),Buffer.from(overview.data,'base64'));
     writeFileSync(join(output,'index.html'),'<!doctype html><html lang="ja"><meta charset="utf-8"><title>実施者画面の確認</title><style>body{font-family:system-ui;background:#eee;margin:30px}article{background:white;padding:20px;margin:20px 0}img{max-width:100%;border:1px solid #aaa}a{color:#1756b8}</style><h1>実施者画面の実ブラウザー画像</h1><p>合成データを使用。実機・現地の検証ではありません。Source: '+commit+'</p><p><a href="overview.png">画面一覧PNG</a></p>'+shots.map(s=>'<article><h2>'+s.title+'</h2><p>'+s.width+'×'+s.height+'</p><a href="'+s.file+'"><img src="'+s.file+'"></a>'+Object.values(s.crops).map(f=>'<p><a href="'+f+'"><img src="'+f+'"></a></p>').join('')+'</article>').join('')+'</html>');
-    console.log('実施者画面を撮影しました: '+join(output,'index.html'));return output;
+    rmSync(finalOutput+'.previous',{recursive:true,force:true});if(existsSync(finalOutput))renameSync(finalOutput,finalOutput+'.previous');renameSync(output,finalOutput);
+    console.log('実施者画面を撮影しました: '+join(finalOutput,'index.html'));return finalOutput;
   } finally {demo();ws?.close();chrome.kill('SIGTERM');await app.close();await sleep(300);rmSync(profile,{recursive:true,force:true});}
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url))captureConsole().catch(error=>{console.error(error);process.exitCode=1;});

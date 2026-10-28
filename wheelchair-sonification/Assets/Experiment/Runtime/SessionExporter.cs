@@ -11,9 +11,10 @@ namespace WheelchairSonification.Runtime
 
     public static class SessionExporter
     {
-        public static string CreateResearchBundle(string sessionsRoot, string visitsRoot, string outputDirectory)
+        public static string CreateResearchBundle(string sessionsRoot, string visitsRoot, string outputDirectory, string checksRoot = null)
         {
-            var roots = new[] { (path: sessionsRoot, name: File.Exists(Path.Combine(sessionsRoot, "session.json")) ? "ResearchSessions/" + Path.GetFileName(sessionsRoot) : "ResearchSessions"), (path: visitsRoot, name: "ResearchVisits") };
+            var roots = new[] { (path: sessionsRoot, name: File.Exists(Path.Combine(sessionsRoot, "session.json")) ? "ResearchSessions/" + Path.GetFileName(sessionsRoot) : "ResearchSessions"), (path: visitsRoot, name: "ResearchVisits"),
+                (path:checksRoot,name:checksRoot!=null&&File.Exists(Path.Combine(checksRoot,"report.json"))?"DeviceChecks/"+Path.GetFileName(checksRoot):"DeviceChecks") }.Where(r=>r.path!=null).ToArray();
             if (!roots.Any(r => Directory.Exists(r.path) && Directory.GetFiles(r.path, "*", SearchOption.AllDirectories).Length > 0))
                 throw new InvalidOperationException("取り出せる記録がありません。");
             Directory.CreateDirectory(outputDirectory);
@@ -59,6 +60,12 @@ namespace WheelchairSonification.Runtime
         {
             if (!File.Exists(Path.Combine(trialDirectory, "session.json"))) throw new InvalidOperationException("試行記録がありません。");
             return CreateResearchBundle(trialDirectory, Path.Combine(outputDirectory, "nonexistent-visits"), outputDirectory);
+        }
+
+        public static string CreateCheckArchive(string checkDirectory,string outputDirectory)
+        {
+            if(!File.Exists(Path.Combine(checkDirectory,"report.json")))throw new InvalidOperationException("チェック記録がありません。");
+            return CreateResearchBundle(Path.Combine(outputDirectory,"no-sessions"),Path.Combine(outputDirectory,"no-visits"),outputDirectory,checkDirectory);
         }
 
         public static string CreateArchive(string root, string outputDirectory, string activeDirectory = null)

@@ -19,5 +19,19 @@ namespace WheelchairSonification.Tests
             Assert.That(gauge.transform.GetComponentsInChildren<UnityEngine.UI.Button>().Length,Is.Zero);
             UnityEngine.Object.Destroy(root);UnityEngine.Object.Destroy(camera.gameObject);yield return null;
         }
+        [UnityTest] public IEnumerator PreparationPanelIsWorldAnchoredAndCanBeRecentered()
+        {
+            var root=new GameObject("XR preparation fixture");var xr=root.AddComponent<FocusVisionDemo>();xr.EnableEditorPreview();yield return null;
+            xr.PreparationUi.ShowPreview(PreparationWorkflow.Preview("Home"));Canvas.ForceUpdateCanvases();
+            Assert.That(xr.PreparationUi.Panel.IsChildOf(xr.Rig.Camera.transform),Is.False);
+            var position=xr.PreparationUi.Panel.position;xr.Rig.Camera.transform.rotation=Quaternion.Euler(0,60,0);
+            Assert.That(xr.PreparationUi.Panel.position,Is.EqualTo(position));xr.PreparationUi.Recenter();
+            Assert.That(Vector3.Dot((xr.PreparationUi.Panel.position-xr.Rig.Camera.transform.position).normalized,xr.Rig.Camera.transform.forward),Is.GreaterThan(.98));
+            xr.Rig.Camera.transform.rotation=Quaternion.Euler(35,60,0);xr.PreparationUi.Recenter();
+            Assert.That(Vector3.Dot((xr.PreparationUi.Panel.position-xr.Rig.Camera.transform.position).normalized,xr.Rig.Camera.transform.forward),Is.GreaterThan(.98),"Looking down must still place the panel in front of the user's current view.");
+            foreach(var label in xr.PreparationUi.Panel.GetComponentsInChildren<TMPro.TMP_Text>()){label.ForceMeshUpdate();Assert.That(label.isTextOverflowing,Is.False,label.text);}
+            xr.PreparationUi.ShowPreview(PreparationWorkflow.Preview("Forward"));Assert.That(xr.PreparationUi.PanelVisible,Is.False);Assert.That(xr.PreparationUi.Footer.gameObject.activeSelf,Is.True);
+            UnityEngine.Object.Destroy(root);yield return null;
+        }
     }
 }

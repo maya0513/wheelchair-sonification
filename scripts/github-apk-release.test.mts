@@ -39,7 +39,7 @@ function fixture(t: { after: (fn: () => void) => void }, scenario = '') {
   };
   const output = join(root, 'output');
   const info = { gitCommit: commit, gitDirty: false, version: '0.2.0', versionCode: 2, targetDevice: 'VIVE Focus Vision',
-    operatorProtocol: 2, headsetUi: 'participant-only', androidTargetSdk: 36, xrLoader: 'OpenXR', inputMode: 'simulated-and-vive-ultimate-tracker', validation: { signatureVerified: true, xrManifestVerified: true } };
+    operatorProtocol: 3, headsetUi: 'guided-preparation-and-participant', androidTargetSdk: 36, xrLoader: 'OpenXR', inputMode: 'simulated-and-vive-ultimate-tracker', validation: { signatureVerified: true, xrManifestVerified: true } };
   const build = async (_: string, environment: NodeJS.ProcessEnv) => {
     built = true;
     assert.equal(environment.UNITY_BUILD_VERSION, '0.2.0');

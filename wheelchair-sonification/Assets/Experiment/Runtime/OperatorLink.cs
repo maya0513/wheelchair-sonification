@@ -18,7 +18,7 @@ namespace WheelchairSonification.Runtime
         public string EndpointOverride { get; set; }
         private string deviceId, token, endpoint;
         private bool active, uploading;
-        [Serializable] private sealed class Hello { public int schema = 2; public string deviceId, codeHash; }
+        [Serializable] private sealed class Hello { public int schema = 3; public string deviceId, codeHash; }
         [Serializable] private sealed class Reply { public int schema; public string pairToken; public bool operatorConnected; public double operatorLeaseSeconds; public OperatorCommand command; }
         [Serializable] private sealed class Exchange { public OperatorSnapshot state; public OperatorResult result; }
         [Serializable] private sealed class UploadReply { public bool saved; public string sha256; }
@@ -53,7 +53,7 @@ namespace WheelchairSonification.Runtime
                         catch (Exception e) { Status = "PC応答の形式を確認できません：" + e.Message; }
                         if (reply != null)
                         {
-                            if (reply.schema != 2) { Status = "通信形式が異なります。対応するAPKとコンソールを使ってください。"; Host.Suspend("operator_protocol_mismatch"); active = false; yield break; }
+                            if (reply.schema != 3) { Status = "通信形式が異なります。対応するAPKとコンソールを使ってください。"; if(Host.Research.Active)Host.Suspend("operator_protocol_mismatch"); active = false; yield break; }
                             if (!string.IsNullOrEmpty(reply.pairToken)) token = reply.pairToken;
                             Host.ObserveOperator(reply.operatorConnected, Math.Max(0, reply.operatorLeaseSeconds - (Time.realtimeSinceStartupAsDouble - requestStart)));
                             if (reply.command != null && !string.IsNullOrEmpty(reply.command.id)) lastResult = Host.Execute(reply.command);
@@ -62,7 +62,7 @@ namespace WheelchairSonification.Runtime
                     }
                     else
                     {
-                        Status = "PCとの通信を確認できません。";
+                        Status = request.responseCode==409?"PCとアプリの通信形式が異なります。同じ版のコンソールを使ってください。":"PCとの通信を確認できません。";
                         if (request.responseCode == 401) token = null;
                     }
                 }

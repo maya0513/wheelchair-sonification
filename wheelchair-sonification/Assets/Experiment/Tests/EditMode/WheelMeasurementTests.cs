@@ -48,6 +48,8 @@ namespace WheelchairSonification.Tests
             Assert.That(estimator.Update(source.Read(.16)).valid, Is.True);
         }
         [Test] public void RoleDuplicateRejected(){using var source=new SyntheticPoseSource();var w=new CalibrationWizard();var f=source.Read(0);w.Bind(TrackerRole.Chassis,f.poses[4]);Assert.Throws<ArgumentException>(()=>w.Bind(TrackerRole.LeftWheel,f.poses[4]));}
+        [Test] public void OptionalRoleCanBeClearedAndCriticalRemovalInvalidatesAxes()
+        {var w=new CalibrationWizard();w.UseSynthetic(SyntheticPoseSource.Calibration());w.Unbind(TrackerRole.LeftWrist);Assert.That(w.Calibration.Complete,Is.True);Assert.That(w.Calibration.roles[0].key,Is.Null);w.Unbind(TrackerRole.LeftWheel);Assert.That(w.Calibration.Complete,Is.False);}
         [Test] public void RotationCalibrationWorksWithCamber()
         {using var source=new SyntheticPoseSource();var w=new CalibrationWizard();var f=source.Read(0);foreach(TrackerRole r in Enum.GetValues(typeof(TrackerRole)))w.Bind(r,f.poses[(int)r]);w.Capture(f);for(int i=1;i<=40;i++)w.Observe(source.Read(i*.01));w.Capture(source.Read(.4));for(int i=41;i<=71;i++)w.Observe(source.Read(i*.01));w.Capture(source.Read(.71));Assert.That(w.Calibration.Complete,Is.True);Assert.That(Vector3.Angle(w.Calibration.left.axle,SyntheticPoseSource.Calibration().left.axle),Is.LessThan(.02));}
         [Test] public void RecordedDataReplaysIdenticallyAndOldFormatRejected()

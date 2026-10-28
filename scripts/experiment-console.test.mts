@@ -12,12 +12,12 @@ async function fixture(t:any) {
   const page=await fetch(url);const html=await page.text();const cookie=page.headers.get('set-cookie')!.split(';')[0];const csrf=/name="csrf" content="([a-f0-9]+)"/.exec(html)![1];
   const api=async(path:string,body?:any,extra:any={})=>fetch(url+path,{method:body===undefined?'GET':'POST',headers:{cookie,'X-CSRF-Token':csrf,'Content-Type':'application/json',...extra},body:body===undefined?undefined:JSON.stringify(body)});
   const id='0123456789abcdef0123456789abcdef',code='765432';
-  const hello=()=>fetch(url+'/device/hello',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({schema:2,deviceId:id,codeHash:createHash('sha256').update(id+':'+code).digest('hex')})});
+  const hello=()=>fetch(url+'/device/hello',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({schema:3,deviceId:id,codeHash:createHash('sha256').update(id+':'+code).digest('hex')})});
   t.after(async()=>{await app.close();rmSync(directory,{recursive:true,force:true});});
   return {directory,url,api,hello,id,code,advance:(ms:number)=>{now+=ms;},pair:async()=>{await hello();assert.equal((await api('/api/pair',{deviceId:id,code})).status,200);return (await (await hello()).json()).pairToken as string;},html};
 }
 test('local console pairs only the matching headset and serves offline assets',async t=>{
-  const f=await fixture(t);assert.match(f.html,/装着前の接続確認/);assert.equal((await f.api('/api/pair',{deviceId:f.id,code:f.code})).status,400);
+  const f=await fixture(t);assert.match(f.html,/ゴーグルと接続する/);assert.equal((await f.api('/api/pair',{deviceId:f.id,code:f.code})).status,400);
   await f.hello();assert.equal((await f.api('/api/pair',{deviceId:f.id,code:'000000'})).status,400);assert.ok(await f.pair());
   assert.equal((await fetch(f.url+'/console.js')).status,200);assert.equal((await fetch(f.url+'/console.css')).status,200);
   assert.equal((await fetch(f.url+'/api/state')).status,401);
@@ -25,7 +25,7 @@ test('local console pairs only the matching headset and serves offline assets',a
   assert.equal((await f.api('/api/heartbeat',{}, {origin:'https://example.com'})).status,403);
 });
 test('expired browser leases and old queued commands cannot drive the headset',async t=>{
-  const f=await fixture(t);const token=await f.pair();const exchange=async(result?:any)=>(await fetch(f.url+'/device/exchange',{method:'POST',headers:{'X-Device-Token':token,'Content-Type':'application/json'},body:JSON.stringify({state:{schema:2,visitId:'v',revision:1,running:false},result})})).json();
+  const f=await fixture(t);const token=await f.pair();const exchange=async(result?:any)=>(await fetch(f.url+'/device/exchange',{method:'POST',headers:{'X-Device-Token':token,'Content-Type':'application/json'},body:JSON.stringify({state:{schema:3,visitId:'v',revision:1,running:false},result})})).json();
   await f.api('/api/heartbeat',{});await exchange();
   const command=await f.api('/api/command',{action:'start',visitId:'v',revision:1});assert.equal(command.status,202);const id=(await command.json()).id;
   assert.equal((await f.api('/api/command',{action:'start',visitId:'v',revision:1})).status,409);
@@ -47,3 +47,11 @@ test('record transfer verifies checksums, keeps originals and removes incomplete
 });
 
 test('protocol mismatch is rejected and operator records are idempotent',async t=>{const f=await fixture(t);const bad=await fetch(f.url+'/device/hello',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({schema:1})});assert.equal(bad.status,409);const entry={id:'entry-1',type:'timing',trialId:'t1',seconds:12.34};assert.equal((await f.api('/api/record',{visitId:'visit-1',entry})).status,200);assert.equal((await f.api('/api/record',{visitId:'visit-1',entry})).status,200);const file=JSON.parse(readFileSync(join(f.directory,'visit-1/operator.json'),'utf8'));assert.equal(file.entries.length,1);assert.equal(file.entries[0].seconds,12.34);assert.equal((await f.api('/api/record',{visitId:'../outside',entry})).status,400);});
+
+test('preparation commands share the authenticated channel and cancellation takes priority',async t=>{
+ const f=await fixture(t);const old=await fetch(f.url+'/device/hello',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({schema:2,deviceId:f.id,codeHash:'a'.repeat(64)})});assert.equal(old.status,409);
+ const token=await f.pair();await f.api('/api/heartbeat',{});
+ const exchange=async()=>{const r=await fetch(f.url+'/device/exchange',{method:'POST',headers:{'X-Device-Token':token,'Content-Type':'application/json'},body:JSON.stringify({state:{schema:3,visitId:'',revision:4,running:false,preparation:{stage:'Manual',active:true}}})});return r.json();};
+ await exchange();assert.equal((await f.api('/api/command',{action:'prep.select',visitId:'',revision:4,value:'tracker-key',number:2})).status,202);
+ assert.equal((await f.api('/api/command',{action:'prep.cancel',visitId:'',revision:4})).status,202);const reply=await exchange();assert.equal(reply.command.action,'prep.cancel');assert.equal(reply.schema,3);
+});

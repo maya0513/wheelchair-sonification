@@ -1,6 +1,6 @@
 # 研究・実施資料
 
-初心者15名、聴覚・視覚・追加FBなしの並行3群で、左右車輪の回転速度の連続フィードバックを比較する。被験者のアプリ操作はなく、実施者がPCで記録・計時する。1回来訪90分以内、20分休憩中はHMDを外す。
+初心者15名、聴覚・視覚・追加FBなしの並行3群で、左右車輪の回転速度の連続フィードバックを比較する。本実験中の被験者のアプリ操作はなく、実施者がPCで記録・計時する。1回来訪90分以内、20分休憩中はHMDを外す。
 
 | 読みたいこと | 正本 |
 |---|---|
@@ -14,7 +14,7 @@
 | 募集・安全・開始条件 | [実施運営](operations/study-operations.md) |
 | 参加者向け説明 | [説明・質問項目](operations/participant-materials.md) |
 | PCから操作する | [操作コンソール](development/experiment-console.md) |
-| 装着と校正 | [トラッカー](development/tracker-measurement.md) |
+| 装着・案内付き割当・校正・チェック | [トラッカー](development/tracker-measurement.md) |
 | 保存先・ファイル | [記録形式](development/research-records.md) |
 | 開発・配布・画像確認 | [開発](development/guide.md)・[APK](development/android-build.md)・[プレビュー](development/xr-preview.md) |
 | 実装・実機確認の状態 | [残作業と証拠](development/remaining-work.md) |

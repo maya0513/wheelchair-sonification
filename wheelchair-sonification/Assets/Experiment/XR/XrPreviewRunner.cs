@@ -19,8 +19,9 @@ namespace WheelchairSonification.Editor
         public string OutputDirectory; public bool Interactive;
         FocusVisionDemo xr; RenderTexture target;
         readonly List<Shot> shots=new List<Shot>(); readonly List<string> errors=new List<string>();
-        [Serializable] sealed class Shot { public string name,file,title,crop_title,crop_gauge; public float assumed_vertical_fov_degrees; public bool light_background,intentional_world_panel_offscreen; }
+        [Serializable] sealed class Shot { public string name,file,title,crop_title,crop_gauge,crop_button; public float assumed_vertical_fov_degrees; public bool light_background,intentional_world_panel_offscreen; }
         [Serializable] sealed class Manifest { public bool passed,physical_device_measured=false; public string unity_version,source_commit; public Shot[] shots; public string[] errors; }
+        [Serializable] sealed class PreparationFixtures { public string provenance="Generated from PreparationWorkflow.Preview; synthetic UI states, not device measurements";public PreparationSnapshot[] stages; }
         IEnumerator Start()
         {
             yield return null; yield return null;
@@ -42,8 +43,8 @@ namespace WheelchairSonification.Editor
                 foreach(float fov in new[]{70f,90f})foreach(bool light in new[]{true,false})
                 {
                     xr.Rig.Camera.fieldOfView=fov;xr.Rig.Camera.clearFlags=CameraClearFlags.SolidColor;xr.Rig.Camera.backgroundColor=light?new Color(.75f,.76f,.78f):new Color(.12f,.13f,.15f);
-                    xr.Gauge.SetVisible(false);xr.ShowParticipantPreview("接続確認\n123456",true);ShotImage($"{++number:00}-pairing", "装着前の接続照合");
-                    xr.ShowParticipantPreview("準備中",true);ShotImage($"{++number:00}-waiting", "停止中・短文だけ");
+                    xr.Gauge.SetVisible(false);xr.PreparationUi.ShowPreview(PreparationWorkflow.Preview("Home"));ShotImage($"{++number:00}-pairing", "起動・単体チェックと接続番号");
+                    xr.PreparationUi.ShowPreview(PreparationWorkflow.Preview("Waiting"));ShotImage($"{++number:00}-waiting", "停止中・短文だけ");
                     xr.ShowParticipantPreview("",false);xr.Gauge.SetValues(.33,.67);xr.Gauge.SetVisible(true);ShotImage($"{++number:00}-bilateral", "左右の速度差・視覚訓練");
                     xr.Gauge.SetVisible(false);ShotImage($"{++number:00}-no-feedback", "聴覚・追加FBなし・評価中の無表示");
                 }
@@ -53,17 +54,33 @@ namespace WheelchairSonification.Editor
                 xr.Recenter();ShotImage("20-recentered","再配置後");
                 xr.Gauge.SetValues(0,0);ShotImage("21-stopped","停止付近・両方ゼロ");
                 xr.Gauge.SetVisible(false);ShotImage("22-missing","車輪・車体の欠測時・提示なし");
+                xr.Rig.Camera.transform.rotation=Quaternion.identity;xr.PreparationUi.Recenter();
+                var stages=new[]{"Home","Still","ForwardReady","Forward","BackwardReady","Candidate","Manual","WristsChoice","VerifyReady","VerifyLeft","VisualAnswer","AudioAnswer","Paused","Result","Waiting"};
+                var fixtures=stages.Select(PreparationWorkflow.Preview).ToArray();
+                File.WriteAllText(Path.Combine(OutputDirectory,"preparation-fixtures.json"),JsonUtility.ToJson(new PreparationFixtures{stages=fixtures},true));
+                int index=23;
+                foreach(var stage in fixtures){xr.PreparationUi.ShowPreview(stage);ShotImage($"{index++:00}-prep-{stage.stage.ToLowerInvariant()}","準備："+stage.title);}
+                foreach(float fov in new[]{70f,90f})foreach(bool light in new[]{true,false})
+                {xr.Rig.Camera.fieldOfView=fov;xr.Rig.Camera.backgroundColor=light?new Color(.75f,.76f,.78f):new Color(.12f,.13f,.15f);xr.PreparationUi.ShowPreview(PreparationWorkflow.Preview("Home"));ShotImage($"{index++:00}-prep-field","準備画面・視野と背景");}
+                xr.Rig.Camera.fieldOfView=70;xr.Rig.Camera.transform.rotation=Quaternion.Euler(0,60,0);ShotImage("42-prep-head-turned","準備パネルは空間に固定・頭部回転後",true);
+                xr.PreparationUi.Recenter();ShotImage("43-prep-recentered","準備パネルを正面へ再配置");
+                xr.Rig.Camera.transform.rotation=Quaternion.Euler(35,60,0);xr.PreparationUi.Recenter();ShotImage("44-prep-looking-down","下を向いた状態でも視線の正面へ再配置");
                 MakeContactSheet();AudioSampleExporter.Export(OutputDirectory);
             }
             catch(Exception e){errors.Add(e.ToString());}
             var m=new Manifest{passed=errors.Count==0,unity_version=Application.unityVersion,source_commit=Environment.GetEnvironmentVariable("WHEELCHAIR_SOURCE_COMMIT")??"unknown",shots=shots.ToArray(),errors=errors.ToArray()};
             File.WriteAllText(Path.Combine(OutputDirectory,"manifest.json"),JsonUtility.ToJson(m,true));RenderTexture.active=null;target.Release();Destroy(target);EditorApplication.Exit(m.passed?0:1);
         }
-        void ShotImage(string name,string title)
+        void ShotImage(string name,string title,bool intentionalOffscreen=false)
         {
             Canvas.ForceUpdateCanvases();
             foreach(var label in xr.GetComponentsInChildren<TMP_Text>()){label.ForceMeshUpdate();if(label.isTextOverflowing)errors.Add(name+": text overflow "+label.text);}
             var camera=xr.Rig.Camera;
+            if(xr.PreparationUi.PanelVisible&&!intentionalOffscreen)
+            {
+                var corners=new Vector3[4];xr.PreparationUi.Panel.GetWorldCorners(corners);
+                foreach(var c in corners){var p=camera.WorldToViewportPoint(c);if(p.z<=0||p.x<.02||p.x>.98||p.y<.02||p.y>.98)errors.Add(name+": preparation panel offscreen");}
+            }
             if(xr.Gauge.Visible)
             {
                 var corners=new Vector3[4];((RectTransform)xr.Gauge.transform).GetWorldCorners(corners);
@@ -71,10 +88,12 @@ namespace WheelchairSonification.Editor
             }
             var request=new UniversalRenderPipeline.SingleCameraRequest{destination=target};RenderPipeline.SubmitRenderRequest(camera,request);
             var previous=RenderTexture.active;RenderTexture.active=target;var image=new Texture2D(1440,1440,TextureFormat.RGB24,false);image.ReadPixels(new Rect(0,0,1440,1440),0,0);image.Apply();RenderTexture.active=previous;
-            var shot=new Shot{name=name,file=name+".png",title=title,assumed_vertical_fov_degrees=camera.fieldOfView,light_background=camera.backgroundColor.r>.5f};
+            var shot=new Shot{name=name,file=name+".png",title=title,assumed_vertical_fov_degrees=camera.fieldOfView,light_background=camera.backgroundColor.r>.5f,intentional_world_panel_offscreen=intentionalOffscreen};
             File.WriteAllBytes(Path.Combine(OutputDirectory,shot.file),image.EncodeToPNG());
             if(xr.Gauge.Visible)shot.crop_gauge=Crop(image,(RectTransform)xr.Gauge.transform,name+"-gauge.png");
-            if(xr.WaitingLabel.gameObject.activeInHierarchy)shot.crop_title=Crop(image,xr.WaitingLabel.rectTransform,name+"-title.png");
+            if(xr.WaitingLabel.gameObject.activeInHierarchy&&!intentionalOffscreen)shot.crop_title=Crop(image,xr.WaitingLabel.rectTransform,name+"-title.png");
+            var button=xr.PreparationUi.Panel.GetComponentsInChildren<UnityEngine.UI.Button>().FirstOrDefault(b=>b.gameObject.activeInHierarchy);
+            if(button!=null&&!intentionalOffscreen)shot.crop_button=Crop(image,(RectTransform)button.transform,name+"-button.png");
             Destroy(image);shots.Add(shot);
         }
         private string Crop(Texture2D source, RectTransform rect, string file)

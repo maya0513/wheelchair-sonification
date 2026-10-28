@@ -14,6 +14,7 @@
 | 先行研究の装置と検証方法を調べる | [計測の読み方](topics/sensing-and-devices.md)・[装置比較](topics/device-comparison.md) |
 | 手元の装置で接触角・目標誤差を測れるか判断する | [推進角の計測可能性と先行研究との比較](topics/propulsion-angle-measurement-feasibility.md) |
 | 将来の脳波計測を検討する | [簡易EEG](topics/eeg.md)。本研究の測定には組み込まない |
+| 案内付き準備とXR UIの設計根拠 | [技術ノート](implementation/guided-preparation-ui.md) |
 | 開発を進める | [入門解説](implementation/development-and-testing-guide.md)・[実行手順](../docs/development/guide.md) |
 
 ## 出典を確認する

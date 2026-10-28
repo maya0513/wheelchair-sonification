@@ -1,8 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { TrialClock, spaceStops, audioInterruptsClock } from './console/timing.mjs';
+import { TrialClock, TrialOwnership, spaceStops, audioInterruptsClock } from './console/timing.mjs';
 test('PC cue timer starts after exactly three seconds and manual stop ignores network time',()=>{let now=10;const clock=new TrialClock(()=>now);clock.prepare(3000,'trial-1');assert.equal(clock.tick(),'preparing');now=3009;assert.equal(clock.stop(),null);now=3010;assert.equal(clock.tick(),'running');assert.throws(()=>clock.prepare());now=15355;const result=clock.stop();assert.equal(result.seconds,12.345);assert.equal(result.trialId,'trial-1');now=90000;assert.equal(clock.elapsed(),12.345);assert.equal(clock.stop(),null);});
 test('cue cancellation and restart never join browser clocks',()=>{let now=0;const clock=new TrialClock(()=>now);clock.prepare(3000,'one');now=100;assert.equal(clock.cancel('interrupted').seconds,null);now=10000;clock.prepare(3000,'two');now=14000;assert.equal(clock.stop().seconds,1);});
 test('Space is ignored in text/select/contenteditable and on repeats',()=>{for(const tagName of ['INPUT','TEXTAREA','SELECT'])assert.equal(spaceStops({code:'Space',target:{tagName}}),false);assert.equal(spaceStops({code:'Space',repeat:true,target:{}}),false);assert.equal(spaceStops({code:'Space',target:{isContentEditable:true}}),false);assert.equal(spaceStops({code:'Space',target:{tagName:'BODY'}}),true);assert.equal(spaceStops({code:'Space',target:{tagName:'BUTTON'}}),true);});
 test('audio suspension invalidates a pending or running cue but not a completed time',()=>{for(const state of ['preparing','running'])for(const audioState of ['suspended','interrupted','closed'])assert.equal(audioInterruptsClock(state,audioState),true);for(const state of ['idle','stopped','cancelled'])assert.equal(audioInterruptsClock(state,'suspended'),false);assert.equal(audioInterruptsClock('running','running'),false);let now=0;const clock=new TrialClock(()=>now);clock.prepare(3000,'trial');now=3500;if(audioInterruptsClock(clock.state,'suspended'))clock.cancel('pc_audio_suspended');assert.equal(clock.stop(),null);assert.equal(clock.result().seconds,null);});
 test('a completed trial cannot be timed again while a cancelled cue may restart',()=>{let now=0;const clock=new TrialClock(()=>now);clock.prepare(3000,'trial');now=4000;clock.stop();assert.equal(clock.hasResultFor('trial'),true);assert.throws(()=>clock.prepare(3000,'trial'),/計時済み/);clock.prepare(3000,'retry');clock.cancel();assert.doesNotThrow(()=>clock.prepare(3000,'retry'));});
+test('only the browser that requested a trial can time it, and reloading cannot recover ownership',()=>{
+ const owner=new TrialOwnership();owner.requested('command-1');const active={running:true,trialId:'trial-1'};
+ assert.equal(owner.observe({running:false},null),false);assert.equal(owner.observe(active,{id:'command-1',ok:true}),false);
+ assert.equal(owner.observe(active,null),false);assert.equal(new TrialOwnership().observe(active,null),true);
+ assert.equal(owner.observe({running:true,trialId:'different-trial'},null),true);assert.equal(owner.observe({running:false},null),false);
+ assert.equal(owner.observe(active,null),true);
+});
+test('failed start cannot claim a trial and the explicitly isolated UI demo is not a measurement',()=>{
+ const owner=new TrialOwnership();owner.requested('failed');assert.equal(owner.observe({running:true,trialId:'other'},{id:'failed',ok:false}),true);
+ assert.equal(owner.observe({running:true,trialId:'fixture'},null,true),false);
+});

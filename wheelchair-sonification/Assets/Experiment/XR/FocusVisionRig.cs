@@ -24,6 +24,7 @@ namespace WheelchairSonification.XR
         private readonly InputAction recenter;
         private readonly Material lineMaterial;
         public Camera Camera { get; }
+        public Transform TrackingOrigin {get;}
         public bool TogglePressed => toggle.WasPressedThisFrame();
         public bool RecenterPressed => recenter.WasPressedThisFrame();
         public bool AnyControllerTracked => pointers.Exists(pointer => pointer.tracked.IsPressed());
@@ -34,6 +35,7 @@ namespace WheelchairSonification.XR
             rig.transform.SetParent(parent, false);
             var offset = new GameObject("Camera offset");
             offset.transform.SetParent(rig.transform, false);
+            TrackingOrigin=offset.transform;
             var cameraObject = new GameObject("XR Camera", typeof(Camera), typeof(AudioListener));
             cameraObject.transform.SetParent(offset.transform, false);
             cameraObject.tag = "MainCamera";

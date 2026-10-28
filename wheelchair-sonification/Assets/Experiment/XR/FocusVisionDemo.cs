@@ -21,6 +21,7 @@ namespace WheelchairSonification.XR
         public ResearchVisitHost VisitHost { get; private set; }
         public OperatorLink Link { get; private set; }
         public TMP_Text WaitingLabel { get; private set; }
+        public PreparationView PreparationUi {get;private set;}
         public bool IsEditorPreview { get; private set; }
         public bool Ready => ready;
         UnityFeedbackOutput output; UltimatePoseSource actualInput;
@@ -32,14 +33,12 @@ namespace WheelchairSonification.XR
         {
             output=GetComponent<DemoController>().Output;
             Rig=new FocusVisionRig(transform); Gauge=XrGauge.InstantiateFor(Rig.Camera); output.BindGauge(Gauge);
-            var waiting=XrUi.Canvas("Participant waiting",Rig.Camera.transform,new Vector2(850,230));
-            waiting.localPosition=new Vector3(0,0,1.4f); waiting.localScale=Vector3.one*.001f; XrUi.Fill(waiting,XrUi.Paper);
-            WaitingLabel=XrUi.Text(waiting,"Waiting text","準備中",24,20,802,190,56);
             Research=gameObject.AddComponent<ResearchController>(); Research.Output=output;
             actualInput=new UltimatePoseSource(); Research.SetSource(new BorrowedPoseSource(actualInput));
             VisitHost=gameObject.AddComponent<ResearchVisitHost>(); VisitHost.Initialize(Research);
             VisitHost.SourceFactory=_=>new BorrowedPoseSource(actualInput); VisitHost.Present=PresentExample; VisitHost.StopPresentation=StopExample;
             Link=gameObject.AddComponent<OperatorLink>(); Link.Host=VisitHost;
+            PreparationUi=new PreparationView(Rig,VisitHost,transform);WaitingLabel=PreparationUi.Title;
         }
         IEnumerator Start()
         {
@@ -56,23 +55,24 @@ namespace WheelchairSonification.XR
         }
         void Update()
         {
-            Rig.UpdatePointers(false); // Participant never needs a controller.
             if(nativeStarted&&!paused&&focused)UpdateRuntime();
+            if(Rig.TogglePressed)PreparationUi.Toggle();
+            if(Rig.RecenterPressed)PreparationUi.Recenter();
             bool example=exampleEngine!=null&&Time.realtimeSinceStartupAsDouble<exampleUntil;
             if(example) output.Apply(exampleEngine.Update(Time.realtimeSinceStartupAsDouble,exampleLeft,exampleRight,true,exampleGroup,true));
             else if(exampleEngine!=null)StopExample();
-            WaitingLabel.transform.parent.gameObject.SetActive(!Research.Active&&!example);
-            if(!IsEditorPreview) WaitingLabel.text=!Link.Paired?"接続確認\n"+(Link.PairingCode??"PCで準備"):!ready?"停止してお待ちください":"準備中";
+            PreparationUi.Render(Link.Paired,Link.PairingCode??"------",ready,Link.Status.Contains("形式"));
+            if(example)PreparationUi.HideForPresentation();
         }
         public void PresentExample(StudyGroup group,double left,double right)
         {
-            if(!ready||Research.Active)return;
+            if(!ready||Research.Active||VisitHost.Preparation.Active)return;
             exampleGroup=group;exampleLeft=left;exampleRight=right;exampleEngine=new SpeedFeedbackEngine(Research.Settings);
             output.Volume=Research.Volume;exampleUntil=Time.realtimeSinceStartupAsDouble+2;
         }
         public void StopExample(){exampleEngine=null;if(!Research.Active)output.Stop();}
-        public void Recenter(){Gauge.transform.localPosition=new Vector3(0,-Mathf.Tan(10*Mathf.Deg2Rad)*1.4f,1.4f);Gauge.transform.localRotation=Quaternion.identity;}
-        public void TogglePanel(){} // Editor simulator key retained; there is no participant menu.
+        public void Recenter(){Gauge.transform.localPosition=new Vector3(0,-Mathf.Tan(10*Mathf.Deg2Rad)*1.4f,1.4f);Gauge.transform.localRotation=Quaternion.identity;PreparationUi?.Recenter();}
+        public void TogglePanel()=>PreparationUi.Toggle();
         private void UpdateRuntime()
         {
             if (feature == null || !feature.enabled) { SetReady(false, "パススルー機能が無効です。"); return; }
@@ -107,6 +107,7 @@ namespace WheelchairSonification.XR
             bool lost = ready && !value;
             ready = value; runtimeStatus = message;
             Research.PresentationReady = value;
+            Research.PresentationStatus=message;
             if (lost)
             {
                 VisitHost.Suspend("xr_or_head_tracking_lost");
@@ -122,7 +123,7 @@ namespace WheelchairSonification.XR
 #if UNITY_EDITOR
         public void EnableEditorPreview(bool technician=false)
         {IsEditorPreview=true;Rig.Camera.stereoTargetEye=StereoTargetEyeMask.None;Research.SetSource(new SyntheticPoseSource());SetReady(true,"Editor synthetic");}
-        public void ShowParticipantPreview(string text,bool visible){WaitingLabel.text=text;WaitingLabel.transform.parent.gameObject.SetActive(visible);}
+        public void ShowParticipantPreview(string text,bool visible){PreparationUi.Panel.gameObject.SetActive(visible);PreparationUi.Footer.gameObject.SetActive(false);WaitingLabel.text=text;}
 #endif
         void ReleasePassthrough()
         {
@@ -143,6 +144,7 @@ namespace WheelchairSonification.XR
             Research?.Interrupt("xr_scene_closed");actualInput?.Dispose();ReleasePassthrough();
             if(nativeStarted&&manager!=null){var input=manager.activeLoader?.GetLoadedSubsystem<XRInputSubsystem>();if(input!=null)input.trackingOriginUpdated-=OnTrackingOriginUpdated;manager.StopSubsystems();manager.DeinitializeLoader();}
             Rig?.Dispose();
+            PreparationUi?.Dispose();
         }
     }
 }

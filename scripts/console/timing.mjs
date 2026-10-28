@@ -23,3 +23,17 @@ export function spaceStops(event) {
   const tag = event.target?.tagName?.toLowerCase();
   return event.code === 'Space' && !event.repeat && !['input','textarea','select'].includes(tag) && !event.target?.isContentEditable;
 }
+
+// A monotonic clock belongs to the browser that requested this trial. Reloading cannot recover it.
+export class TrialOwnership {
+  constructor() { this.pending = ''; this.owned = ''; }
+  requested(id) { this.pending = id; }
+  observe(snapshot, result, uiDemo = false) {
+    if (this.pending && result?.id === this.pending) {
+      if (result.ok && snapshot?.running) this.owned = snapshot.trialId;
+      this.pending = '';
+    }
+    if (!snapshot?.running) this.owned = '';
+    return !!snapshot?.running && !uiDemo && this.owned !== snapshot.trialId;
+  }
+}

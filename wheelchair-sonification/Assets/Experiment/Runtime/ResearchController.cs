@@ -14,6 +14,7 @@ namespace WheelchairSonification.Runtime
         public IPoseSource Source { get; private set; }
         public bool Active { get; private set; }
         public bool PresentationReady;
+        public string PresentationStatus="ゴーグルの準備を待っています。";
         public bool TrainingEnded { get; private set; }
         public string Status { get; private set; } = "停止中";
         public string TrialId { get; private set; }
@@ -56,6 +57,8 @@ namespace WheelchairSonification.Runtime
             try
             {
                 Frame = Source.Read(time); if (Frame == null) { if (Active) Interrupt("pose_source_ended"); return; }
+                foreach(var role in new[]{TrackerRole.LeftWheel,TrackerRole.RightWheel,TrackerRole.Chassis})
+                {var binding=Wizard.Calibration.roles[(int)role];var pose=Frame.Find(binding.key);if(pose!=null&&pose.runtimeDeviceId!=binding.runtimeDeviceId&&!string.IsNullOrEmpty(binding.key))Wizard.Calibration.Invalidate("critical_device_reconnected");}
                 Wizard.Observe(Frame);
                 if (!Active) return;
                 log.Poses(Frame, Wizard.Calibration);
@@ -66,7 +69,7 @@ namespace WheelchairSonification.Runtime
                 Output.Apply(value); log.Speed(Frame.time, sample, value); log.Diagnostic(time, time - previousTime); previousTime = time;
                 if (time >= flushAt) { FileStorage.EnsureReserve(SaveRoot); log.Flush(); flushAt = time + FeedbackProtocol.FlushIntervalSeconds; }
             }
-            catch (Exception e) { Interrupt("storage_or_input_failure:" + e.Message); }
+            catch (Exception e) { Frame=null;Interrupt("storage_or_input_failure:" + e.Message); }
         }
         public void StopTraining()
         {

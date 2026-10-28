@@ -78,7 +78,7 @@ export async function buildRelease(root = repository, env = process.env, runUnit
     if (info.result !== 'Succeeded' || info.target !== 'Android' || info.development !== false || info.unityVersion !== version
       || info.architecture !== 'ARM64' || info.scriptingBackend !== 'IL2CPP' || !info.customSigning
       || info.targetDevice !== 'VIVE Focus Vision' || info.xrLoader !== 'OpenXR' || info.passthrough !== true
-      || info.inputMode !== 'simulated-and-vive-ultimate-tracker' || info.operatorProtocol !== 2 || info.headsetUi !== 'participant-only' || info.androidTargetSdk !== 36 || info.scenes?.length !== 1 || info.scenes[0] !== 'Assets/Scenes/FeedbackDemoXR.unity'
+      || info.inputMode !== 'simulated-and-vive-ultimate-tracker' || info.operatorProtocol !== 3 || info.headsetUi !== 'guided-preparation-and-participant' || info.androidTargetSdk !== 36 || info.scenes?.length !== 1 || info.scenes[0] !== 'Assets/Scenes/FeedbackDemoXR.unity'
       || !existsSync(apk) || statSync(apk).size === 0) throw new Error(`今回の署名付き非開発APKを確認できません。ログ: ${log}`);
     const validation = dependencies.verify(apk, editor, env, info);
     if ('signerCertificateSha256' in validation && existsSync(join(output, apkName))) {

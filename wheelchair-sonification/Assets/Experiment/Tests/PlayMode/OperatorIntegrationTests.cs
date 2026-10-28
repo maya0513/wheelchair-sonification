@@ -68,5 +68,19 @@ namespace WheelchairSonification.Tests
         {Send("createVisit","P001");var previous=host.Snapshot();Send("start");yield return null;Assert.That(host.Execute(new OperatorCommand{id="emergency",visitId=previous.visitId,revision=previous.revision,action="abort"}).ok,Is.True);Assert.That(r.Active,Is.False);var export=new ExportFixture();host.UsbDestinationOverride=export;int main=System.Threading.Thread.CurrentThread.ManagedThreadId;Assert.That(Send("exportUsb").ok,Is.True);for(int i=0;i<120&&host.Transferring;i++)yield return null;Assert.That(host.Transferring,Is.False);Assert.That(export.calledThread,Is.Not.EqualTo(main));Assert.That(host.ExportStatus,Is.EqualTo("fixture-export"));}
         [UnityTest] public IEnumerator StorageFailureLeavesUnfinishedData()
         {Send("createVisit","P001");r.RootOverride=Path.Combine(folder,"blocked");Directory.CreateDirectory(folder);File.WriteAllText(r.RootOverride,"blocked");Assert.That(Send("start").ok,Is.False);Assert.That(r.Active,Is.False);yield return null;}
+        [UnityTest] public IEnumerator StandalonePreparationIgnoresPcLeaseButCannotOverlapResearch()
+        {
+            Send("createVisit","P001");var before=host.Snapshot();
+            var start=new OperatorCommand{id="preparation-once",visitId=before.visitId,revision=before.revision,action="prep.start"};
+            Assert.That(host.Execute(start).ok,Is.True);Assert.That(host.Execute(start).ok,Is.True);
+            Assert.That(Directory.GetDirectories(host.CheckRoot).Length,Is.EqualTo(1));
+            host.ObserveOperator(true,0);yield return null;yield return null;
+            Assert.That(host.Preparation.Active,Is.True);Assert.That(r.Active,Is.False);
+            Assert.That(Send("start").ok,Is.False);Assert.That(Send("setInput","synthetic").ok,Is.False);
+            Assert.That(host.Execute(new OperatorCommand{id="old",visitId=before.visitId,revision=before.revision,action="prep.next"}).ok,Is.False);
+            Assert.That(host.Execute(new OperatorCommand{id="cancel-priority",visitId="stale-visit",revision=-1,action="prep.cancel"}).ok,Is.True);
+            Assert.That(host.Preparation.Active,Is.False);Assert.That(host.Snapshot().schema,Is.EqualTo(3));
+            using var zip=ZipFile.OpenRead(host.ExportPath);Assert.That(zip.Entries.Any(e=>e.FullName.EndsWith("closed.json")&&e.FullName.StartsWith("DeviceChecks/")),Is.True);
+        }
     }
 }

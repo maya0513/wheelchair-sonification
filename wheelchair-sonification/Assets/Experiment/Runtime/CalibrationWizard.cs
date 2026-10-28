@@ -17,6 +17,12 @@ namespace WheelchairSonification.Runtime
             Calibration.roles[(int)role] = new RoleBinding { key = pose.key, runtimeDeviceId = pose.runtimeDeviceId };
             if ((int)role >= 2) { Calibration.Invalidate("binding_changed"); Step = 0; rotations.Clear(); }
         }
+        public void Unbind(TrackerRole role)
+        {
+            if(!Enum.IsDefined(typeof(TrackerRole),role))throw new ArgumentException("役割を確認してください。");
+            Calibration.roles[(int)role]=new RoleBinding();
+            if((int)role>=2){Calibration.Invalidate("binding_removed");Step=0;rotations.Clear();}
+        }
         public void Observe(PoseFrame frame)
         {
             if (Step != 1 && Step != 2) return;
@@ -38,6 +44,7 @@ namespace WheelchairSonification.Runtime
             wheel.axle = sum.normalized; wheel.ready = true; wheel.angularSpreadDegrees = total;
             Step++; rotations.Clear(); Calibration.createdUtc = DateTime.UtcNow.ToString("O");
         }
-        public void UseSynthetic(TrackingCalibration calibration) { Calibration = calibration; Step = 3; rotations.Clear(); }
+        public void Apply(TrackingCalibration calibration) { Calibration = calibration; Step = 3; rotations.Clear(); }
+        public void UseSynthetic(TrackingCalibration calibration) => Apply(calibration);
     }
 }

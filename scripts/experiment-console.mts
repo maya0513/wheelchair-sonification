@@ -88,7 +88,7 @@ export function createConsoleServer(options: { dataDirectory?: string; demo?: bo
         if (options.demo && !isLocal) return send(response, 403, { error: '模擬コンソールへ実機は接続できません。' });
         if (url.pathname === '/device/hello' && request.method === 'POST') {
           const data = await json(request);
-          if (data.schema !== 2) return send(response, 409, { error: '通信形式が異なります。v0.4.0以降の対応するAPKとコンソールを組み合わせてください。' });
+          if (data.schema !== 3) return send(response, 409, { error: '通信形式が異なります。v0.5.0の対応するAPKとコンソールを組み合わせてください。' });
           if (!/^[a-f0-9]{32}$/.test(data.deviceId) || !/^[a-f0-9]{64}$/.test(data.codeHash)) return send(response, 400, { error: '接続識別が不正です。' });
           let candidate = candidates.get(data.deviceId);
           if (!candidate || candidate.codeHash !== data.codeHash) {
@@ -96,20 +96,20 @@ export function createConsoleServer(options: { dataDirectory?: string; demo?: bo
             candidates.set(data.deviceId, candidate);
           }
           candidate.seen = now();
-          return send(response, 200, { schema: 2, pairToken: approved === candidate ? candidate.token : '', operatorConnected: activeOperator(), operatorLeaseSeconds: Math.max(0, (3000 - (now() - browserSeen)) / 1000), demo: !!options.demo });
+          return send(response, 200, { schema: 3, pairToken: approved === candidate ? candidate.token : '', operatorConnected: activeOperator(), operatorLeaseSeconds: Math.max(0, (3000 - (now() - browserSeen)) / 1000), demo: !!options.demo });
         }
         if (!deviceAuthorized(request)) return send(response, 401, { error: '装着前にPCで接続承認してください。' });
         if (url.pathname === '/device/exchange' && request.method === 'POST') {
           const body = await json(request);
-          if (body.state?.schema !== 2) return send(response, 409, { error: '旧アプリの通信形式を拒否しました。' });
+          if (body.state?.schema !== 3) return send(response, 409, { error: '旧アプリの通信形式を拒否しました。' });
           latestState = body.state; stateSeen = now();
           if (body.result?.id) {
             const command = pending.find(c => c.id === body.result.id);
-            if (command && body.state?.visitId) persistOperator(body.state.visitId, { id: command.id, type: 'operator_command', trialId: body.state.trialId || '', action: command.action, value: command.value, number: command.number, requestedPcUtc: new Date(command.created).toISOString(), result: body.result });
+            if (command && body.state?.visitId) persistOperator(body.state.visitId, { id: command.id, type: 'operator_command', trialId: body.state.trialId || '', checkId: body.state.preparation?.checkId || '', action: command.action, value: command.value, number: command.number, requestedPcUtc: new Date(command.created).toISOString(), result: body.result });
             result = body.result; pending = pending.filter(c => c.id !== body.result.id);
           }
           clearExpired();
-          return send(response, 200, { schema: 2, operatorConnected: activeOperator(), operatorLeaseSeconds: Math.max(0, (3000 - (now() - browserSeen)) / 1000), command: pending[0] || null });
+          return send(response, 200, { schema: 3, operatorConnected: activeOperator(), operatorLeaseSeconds: Math.max(0, (3000 - (now() - browserSeen)) / 1000), command: pending[0] || null });
         }
         if (url.pathname === '/device/export' && request.method === 'PUT') {
           if (!activeOperator() || latestState?.running) return send(response, 409, { error: '停止中に取り出してください。' });
@@ -170,11 +170,11 @@ export function createConsoleServer(options: { dataDirectory?: string; demo?: bo
       if (url.pathname === '/api/command' && request.method === 'POST') {
         if (!approved || !activeOperator() || now() - stateSeen >= 3000) return send(response, 409, { error: '最新の接続状態を確認できません。' });
         const body = await json(request);
-        const allowed = ['createVisit','setInput','setGroup','setSelection','start','finishTrial','trainingEnd','abort','assignRole','calibrate','resetCalibration','setVolume','export','exportUsb','quick'];
+        const allowed = ['createVisit','setInput','setGroup','setSelection','start','finishTrial','trainingEnd','abort','assignRole','calibrate','resetCalibration','setVolume','export','exportUsb','quick','prep.start','prep.next','prep.manual','prep.select','prep.skip','prep.yes','prep.no','prep.retry','prep.cancel','prep.wait','prep.home','prep.recheck','prep.settings'];
         if (!allowed.includes(body.action) || typeof body.visitId !== 'string' || !Number.isInteger(body.revision)) return send(response, 400, { error: '操作形式が不正です。' });
         const command: Command = { id: randomUUID(), visitId: body.visitId, revision: body.revision, action: body.action,
           value: String(body.value || '').slice(0, 4000), number: Number.isFinite(body.number) ? body.number : 0, flag: body.flag === true, created: now() };
-        if (command.action === 'abort') pending = [command];
+        if (command.action === 'abort' || command.action === 'prep.cancel') pending = [command];
         else if (pending.length) return send(response, 409, { error: '前の操作の応答を待っています。' });
         else pending.push(command);
         return send(response, 202, { id: command.id });

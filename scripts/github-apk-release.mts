@@ -62,7 +62,7 @@ export async function publishRelease(tag: string, code: string, options: Publish
   const info = JSON.parse(readFileSync(join(output, 'build-info.json'), 'utf8'));
   if (info.gitCommit !== commit || info.gitDirty !== false || info.version !== tag.slice(1) || info.versionCode !== Number(code)
     || info.targetDevice !== 'VIVE Focus Vision' || info.xrLoader !== 'OpenXR' || info.inputMode !== 'simulated-and-vive-ultimate-tracker'
-    || info.operatorProtocol !== 2 || info.headsetUi !== 'participant-only' || info.androidTargetSdk !== 36
+    || info.operatorProtocol !== 3 || info.headsetUi !== 'guided-preparation-and-participant' || info.androidTargetSdk !== 36
     || info.validation?.signatureVerified !== true || info.validation?.xrManifestVerified !== true)
     throw new Error('公開するビルドの版・コミット・検証情報を確認できません。');
   if (checked('git', ['rev-parse', 'HEAD']) !== commit || checked('git', ['status', '--porcelain']))
@@ -75,7 +75,7 @@ export async function publishRelease(tag: string, code: string, options: Publish
   (options.overviewPackage || packageOverview)(root, join(output, overviewName), commit);
   info.uiPreview = { file: previewName, headsetShots: previewManifest.shots.length, operatorShots: operatorManifest.shots.length, sourceCommit: commit, physicalDeviceMeasured: false };
   info.soakValidation = soak;
-  info.operatorConsole = { file: consoleName, sourceCommit: commit, protocol: 2, localOnly: true };
+  info.operatorConsole = { file: consoleName, sourceCommit: commit, protocol: 3, localOnly: true };
   info.applicationOverview = { file: overviewName, sourceCommit: commit, document: 'docs/app-overview.md' };
   writeFileSync(join(output, 'build-info.json'), JSON.stringify(info, null, 2) + '\n');
   const hashedFiles = [apkName, 'build-info.json', previewName, consoleName, overviewName];
@@ -88,7 +88,7 @@ export async function publishRelease(tag: string, code: string, options: Publish
   writeFileSync(notes, `VIVE Focus Vision向けのAndroid / OpenXR単体実行用APKです。\n\n` +
     `[画像でわかるアプリの概要](https://github.com/${releaseRepository}/blob/${tag}/docs/app-overview.md) — 短い説明とテスト画像を掲載しています。オフラインで読む場合はapp-overview.zipを展開してください。\n\n` +
     `![参加者用の左右速度ゲージ（Unityの合成入力テスト画像）](https://raw.githubusercontent.com/${releaseRepository}/${tag}/docs/images/app-overview/hmd-gauge.png)\n\n` +
-    `被験者はアプリやコントローラーを操作しません。実施者のPCブラウザーから、5台の役割設定・3次元校正、手動の課題選択・開始合図とPC計時・理解確認・目安タイマー、元データ保存・ZIP回収を操作します。実測入力と明示した合成入力を備えます。\n\n` +
+    `実施者はゴーグル単体の案内付きチェックで、動きからの割当候補・実物選択・校正・機能確認を行えます。PCは同じ状態と詳細を表示し、本実験の手動課題選択・開始合図と正式計時・回答保存・ZIP回収を担当します。本実験中の被験者操作は不要です。実測入力と明示した合成入力を備えます。\n\n` +
     `**この版の実機インストール、5台同時追跡、左右速度の精度、出力遅延、屋外条件、90分稼働は未確認です。本計測の受入れ条件は未達です。** 最初は停止・着座して確認してください。左右車輪の速度を連続提示する版で、接触区間や力は測定しません。\n\n` +
     `operator-console.zipを展開し、Node.js 24を準備した実施者用Ubuntu PCで sh start.sh を実行してください。PCのホットスポットにゴーグルを接続し、表示された確認番号をPCへ入力します。現地の外部回線は不要です。\n\nui-preview.zipには共通処理の音見本も含みます。展開してindex.htmlを開くと、被験者用のUnity描画と実施者用のブラウザー画像を確認できます。実機の光学系・パススルーを再現した画像ではありません。記録データはReleaseに含みません。\n\n` +
     `- Source: ${commit}\n- Version: ${info.version} / Android versionCode ${info.versionCode}\n` +

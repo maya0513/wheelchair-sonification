@@ -1,6 +1,6 @@
 # APKの導入とビルド
 
-対象はVIVE Focus VisionのAndroid／OpenXR単体実行。実施者のPCブラウザーから操作し、参加者はコントローラーを使わない。[PC操作](experiment-console.md)・[確認状況](remaining-work.md)
+対象はVIVE Focus VisionのAndroid／OpenXR単体実行。実施者はゴーグル単体で準備・チェックできる。本実験の操作と正式計時はPCブラウザーで行い、参加者はコントローラーを使わない。[PC操作](experiment-console.md)・[確認状況](remaining-work.md)
 
 ## 配布物から導入する
 
@@ -12,7 +12,7 @@
 
 [アプリの概要](../app-overview.md)は画像付きの短い説明。`app-overview.zip`を展開するとMarkdownと画像をまとめて読める。`ui-preview.zip`は展開して`index.html`を開くと、Unity画像・PC画像・WAV見本を閲覧できる。`build-info.json`はソース・設定・検査結果、`SHA256SUMS.txt`は照合用。これらをHMDへ入れる必要はない。回収はアプリ内の[記録ページ](research-records.md)から行う。
 
-同じアプリID・署名鍵で更新する。署名不一致をアンインストールで回避すると元データを失うので、鍵と版を先に確認する。通信形式2のAPKとコンソールを使い、旧接触角版と混ぜない。
+同じアプリID・署名鍵で更新する。署名不一致をアンインストールで回避すると元データを失うので、鍵と版を先に確認する。通信形式3のAPKとコンソールを使い、旧接触角版と混ぜない。
 
 ## 開発環境と署名
 
@@ -38,7 +38,7 @@ UNITY_BUILD_VERSION=0.4.0 UNITY_ANDROID_VERSION_CODE=4 just unity-build-apk
 ## 公開する
 
 ```sh
-just release-apk v0.4.0 4
+just release-apk v0.5.0 5
 ```
 
 公開時はGitHub認証・公開先・クリーンなソース・GitHubにあるコミット、未使用のタグを確認する。Unity画像・WAV、PC画像、署名付きAPKを同じソースから新規生成し、DraftへAPK・コンソール・概要資料・プレビュー・ビルド情報・チェックサムを添付してプレリリース公開する。概要ZIPの画像は同梱し、詳細資料へのリンクはソースコミットへ固定する。既存Releaseは上書きしない。アップロード失敗はDraftで止め、ローカル成果物と復旧案内を残す。
