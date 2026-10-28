@@ -7,4 +7,5 @@ node = "lts"
 python = "latest"
 uv = "latest"
 typst = "latest"
-"pypi:mcpforunityserver" = "10.2.0"
+# ロックしたPyYAML 6.0.3にPython 3.15用wheelが含まれないため、このツールだけ3.14を使う。
+"pypi:mcpforunityserver" = { version = "10.2.0", python = "3.14" }
