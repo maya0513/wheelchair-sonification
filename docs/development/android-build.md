@@ -10,9 +10,8 @@ Unity Hubで6000.6.4f1とAndroid Build Support／SDK・NDK・OpenJDKを用意す
 
 ```sh
 just setup
-just dev unity-prepare
 just dev android-signing-init  # 初回だけ。既存の配布鍵を作り直さない
-just unity-build-apk
+just dev unity-build-apk
 ```
 
 既存の配布鍵はGit管理外の`.local/signing/`と`.local/android-signing.json`にある。バックアップは安全な別場所へ保存し、鍵・パスワードをGit・チャット・Releaseへ入れない。別環境では`UNITY_ANDROID_KEYSTORE`、`UNITY_ANDROID_KEY_ALIAS`、`UNITY_ANDROID_KEYSTORE_PASSWORD`、`UNITY_ANDROID_KEY_ALIAS_PASSWORD`から読み込める。
@@ -20,7 +19,7 @@ just unity-build-apk
 バージョンを指定する例を示す。
 
 ```sh
-UNITY_BUILD_VERSION=0.6.0 UNITY_ANDROID_VERSION_CODE=6 just unity-build-apk
+UNITY_BUILD_VERSION=0.6.0 UNITY_ANDROID_VERSION_CODE=6 just dev unity-build-apk
 ```
 
 出力は`.local/builds/android-release/`。署名、ARM64、IL2CPP、非デバッグ、XR Manifest、ローカルHTTP・権限、SDK・ライセンスを検査する。前のAPKと証明書が違えば更新互換性を認めない。実機動作は別途確認する。
@@ -28,7 +27,7 @@ UNITY_BUILD_VERSION=0.6.0 UNITY_ANDROID_VERSION_CODE=6 just unity-build-apk
 ## 公開する
 
 ```sh
-just release-apk v0.6.0 6
+just dev release-apk v0.6.0 6
 ```
 
 公開時はGitHub認証・公開先・クリーンなソース・GitHubにあるコミット、未使用のタグを確認する。Unity画像・WAV、PC画像、署名付きAPKを同じソースから新規生成し、DraftへAPK・コンソール・概要資料・プレビュー・ビルド情報・チェックサムを添付してプレリリース公開する。概要ZIPの画像は同梱し、詳細資料へのリンクはソースコミットへ固定する。既存Releaseは上書きしない。アップロード失敗はDraftで止め、ローカル成果物と復旧案内を残す。

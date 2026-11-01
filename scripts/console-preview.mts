@@ -12,7 +12,12 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createConsoleServer } from './experiment-console.mts';
-import { demoSnapshot, startDemoDevice, demoCode, preparationFixture } from './console-demo.mts';
+import {
+  previewSnapshot,
+  startPreviewDevice,
+  previewCode,
+  preparationFixture,
+} from './console-preview-fixture.mts';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export async function captureConsole(output = join(root, '.local/console-preview')) {
@@ -21,10 +26,10 @@ export async function captureConsole(output = join(root, '.local/console-preview
   output = mkdtempSync(join(dirname(finalOutput), '.console-preview-'));
   const fixtureRecords = join(output, 'fixture-recovered-records');
   rmSync(fixtureRecords, { recursive: true, force: true }); // Do not let records from a previous capture satisfy today's checks.
-  const app = createConsoleServer({ demo: true, port: 18765, dataDirectory: fixtureRecords });
+  const app = createConsoleServer({ port: 18765, dataDirectory: fixtureRecords });
   await app.listen();
   const endpoint = 'http://127.0.0.1:18765';
-  const demo = await startDemoDevice(endpoint);
+  const device = await startPreviewDevice(endpoint);
   const profile = mkdtempSync(join(tmpdir(), 'wheelchair-browser-'));
   const chrome = spawn(
     process.env.CHROME_BIN || 'google-chrome',
@@ -94,19 +99,19 @@ export async function captureConsole(output = join(root, '.local/console-preview
     await call('Page.navigate', { url: endpoint });
     await sleep(1500);
     await evaluate(
-      `document.getElementById('pair-code').value='${demoCode}';document.getElementById('pair').click()`,
+      `document.getElementById('pair-code').value='${previewCode}';document.getElementById('pair').click()`,
     );
     await sleep(1500);
     const capture = async (
       name: string,
       title: string,
       page = 'progress',
-      snapshot: any = demoSnapshot(),
+      snapshot: any = previewSnapshot(),
       width = 1440,
       height = 1100,
       focus = '',
     ) => {
-      demo.setSnapshot(snapshot);
+      device.setSnapshot(snapshot);
       await sleep(1100);
       await call('Emulation.setDeviceMetricsOverride', {
         width,
@@ -162,19 +167,28 @@ export async function captureConsole(output = join(root, '.local/console-preview
       }
       shots.push({ name, file: name + '.png', title, width, height, crops });
     };
-    const ready = demoSnapshot({
+    const ready = previewSnapshot({
       visitId: 'fixture-visit',
       participantId: 'P001',
       status: '停止中',
     });
-    await capture('01-initial', '接続後・新しい来訪', 'progress', demoSnapshot());
+    // Request trials through the shipped UI, so screenshots exercise the real clock ownership rules.
+    const startTrial = async (snapshot: any) => {
+      device.setSnapshot({ ...snapshot, running: false, trialId: '' });
+      await sleep(1100);
+      await evaluate(`document.querySelector('[data-page="progress"]').click()`);
+      if (await evaluate(`document.getElementById('record-start').disabled`))
+        throw new Error('画像検証用の記録を開始できません。');
+      await evaluate(`document.getElementById('record-start').click()`);
+      await sleep(1100);
+      if (await evaluate(`document.getElementById('cue').disabled`))
+        throw new Error('記録を開始したブラウザーが計時できません。');
+      return device.getSnapshot();
+    };
+    await capture('01-initial', '接続後・新しい来訪', 'progress', previewSnapshot());
     await capture('02-ready', '評価の手動選択', 'progress', ready);
-    await capture('03-recording', '記録と計時の区別', 'progress', {
-      ...ready,
-      running: true,
-      status: '記録中',
-      trialId: 'fixture-trial',
-    });
+    const recording = await startTrial({ ...ready, status: '記録中' });
+    await capture('03-recording', '記録と計時の区別', 'progress', recording);
     await evaluate(`document.getElementById('cue').click()`);
     await sleep(150);
     await evaluate(`window.previewAudioContext.suspend()`);
@@ -199,17 +213,13 @@ export async function captureConsole(output = join(root, '.local/console-preview
       throw new Error('取り消した開始合図を再予約できません。');
     await evaluate(`document.getElementById('cue').click()`);
     await capture('16-preparing', 'PC開始合図・準備中', 'progress', {
-      ...ready,
-      running: true,
+      ...recording,
       status: '記録中',
-      trialId: 'fixture-trial',
     });
     await sleep(2300);
     await capture('17-timing-running', 'PCの正式時計・手動停止前', 'progress', {
-      ...ready,
-      running: true,
+      ...recording,
       status: '記録中',
-      trialId: 'fixture-trial',
     });
     if (!(await evaluate(`parseFloat(document.getElementById('stopwatch').textContent)>0`)))
       throw new Error('開始合図後にPC時計が開始していません。');
@@ -239,15 +249,12 @@ export async function captureConsole(output = join(root, '.local/console-preview
     if (!(await evaluate(`document.getElementById('cue').disabled`)))
       throw new Error('計時済み試行の開始合図が再び有効になっています。');
     await capture('04-training', '訓練終了と記録終了', 'progress', {
-      ...ready,
-      running: true,
+      ...recording,
       phase: 'Training',
       status: '訓練記録中',
-      trialId: 'fixture-trial',
     });
     await capture('05-training-end', 'FB終了後も安全停止まで記録', 'progress', {
-      ...ready,
-      running: true,
+      ...recording,
       phase: 'Training',
       trainingEnded: true,
       status: '記録中',
@@ -282,7 +289,7 @@ export async function captureConsole(output = join(root, '.local/console-preview
       ...ready,
       exportStatus: 'PCへコピー・SHA-256照合済み。元記録を保持。',
     });
-    const laptop = { ...ready, running: true, status: '記録中', trialId: 'laptop-live-trial' };
+    const laptop = await startTrial({ ...ready, status: '記録中' });
     await capture('18-laptop', 'ノートPC・主操作が画面内', 'progress', laptop, 1366, 768);
     shots.pop(); // The final image below is the evidence for this viewport, after the cue starts.
     await evaluate(`document.getElementById('cue').click()`);
@@ -344,9 +351,8 @@ export async function captureConsole(output = join(root, '.local/console-preview
       '#eye-state',
     );
     await evaluate(`document.querySelector('details.technical').open=false`);
-    app.options.demo = false;
     const orphan = { ...ready, running: true, trialId: 'reloaded-unowned-trial' };
-    demo.setSnapshot(orphan);
+    device.setSnapshot(orphan);
     await call('Page.reload');
     await sleep(1400);
     await capture('25-reloaded', '再読込後の時計を誤って再開しない', 'progress', orphan, 1366, 768);
@@ -356,11 +362,10 @@ export async function captureConsole(output = join(root, '.local/console-preview
       ))
     )
       throw new Error('再読込後の時計が継続できるように見えます。');
-    app.options.demo = true;
     await evaluate(
       `document.getElementById('scale-0').value='95';document.getElementById('question-notes').value='previous participant fixture'`,
     );
-    demo.setSnapshot({ ...ready, visitId: 'second-fixture-visit', participantId: 'P002' });
+    device.setSnapshot({ ...ready, visitId: 'second-fixture-visit', participantId: 'P002' });
     await sleep(1100);
     if (
       !(await evaluate(
@@ -368,7 +373,7 @@ export async function captureConsole(output = join(root, '.local/console-preview
       ))
     )
       throw new Error('次の参加者へ回答が残っています。');
-    demo();
+    device();
     await sleep(3600);
     await call('Emulation.setDeviceMetricsOverride', {
       width: 1440,
@@ -469,7 +474,7 @@ export async function captureConsole(output = join(root, '.local/console-preview
     console.log('実施者画面を撮影しました: ' + join(finalOutput, 'index.html'));
     return finalOutput;
   } finally {
-    demo();
+    device();
     ws?.close();
     chrome.kill('SIGTERM');
     await app.close();

@@ -22,7 +22,7 @@ test('operator distribution contains only the runtime and offline frontend, neve
   );
   assert.equal(inspect.status, 0, inspect.stderr);
   const result = JSON.parse(inspect.stdout);
-  assert.equal(result.files.length, 10);
+  assert.equal(result.files.length, 8);
   assert.equal(result.info.operatorProtocol, 3);
   assert.equal(result.info.sourceCommit, 'a'.repeat(40));
   assert.match(result.start, /node scripts\/experiment-console.mts/);
@@ -32,6 +32,8 @@ test('operator distribution contains only the runtime and offline frontend, neve
         !p.includes('.local') &&
         !p.endsWith('.keystore') &&
         !p.includes('ResearchSessions') &&
+        !p.includes('fixture') &&
+        !p.includes('demo') &&
         !p.endsWith('.test.mts'),
     ),
   );

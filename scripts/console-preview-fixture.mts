@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+// Synthetic device used only by the screenshot checks; not included in the operator distribution.
 const preparationFixtures = JSON.parse(
   readFileSync(new URL('./console/preparation-fixtures.json', import.meta.url), 'utf8'),
 );
@@ -8,14 +9,14 @@ export function preparationFixture(stage = 'Home') {
     preparationFixtures.stages.find((s: any) => s.stage === stage) || preparationFixtures.stages[0],
   );
 }
-export const demoDeviceId = 'de000000000000000000000000000004';
-export const demoCode = '123456';
-export function demoSnapshot(overrides: any = {}) {
+const previewDeviceId = 'de000000000000000000000000000004';
+export const previewCode = '123456';
+export function previewSnapshot(overrides: any = {}) {
   return {
     schema: 3,
     displayAligned: true,
     eyeStatus: '取得不可',
-    eyeReason: 'UI demo; no eye sensor',
+    eyeReason: 'UI preview fixture; no eye sensor',
     eyeCalibrationConfirmed: false,
     revision: 0,
     visitId: '',
@@ -52,13 +53,10 @@ export function demoSnapshot(overrides: any = {}) {
     ...overrides,
   };
 }
-export async function startDemoDevice(
-  endpoint: string,
-  options: { snapshot?: any; autoPair?: boolean } = {},
-) {
+export async function startPreviewDevice(endpoint: string, options: { snapshot?: any } = {}) {
   let token = '',
     running = true,
-    state = options.snapshot || demoSnapshot(),
+    state = options.snapshot || previewSnapshot(),
     result: any = null,
     lastId = '',
     advanceAt = 0,
@@ -81,7 +79,6 @@ export async function startDemoDevice(
     });
     return response.json();
   };
-  console.log('画面デモの接続確認番号: ' + demoCode);
   const loop = async () => {
     while (running) {
       try {
@@ -92,9 +89,9 @@ export async function startDemoDevice(
         if (!token) {
           const hello = await request('/device/hello', {
             schema: 3,
-            deviceId: demoDeviceId,
+            deviceId: previewDeviceId,
             codeHash: createHash('sha256')
-              .update(demoDeviceId + ':' + demoCode)
+              .update(previewDeviceId + ':' + previewCode)
               .digest('hex'),
           });
           token = hello.pairToken || '';
@@ -103,7 +100,7 @@ export async function startDemoDevice(
           if (reply.command && reply.command.id !== lastId) {
             const c = reply.command;
             lastId = c.id;
-            result = { id: c.id, ok: true, message: '模擬モードで反映しました。' };
+            result = { id: c.id, ok: true, message: '画像検証用の状態へ反映しました。' };
             if (c.action.startsWith('prep.')) {
               const action = c.action.slice(5),
                 stage = state.preparation?.stage;
@@ -113,7 +110,7 @@ export async function startDemoDevice(
               } else if (action === 'cancel') {
                 advanceAt = 0;
                 show('Result');
-                state.preparation.problem = '画面デモでチェックを中断しました。';
+                state.preparation.problem = '画像検証用のチェックを中断しました。';
               } else if (action === 'wait') show('Waiting');
               else if (action === 'home') show('Home');
               else if (action === 'recheck')
@@ -153,7 +150,7 @@ export async function startDemoDevice(
                 } else show('Result');
               }
             } else if (c.action === 'createVisit')
-              state = demoSnapshot({
+              state = previewSnapshot({
                 visitId: randomUUID(),
                 participantId: c.value,
                 revision: state.revision,
@@ -190,7 +187,9 @@ export async function startDemoDevice(
               state = {
                 ...state,
                 sourceKind:
-                  c.value === 'synthetic' ? 'synthetic_pose_fixture' : 'actual_unavailable_in_demo',
+                  c.value === 'synthetic'
+                    ? 'synthetic_pose_fixture'
+                    : 'actual_unavailable_in_preview',
               };
             state = { ...state, revision: state.revision + 1 };
           }
@@ -205,6 +204,7 @@ export async function startDemoDevice(
       running = false;
     },
     {
+      getSnapshot: () => state,
       setSnapshot: (value: any) => {
         state = value;
       },

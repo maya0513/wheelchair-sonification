@@ -77,12 +77,18 @@ test('only the browser that requested a trial can time it, and reloading cannot 
   assert.equal(owner.observe({ running: false }, null), false);
   assert.equal(owner.observe(active, null), true);
 });
-test('failed start cannot claim a trial and the explicitly isolated UI demo is not a measurement', () => {
+test('failed start cannot claim a trial, including a synthetic input trial', () => {
   const owner = new TrialOwnership();
   owner.requested('failed');
   assert.equal(
     owner.observe({ running: true, trialId: 'other' }, { id: 'failed', ok: false }),
     true,
   );
-  assert.equal(owner.observe({ running: true, trialId: 'fixture' }, null, true), false);
+  assert.equal(
+    owner.observe(
+      { running: true, trialId: 'fixture', sourceKind: 'synthetic_pose_fixture' },
+      null,
+    ),
+    true,
+  );
 });

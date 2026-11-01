@@ -65,7 +65,7 @@ type Command = {
   created: number;
 };
 export function createConsoleServer(
-  options: { dataDirectory?: string; demo?: boolean; now?: () => number; port?: number } = {},
+  options: { dataDirectory?: string; now?: () => number; port?: number } = {},
 ) {
   const now = options.now || Date.now;
   const port = options.port ?? consolePort;
@@ -153,8 +153,6 @@ export function createConsoleServer(
       const url = new URL(request.url, 'http://127.0.0.1:' + port);
       const isLocal = local(request.socket.remoteAddress);
       if (url.pathname.startsWith('/device/')) {
-        if (options.demo && !isLocal)
-          return send(response, 403, { error: '模擬コンソールへ実機は接続できません。' });
         if (url.pathname === '/device/hello' && request.method === 'POST') {
           const data = await json(request);
           if (data.schema !== 3)
@@ -180,7 +178,6 @@ export function createConsoleServer(
             pairToken: approved === candidate ? candidate.token : '',
             operatorConnected: activeOperator(),
             operatorLeaseSeconds: Math.max(0, (3000 - (now() - browserSeen)) / 1000),
-            demo: !!options.demo,
           });
         }
         if (!deviceAuthorized(request))
@@ -263,9 +260,10 @@ export function createConsoleServer(
       )
         return send(response, 403, { error: '異なるサイトからの操作を拒否しました。' });
       if (url.pathname === '/' && request.method === 'GET') {
-        const page = readFileSync(join(publicDirectory, 'index.html'), 'utf8')
-          .replace('__CSRF__', csrf)
-          .replace('__DEMO__', options.demo ? 'true' : 'false');
+        const page = readFileSync(join(publicDirectory, 'index.html'), 'utf8').replace(
+          '__CSRF__',
+          csrf,
+        );
         response.writeHead(200, {
           'Content-Type': 'text/html; charset=utf-8',
           'Cache-Control': 'no-store',
@@ -300,7 +298,6 @@ export function createConsoleServer(
       if (url.pathname === '/api/state' && request.method === 'GET') {
         clearExpired();
         return send(response, 200, {
-          demo: !!options.demo,
           connected: !!approved && now() - stateSeen < 3000,
           staleMs: stateSeen ? now() - stateSeen : null,
           operatorConnected: activeOperator(),
@@ -442,30 +439,21 @@ export function createConsoleServer(
         ),
       );
     },
-    options,
     directory,
   };
 }
 
-export async function startConsole(demo = false) {
-  const app = createConsoleServer({ demo });
+export async function startConsole() {
+  const app = createConsoleServer();
   await app.listen();
-  const aps = demo ? [] : accessPointAddresses();
+  const aps = accessPointAddresses();
   for (const address of aps) await app.listen(address);
   console.log('実施者用画面: http://127.0.0.1:' + consolePort + '/');
   console.log(
-    demo
-      ? '模擬モード：実機計測には使用できません。'
-      : aps.length
-        ? '接続済みホットスポット内だけで機器通信を受け付けます。'
-        : 'ホットスポットは未接続です。Wi-Fi設定で有効にした後、このコマンドを起動し直してください。設定は変更していません。',
+    aps.length
+      ? '接続済みホットスポット内だけで機器通信を受け付けます。'
+      : 'ホットスポットは未接続です。Wi-Fi設定で有効にした後、このコマンドを起動し直してください。設定は変更していません。',
   );
-  if (demo) {
-    const { startDemoDevice } = await import('./console-demo.mts');
-    const stop = await startDemoDevice('http://127.0.0.1:' + consolePort);
-    process.once('SIGINT', stop);
-    process.once('SIGTERM', stop);
-  }
   if (process.env.WHEELCHAIR_NO_BROWSER !== '1')
     spawn(
       process.platform === 'win32' ? 'cmd.exe' : 'xdg-open',
@@ -483,8 +471,13 @@ export async function startConsole(demo = false) {
   return app;
 }
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  startConsole(process.argv.includes('--demo')).catch((error) => {
-    console.error(error.message);
-    process.exitCode = 1;
-  });
+  Promise.resolve()
+    .then(() => {
+      if (process.argv.length !== 2) throw new Error('Usage: just start');
+      return startConsole();
+    })
+    .catch((error) => {
+      console.error(error.message);
+      process.exitCode = 1;
+    });
 }

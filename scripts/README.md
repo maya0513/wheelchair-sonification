@@ -1,6 +1,6 @@
 # 補助スクリプト
 
-実施者向けの少数の入口は[ルートjustfile](../justfile)、開発・検証用は[tasks/dev.just](../tasks/dev.just)。`just --list dev`で開発用コマンドを表示する。使い方は[開発資料](../docs/development/README.md)へ集約する。
+実施者向けは[ルートjustfile](../justfile)の`setup`・`update`・`start`、開発・検証・ビルド・公開は[tasks/dev.just](../tasks/dev.just)。`just --list dev`で開発用コマンドを表示する。使い方は[開発資料](../docs/development/README.md)へ集約する。
 
 | 入口 | 役割 |
 |---|---|
@@ -13,6 +13,7 @@
 | `android-signing.mts` | ローカル鍵の初回作成・読込み。秘密は出力しない |
 | `unity-preview.mts` | 共通Unity UIのPNG・WAV・閲覧HTML |
 | `console-preview.mts` | 実ブラウザーのPNG・切り出し・閲覧HTML |
+| `console-preview-fixture.mts` | 画像検証専用の模擬機器。配布コンソールには含めない |
 | `experiment-console.mts` / `console/` | オフラインの手動操作・PC時計・回答保存 |
 | `console-integration.mts` | Unity合成入力とPCの短時間結合確認／任意の継続確認 |
 | `console-validation.mts` | 継続確認の成功証拠がある場合だけ採用。未実施でも公開を妨げない |

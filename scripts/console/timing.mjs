@@ -72,12 +72,12 @@ export class TrialOwnership {
   requested(id) {
     this.pending = id;
   }
-  observe(snapshot, result, uiDemo = false) {
+  observe(snapshot, result) {
     if (this.pending && result?.id === this.pending) {
       if (result.ok && snapshot?.running) this.owned = snapshot.trialId;
       this.pending = '';
     }
     if (!snapshot?.running) this.owned = '';
-    return !!snapshot?.running && !uiDemo && this.owned !== snapshot.trialId;
+    return !!snapshot?.running && this.owned !== snapshot.trialId;
   }
 }

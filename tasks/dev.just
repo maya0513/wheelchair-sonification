@@ -42,6 +42,19 @@ unity-test-play:
 unity-build:
     mise exec --locked node -- bash scripts/unity.sh build
 
+# 本番用の署名付きFocus Vision APKを作成
+unity-build-apk:
+    mise exec --locked node -- node scripts/unity-release.mts
+
+# 指定版を新規ビルドし、GitHubプレリリースとして公開
+release-apk tag version_code:
+    mise exec --locked node -- node scripts/github-apk-release.mts {{quote(tag)}} {{quote(version_code)}}
+
+# ゴーグル・PCの画像と音見本を生成（Unity Editorを閉じてから）
+preview:
+    just dev unity-preview
+    just dev console-preview
+
 # 共通Unity UIからPNG・WAVを生成
 unity-preview:
     mise exec --locked node -- node scripts/unity-preview.mts capture
@@ -73,8 +86,3 @@ android-signing-init:
 # 任意のUnity–Codex接続（Ctrl+Cで終了）
 unity-mcp:
     mise exec --locked node -- node scripts/unity-mcp.mts
-
-# プロジェクトのツール要求を再解決し、ロックされた環境を導入
-tools-update:
-    mise lock --bump --platform linux-x64
-    just setup

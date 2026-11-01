@@ -25,12 +25,10 @@ export function validateConsolePreview(directory: string, commit?: string) {
 export function packageConsole(root: string, output: string, commit: string, version: string) {
   const files = [
     'scripts/experiment-console.mts',
-    'scripts/console-demo.mts',
     'scripts/console/index.html',
     'scripts/console/console.js',
     'scripts/console/console.css',
     'scripts/console/timing.mjs',
-    'scripts/console/preparation-fixtures.json',
   ];
   for (const file of files)
     if (!existsSync(join(root, file)))

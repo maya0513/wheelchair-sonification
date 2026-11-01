@@ -362,13 +362,11 @@ window.addEventListener('keydown', (e) => {
 });
 function render() {
   if (!view) return;
-  $('mode').textContent = view.demo
-    ? '模擬モード・実計測には使用不可'
-    : view.state?.sourceKind?.startsWith('synthetic')
-      ? '合成入力・実計測には使用不可'
-      : view.state?.sourceKind === 'vive_ultimate_tracker'
-        ? '実測入力'
-        : '入力確認待ち';
+  $('mode').textContent = view.state?.sourceKind?.startsWith('synthetic')
+    ? '合成入力・実計測には使用不可'
+    : view.state?.sourceKind === 'vive_ultimate_tracker'
+      ? '実測入力'
+      : '入力確認待ち';
   const required = [2, 3, 4].filter((i) =>
     view.state?.devices?.some((d) => d.key === view.state.bindings?.[i] && d.valid),
   ).length;
@@ -762,7 +760,7 @@ async function poll() {
   try {
     await api('heartbeat', {});
     view = await api('state');
-    orphanedTrial = ownership.observe(view.state, view.result, view.demo);
+    orphanedTrial = ownership.observe(view.state, view.result);
     if (pendingId && view.result?.id === pendingId) {
       message(view.result.ok ? '操作を反映しました。' : view.result.message, !view.result.ok);
       pendingId = '';

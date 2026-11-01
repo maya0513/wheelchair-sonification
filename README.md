@@ -13,4 +13,10 @@
 
 本計測へ進む判断は[開始条件G1–G6](docs/operations/study-operations.md#本計測開始条件)に従います。
 
-普段使うコマンドは`just`で一覧を表示します。実験用画面は`just experiment-console`、画面デモは`just experiment-console-demo`、画像・音見本は`just preview`、署名付きAPKは`just unity-build-apk`です。開発・検証用は`just dev`、スキル更新は`just skills-update`を使います。
+普段使うコマンドは次の3つです。開発・検証・ビルド・公開の一覧は`just dev`で表示します。
+
+```sh
+just setup   # ツールとSDKの準備
+just update  # ツールとスキルの更新
+just start   # 実験用PC画面の起動
+```

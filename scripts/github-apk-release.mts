@@ -288,7 +288,7 @@ export async function publishRelease(
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
-    if (process.argv.length !== 4) throw new Error('Usage: just release-apk v0.6.0 6');
+    if (process.argv.length !== 4) throw new Error('Usage: just dev release-apk v0.6.0 6');
     await publishRelease(process.argv[2], process.argv[3]);
   } catch (error) {
     console.error(error instanceof Error ? error.message : String(error));
