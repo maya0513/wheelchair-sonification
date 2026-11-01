@@ -12,3 +12,5 @@
 | 実施前に残っている確認を知る | [確認状況](docs/status.md) |
 
 本計測へ進む判断は[開始条件G1–G6](docs/operations/study-operations.md#本計測開始条件)に従います。
+
+普段使うコマンドは`just`で一覧を表示します。実験用画面は`just experiment-console`、画面デモは`just experiment-console-demo`、画像・音見本は`just preview`、署名付きAPKは`just unity-build-apk`です。開発・検証用は`just dev`、スキル更新は`just skills-update`を使います。

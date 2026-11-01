@@ -27,7 +27,7 @@
 | 画面・音 | Unity 44画像、Chrome 27画像を生成・目視確認。9 WAV（連続2分を含む）の左右分離・無音・クリップ・不連続を検査。実機試聴は未確認 |
 | 梱包 | `.local/logs/distribution-verification.json`。コンソールをリポジトリ外へ展開しNodeだけで起動、ZIPとチェックサムを照合 |
 
-現在の文書リンク・文献一覧・BibTeX・PDFの対応は`just docs-check`で検査する。配置整理後の推敲・参照確認は`.local/logs/document-reorganization-review.json`に記録する。文献の閲覧範囲は[文献一覧](../research/catalog.md)、原著と提案の区別は各ノートで確認する。
+現在の文書リンク・文献一覧・BibTeX・PDFの対応は`just dev docs-check`で検査する。配置整理後の推敲・参照確認は`.local/logs/document-reorganization-review.json`に記録する。文献の閲覧範囲は[文献一覧](../research/catalog.md)、原著と提案の区別は各ノートで確認する。
 
 画像とWAVは`.local/ui-preview/index.html`、PC画面は`.local/console-preview/index.html`で開く。[画像付き概要](app-overview.md)は要点だけを掲載する。90分継続試験は任意で、上のソースでの成功証拠はない。20分休憩を実際に待つ自動試験は行わない。
 

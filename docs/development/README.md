@@ -7,17 +7,26 @@
 Unityのバージョンは[ProjectVersion.txt](../../wheelchair-sonification/ProjectSettings/ProjectVersion.txt)、依存パッケージは[manifest.json](../../wheelchair-sonification/Packages/manifest.json)と[ロック](../../wheelchair-sonification/Packages/packages-lock.json)を確認する。HTC SDKは既存スクリプトが固定URL・SHA-256で取得する。別のSDKや汎用実験エンジンは導入しない。
 
 ```sh
-mise install
-just check             # 文書整合・補助スクリプト。実Releaseは作らない
-just unity-prepare
-just unity-check
-just unity-test-edit
-just unity-test-play
-just unity-preview
-just console-preview
+mise install --locked just  # just未導入の場合
+just setup
+just dev check             # 文書整合・補助スクリプト。実Releaseは作らない
+just dev unity-prepare
+just dev unity-check
+just dev unity-test-edit
+just dev unity-test-play
+just dev unity-preview
+just dev console-preview
 ```
 
-全コマンドは`just --list`、補助スクリプトの役割は[scripts/README](../../scripts/README.md)を参照する。[画像・音確認](xr-preview.md)と[署名付きAPKのビルド・公開](android-build.md)は独立した手順として読む。20分の実待機は通常テストへ入れず、`just experiment-soak`の90分継続確認は任意とする。
+実施者向けの入口は[ルートjustfile](../../justfile)、開発・検証用は[tasks/dev.just](../../tasks/dev.just)に分ける。`just`で普段使うコマンド、`just dev`または`just --list dev`で開発用の一覧を表示する。サブディレクトリから実行しても、開発用コマンドはリポジトリ直下で動く。
+
+[画像・音確認](xr-preview.md)と[署名付きAPKのビルド・公開](android-build.md)は独立した手順として読む。20分の実待機は通常テストへ入れず、`just dev experiment-soak`の90分継続確認は任意とする。実Release作成・90分確認・機器設定の変更を`check`の依存先にしない。補助スクリプトの役割は[scripts/README](../../scripts/README.md)を参照する。
+
+## ツールとスキルの管理
+
+`just setup`はmise.lockに従ってプロジェクトのツールを導入する。通常の実行もmiseのロックされた環境を使う。ツールの要求バージョンを再解決する場合だけ`just dev tools-update`を実行し、mise.lockの差分を確認する。Unity・SDKのバージョン変更とは分けて扱う。
+
+yomiyasuは[.agents/skills/yomiyasu/](../../.agents/skills/yomiyasu/SKILL.md)を使用する。`just skills-update`は、このプロジェクトのyomiyasuだけを更新する。更新後は`.agents/skills/yomiyasu/`と`skills-lock.json`の差分を確認する。更新用CLIはmiseで固定し、別のリポジトリcloneは置かない。これはスキル自体の更新で、文書への推敲を実行するコマンドではない。[公式の更新オプション](https://github.com/vercel-labs/skills/blob/main/docs/commands.md#skills-update)
 
 ## 実装の境界
 

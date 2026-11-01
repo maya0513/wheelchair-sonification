@@ -1,9 +1,10 @@
 # 画面・音を実機なしで確認する
 
 ```sh
-just unity-preview       # 共通Unity UIのPNGと共通音処理のWAV
-just unity-preview-open  # Editorで頭部・コントローラーを模擬操作
-just console-preview     # 実際のブラウザー画面を撮影
+just preview                 # ゴーグル・PCの画像と音見本をまとめて生成
+just dev unity-preview       # ゴーグル側だけ生成
+just dev console-preview     # PC側だけ生成
+just dev unity-preview-open  # Editorで頭部・コントローラーを模擬操作
 ```
 
 `.local/ui-preview/index.html`で画像・切り出し・撮影条件・音見本を確認する。Unityを入れていないPCへもフォルダー／ZIPを渡せる。2分の音はオフラインで生成するため2分待機しない。

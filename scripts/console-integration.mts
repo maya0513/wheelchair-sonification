@@ -33,7 +33,7 @@ async function api(path: string, body?: any) {
   return data;
 }
 const executable = join(root, '.local/builds/feedback-demo/FeedbackDemo.x86_64');
-if (!existsSync(executable)) throw new Error('先にjust unity-buildを実行してください。');
+if (!existsSync(executable)) throw new Error('先にjust dev unity-buildを実行してください。');
 const player = spawn(
   executable,
   [

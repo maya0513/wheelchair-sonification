@@ -66,7 +66,7 @@ export async function publishRelease(
     !existsSync(resolve(root, signing.UNITY_ANDROID_KEYSTORE || '.missing-signing-key'))
   )
     throw new Error(
-      '配布用の署名設定がありません。just android-signing-initまたは署名環境変数を設定してください。',
+      '配布用の署名設定がありません。just dev android-signing-initまたは署名環境変数を設定してください。',
     );
   const checked = (command: string, args: string[]) => {
     const result = run(command, args, root, env);
@@ -288,7 +288,7 @@ export async function publishRelease(
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
-    if (process.argv.length !== 4) throw new Error('Usage: just release-apk v0.2.0 2');
+    if (process.argv.length !== 4) throw new Error('Usage: just release-apk v0.6.0 6');
     await publishRelease(process.argv[2], process.argv[3]);
   } catch (error) {
     console.error(error instanceof Error ? error.message : String(error));

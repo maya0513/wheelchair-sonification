@@ -21,6 +21,12 @@ specifiers = ["lts"]
 checksum = "sha256:6e1db87ef58b8819e5d5402eff1536491b18edd8eb7bee5ef7897876e88dc5ff"
 url = "https://nodejs.org/dist/v24.21.0/node-v24.21.0-linux-x64.tar.gz"
 
+[[tools."npm:skills"]]
+version = "1.7.4"
+aube = { path = ".mise/locks/npm-skills/1.7.4", digest = "sha256:0fc828a5def0f23c2336c3e5094fc52f74b3b73e8f86a28c338a63c4324b902b" }
+backend = "npm:skills"
+specifiers = ["1.7.4"]
+
 [[tools."pypi:mcpforunityserver"]]
 version = "10.2.0"
 backend = "pypi:mcpforunityserver"

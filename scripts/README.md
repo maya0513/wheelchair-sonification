@@ -1,11 +1,11 @@
 # 補助スクリプト
 
-実行入口は`just --list`。仕様は[開発資料](../docs/development/README.md)へ集約する。
+実施者向けの少数の入口は[ルートjustfile](../justfile)、開発・検証用は[tasks/dev.just](../tasks/dev.just)。`just --list dev`で開発用コマンドを表示する。使い方は[開発資料](../docs/development/README.md)へ集約する。
 
 | 入口 | 役割 |
 |---|---|
-| `just docs-check` | Markdownの参照先・見出し、文献一覧とBibTeX、保存PDFのSHA-256を検査 |
-| `just check` | Nodeのスクリプト・時計・HTTP・保存・配布のテスト。実Releaseは作らない |
+| `just dev docs-check` | Markdownの参照先・見出し、文献一覧とBibTeX、保存PDFのSHA-256を検査 |
+| `just dev check` | Nodeのスクリプト・時計・HTTP・保存・配布のテスト。実Releaseは作らない |
 | `unity.sh` | Editor起動・コンパイル・Edit/Play Mode・Linux合成入力版 |
 | `unity-xr-sdk.mts` | HTC SDKの固定URL・ハッシュ・キャッシュ検証 |
 | `unity-release.mts` | 署名付きAPK、ARM64／XR／権限／ライセンス・更新署名の検証 |
@@ -21,4 +21,4 @@
 | `unity-state.mts` | バッチ実行後にUnity設定・動的フォントの変更を戻す |
 | `unity-mcp.mts` | 任意のEditor接続。ビルドに不要 |
 
-ローカル回収先は既定で`~/WheelchairSonificationData/`。テストの合成記録は`.local/`と一時ディレクトリへ分離する。固定時計で2分・20分を確認し、実時間待機を通常のテストに持ち込まない。`just experiment-soak`だけが任意で90分稼働を確認する。
+ローカル回収先は既定で`~/WheelchairSonificationData/`。テストの合成記録は`.local/`と一時ディレクトリへ分離する。固定時計で2分・20分を確認し、実時間待機を通常のテストに持ち込まない。`just dev experiment-soak`だけが任意で90分稼働を確認する。

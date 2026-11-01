@@ -61,7 +61,7 @@ if [[ "$1" == libraries ]]; then
 fi
 
 if [[ -e "$project/Temp/UnityLockfile" ]]; then
-    echo "Unity Editorを閉じてから just unity-$1 を実行してください。" >&2
+    echo "Unity Editorを閉じてから just dev unity-$1 を実行してください。" >&2
     exit 1
 fi
 mkdir -p "$root/.local/logs"

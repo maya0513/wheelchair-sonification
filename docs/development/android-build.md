@@ -6,13 +6,13 @@
 
 ## 開発環境と署名
 
-Unity Hubで6000.6.4f1とAndroid Build Support／SDK・NDK・OpenJDKを用意する。対象SDKは36。HTC OpenXR 2.5.1の公式配布tgzを`just unity-prepare`が固定URL・SHA-256で取得し、Git管理外へキャッシュする。手動インポートやGit LFSは不要。
+Unity Hubで6000.6.4f1とAndroid Build Support／SDK・NDK・OpenJDKを用意する。対象SDKは36。HTC OpenXR 2.5.1の公式配布tgzを`just dev unity-prepare`が固定URL・SHA-256で取得し、Git管理外へキャッシュする。手動インポートやGit LFSは不要。
 
 ```sh
-mise install
-just unity-prepare
-just android-signing-init  # 初回だけ。既存の配布鍵を作り直さない
-just unity-build-release
+just setup
+just dev unity-prepare
+just dev android-signing-init  # 初回だけ。既存の配布鍵を作り直さない
+just unity-build-apk
 ```
 
 既存の配布鍵はGit管理外の`.local/signing/`と`.local/android-signing.json`にある。バックアップは安全な別場所へ保存し、鍵・パスワードをGit・チャット・Releaseへ入れない。別環境では`UNITY_ANDROID_KEYSTORE`、`UNITY_ANDROID_KEY_ALIAS`、`UNITY_ANDROID_KEYSTORE_PASSWORD`、`UNITY_ANDROID_KEY_ALIAS_PASSWORD`から読み込める。
