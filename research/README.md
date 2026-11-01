@@ -1,37 +1,41 @@
 # 文献調査
 
-車いす推進、運動学習、情報フィードバック、ソニフィケーション、計測装置に関する文献調査です。[全体のまとめ](synthesis.md)から、必要な領域のレビュー、個別文献の順に読めます。本研究で実施する条件は[研究資料](../docs/README.md)にあります。
+車いす推進、運動学習、情報フィードバック、ソニフィケーション、計測装置の調査。[全体のまとめ](synthesis.md)から領域別レビュー、個別文献へ進む。本研究で採用する条件・数値は[研究資料](../docs/README.md)で管理する。
 
-## 読む目的と入口
+## 研究の背景を読む
 
-| 目的 | 資料 |
+| 調べたいこと | レビュー |
 |---|---|
-| 主な知見と研究上の限界を知る | [全体のまとめ](synthesis.md) |
-| 成績と保持の違いを理解する | [運動学習](topics/motor-learning.md) |
-| 情報の種類・時点・頻度を整理する | [情報フィードバック](topics/information-feedback.md) |
-| 返す動作情報と、音・表示への変換を比較する | [情報候補の比較：車輪・手首・車体など](topics/feedback-design-alternatives.md)・[聴覚FB](topics/auditory-feedback.md) |
-| 車いすで測る指標と課題を選ぶ | [推進指標](topics/wheelchair-propulsion.md)・[技能評価](topics/wheelchair-skill-assessment.md) |
-| 先行研究の装置と検証方法を調べる | [計測の読み方](topics/sensing-and-devices.md)・[装置比較](topics/device-comparison.md) |
-| 手元の装置で接触角・目標誤差を測れるか判断する | [推進角の計測可能性と先行研究との比較](topics/propulsion-angle-measurement-feasibility.md) |
-| 将来の脳波計測を検討する | [簡易EEG](topics/eeg.md)。本研究の測定には組み込まない |
-| 縦バーの配置・透明度、探索用の眼球取得 | [表示と視線](implementation/visual-placement-and-eye-logging.md) |
-| 案内付き準備とXR UIの設計根拠 | [技術ノート](implementation/guided-preparation-ui.md) |
-| 開発を進める | [入門解説](implementation/development-and-testing-guide.md)・[実行手順](../docs/development/guide.md) |
+| 練習中の成績と保持を区別する | [運動学習](topics/motor-learning.md) |
+| 情報の種類・時点・頻度を選ぶ | [情報フィードバック](topics/information-feedback.md) |
+| 動作の音化と効果を理解する | [聴覚FB](topics/auditory-feedback.md) |
+| 車いすの指標と課題を選ぶ | [推進指標](topics/wheelchair-propulsion.md)・[技能評価](topics/wheelchair-skill-assessment.md) |
+| 車輪・手首・車体などの候補を比較する | [FB情報の比較](topics/feedback-design-alternatives.md) |
 
-## 出典を確認する
+## 装置・開発の根拠を調べる
 
-[文献一覧](catalog.md)には採択した資料と閲覧範囲、`papers/`の個別ノートには目的、方法、結果、限界、確認位置を記載します。本文重点確認、関連節、抄録、書誌のみの確認を区別しています。数値と装置の仕様は各研究の報告として読み、手元の装置で再現できる性能とは分けて扱ってください。
-
-| 調べたい情報 | 保存場所 |
+| 調べたいこと | 技術調査 |
 |---|---|
-| 書誌と引用用データ | [文献一覧](catalog.md)・[BibTeX](references.bib) |
-| 検索方法・採否 | [調査方法](search-method.md) |
+| センサー、処理、音生成、遅延、検証 | [計測・FB装置の比較](implementation/sensing-and-feedback-devices.md) |
+| 準備画面、縦バー、透明度、眼球取得 | [XR画面と視線記録](implementation/xr-ui-and-eye-tracking.md) |
+| 会場回線なしのPC操作と時計 | [オフライン通信](implementation/offline-local-control.md) |
+| モック・記録再生・テストで開発する | [開発とテストの入門](implementation/development-and-testing-guide.md) |
+
+これらは文献・公式資料と設計判断を整理する資料。現行アプリの操作は[実施手順](../docs/operations/setup.md)、実行コマンドは[開発資料](../docs/development/README.md)を参照する。
+
+## 出典と調査範囲を確認する
+
+| 情報 | 保存場所 |
+|---|---|
+| 書誌・閲覧範囲・引用データ | [文献一覧](catalog.md)・[BibTeX](references.bib) |
+| 各研究の目的・方法・結果・限界・確認位置 | 文献一覧からリンクする`papers/`の個別ノート |
+| 探索・採否の方法 | [調査方法](search-method.md) |
 | 検索・書誌照合の実施日と結果 | [照合ログ](search-log.md) |
 | 保存PDF、取得元、利用条件 | [PDF一覧](pdfs/INDEX.md)・[容量とハッシュ](pdfs/manifest.json) |
-| 公式Wordの原本と取得条件 | [保存資料一覧](sources/INDEX.md) |
+| 公式Word等の原本 | [保存資料一覧](sources/INDEX.md) |
 
-研究計画の選択理由は[設計上の判断](../docs/study-plan.md)、原発表の内容は[原資料](../docs/archive/README.md)を参照してください。参加者の映像・生ログは文献調査の資料に含めません。
+本文重点確認・関連節・抄録・書誌のみの確認を区別する。各研究の数値を、手元の装置で再現できる性能とは扱わない。個別ノートは出典単位で残し、総説や方法論を同じ研究として二重計上しない。
 
-会場回線を使わず実施者のPCから操作するための技術的根拠は、[オフラインのローカル操作](topics/offline-local-control.md)を参照する。
+## 採用していない案を調べる
 
-左右提示・開始合図・連続音の快適性の追加根拠：[Dyer](papers/L64-dyer-2017.md)、[Bass](papers/L65-bass-2024.md)、[Dubus](papers/L66-dubus-bresin-2010.md)。
+[推進角・目標誤差の計測可能性](implementation/propulsion-angle-measurement-feasibility.md)は、接触区間を測る案の検討資料。[簡易EEG](topics/eeg.md)は将来の参考で、今回の計測には組み込まない。原発表の内容は[保存資料](../docs/archive/README.md)を参照する。参加者の映像や生ログは文献資料に含めない。

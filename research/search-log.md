@@ -94,7 +94,7 @@ L53はEurope PMCのDOI検索0件のためJ-STAGE原記録とPDFで同定。L54�
 | `"10.1109/JSEN.2026.3657180" full pdf` | Ultimate Trackerのロボット参照による追跡精度研究。出版社直接ページはブラウザー確認で本文未閲覧。2024年のarXiv版と2026年の出版論文を同一の版として混ぜず、今回は接触角の検証文献として追加採用しない |
 | [L14原著Methods](https://link.springer.com/article/10.1186/s12984-021-00936-x)、[HTC公式入力](https://developer.vive.com/resources/openxr/unity/tutorials/tracker-overview/vivexrtracker/) | 全評価でのSMARTWheel使用、APIで取得する位置・姿勢・追跡状態とAndroidの5台対応を確認 |
 
-比較と研究上の判断は[推進角の計測可能性](topics/propulsion-angle-measurement-feasibility.md)に整理。L62の1.75±4.14°を手元の装置のMAEや単一プッシュの精度として転用しない。L62追加後の採択一覧・保存PDF件数は[文献一覧](catalog.md)・[PDF一覧](pdfs/INDEX.md)で管理する。
+比較と研究上の判断は[推進角の計測可能性](implementation/propulsion-angle-measurement-feasibility.md)に整理。L62の1.75±4.14°を手元の装置のMAEや単一プッシュの精度として転用しない。L62追加後の採択一覧・保存PDF件数は[文献一覧](catalog.md)・[PDF一覧](pdfs/INDEX.md)で管理する。
 
 ## 動きそのものを返す情報候補の追加照合（2026-10-21）
 
@@ -117,6 +117,6 @@ GrefのTable 1を再確認し左右の和と独立提示を区別。Dyer2017（D
 
 ## 表示配置・視線記録の追加照合（2026-11-02）
 
-車いすの縦バー（L59）、歩行中の読字・VST動画（L67–L68）、自転車の通知（L69）の対象・表示・結果を区別して確認した。L69は公開PDFの方法・結果・限界と第1ページのCC BY 4.0を確認し保存。L67は大学公開PDF、L68は出版社HTMLの関連節を確認した。D10–D12は眼球取得・標準校正・座標系の公式資料。詳細は[表示と視線の技術ノート](implementation/visual-placement-and-eye-logging.md)。
+車いすの縦バー（L59）、歩行中の読字・VST動画（L67–L68）、自転車の通知（L69）の対象・表示・結果を区別して確認した。L69は公開PDFの方法・結果・限界と第1ページのCC BY 4.0を確認し保存。L67は大学公開PDF、L68は出版社HTMLの関連節を確認した。D10–D12は眼球取得・標準校正・座標系の公式資料。詳細は[表示と視線の技術ノート](implementation/xr-ui-and-eye-tracking.md#表示配置と視線記録の根拠)。
 
 既存書誌はCrossrefのメタデータ38件を照合し、取得した英語タイトルとの対応を確認した。L60の英語タイトルと日本語タイトルは同じ文献である。HTTP 429、登録機関の違いによる404、DOIのない資料は今回のAPI照合成功件数に含めず、既存の閲覧範囲と出典を保持した。ローカルの照合記録は`.local/reference-audit/`。本文の再精読件数とは区別する。

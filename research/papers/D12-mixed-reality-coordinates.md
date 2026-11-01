@@ -6,4 +6,4 @@
 
 通常のHUDを頭に固定し続ける方式は避け、ユーザー・物体・空間と関連付ける指針。メーカーの一般的な設計指針であり、Focus Visionでの車いす走行の実証結果ではない。
 
-採用する条件は[FB仕様](../../docs/specifications/feedback.md)、取得項目と時刻は[保存形式](../../docs/development/research-records.md)を参照。
+採用する条件は[FB仕様](../../docs/specifications/feedback.md)、取得項目と時刻は[保存形式](../../docs/specifications/recording.md)を参照。

@@ -20,7 +20,7 @@ PCには同じ案内、割当、進捗、項目別結果を表示します。数
 
 ![PCの準備・チェック。車いすの図と役割別状態](images/app-overview/pc-settings.png)
 
-A／Xでメニュー、B／Yでパネルを正面へ再配置します。動作中は大きなパネルやポインターを隠し、コントローラーを持たずに確認できます。[準備とチェックの手順](development/tracker-measurement.md)
+A／Xでメニュー、B／Yでパネルを正面へ再配置します。動作中は大きなパネルやポインターを隠し、コントローラーを持たずに確認できます。[準備とチェックの手順](operations/setup.md)
 
 ## 参加者に返す情報
 
@@ -44,7 +44,7 @@ A／Xでメニュー、B／Yでパネルを正面へ再配置します。動作�
 
 ![PCの実験画面。現在の課題、時計、終了操作](images/app-overview/pc-timing.png)
 
-評価は「記録開始 → 開始合図 → ゴールで計時終了 → 安全停止後に記録終了」。開始音からPCで計時し、ボタンかSpaceで止めます。訓練は「訓練終了」でFBを止め、安全停止まで元データを残します。理解確認と質問紙もPCで保存します。[操作手順](development/experiment-console.md)
+評価は「記録開始 → 開始合図 → ゴールで計時終了 → 安全停止後に記録終了」。開始音からPCで計時し、ボタンかSpaceで止めます。訓練は「訓練終了」でFBを止め、安全停止まで元データを残します。理解確認と質問紙もPCで保存します。[操作手順](operations/console.md)
 
 ## 保存と回収
 
@@ -52,12 +52,12 @@ A／Xでメニュー、B／Yでパネルを正面へ再配置します。動作�
 
 ![PCの記録ページ。保存先と再回収](images/app-overview/pc-records.png)
 
-PCの初期保存先は `~/WheelchairSonificationData/`。USB用ZIPはHMDの `Download/WheelchairSonificationExports/` に出します。実名は入力しません。[保存項目](development/research-records.md)
+PCの初期保存先は `~/WheelchairSonificationData/`。USB用ZIPはHMDの `Download/WheelchairSonificationExports/` に出します。実名は入力しません。[保存先と回収手順](operations/records.md)
 
-現地の外部回線は不要で、PCのホットスポットに接続して使います。PCでUnity・VIVE Hubを常時実行する必要はありません。**対応するAPKとコンソールを一緒に更新してください。** [導入方法](development/android-build.md)
+現地の外部回線は不要で、PCのホットスポットに接続して使います。PCでUnity・VIVE Hubを常時実行する必要はありません。**対応するAPKとコンソールを一緒に更新してください。** [導入方法](operations/setup.md)
 
 ## 確認できている範囲
 
-PC上の計算・状態遷移・保存・転送、Unity画像とブラウザー画面を確認します。実機での自動候補の正しさ、目印の位置、追跡、音の左右分離、可読性、計測精度、現地での単独実施は別に確認が必要です。[確認証拠と残作業](development/remaining-work.md)
+PC上の計算・状態遷移・保存・転送、Unity画像とブラウザー画面を確認します。実機での自動候補の正しさ、目印の位置、追跡、音の左右分離、可読性、計測精度、現地での単独実施は別に確認が必要です。[確認証拠と残作業](status.md)
 
 Releaseの `app-overview.zip` でこのMarkdownと画像、`ui-preview.zip` で全画面と音見本を確認できます。

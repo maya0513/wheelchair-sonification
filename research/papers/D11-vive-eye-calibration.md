@@ -6,4 +6,4 @@
 
 参加者ごとにHMD標準の眼球校正を行う。IPDや装着位置を変えた後は再校正する。アプリ内の確認済み表示は実施者の記録で、測定精度の合格ではない。
 
-採用する条件は[FB仕様](../../docs/specifications/feedback.md)、取得項目と時刻は[保存形式](../../docs/development/research-records.md)を参照。
+採用する条件は[FB仕様](../../docs/specifications/feedback.md)、取得項目と時刻は[保存形式](../../docs/specifications/recording.md)を参照。

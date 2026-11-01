@@ -213,7 +213,7 @@ export async function publishRelease(
         ? `PC上のUnity＋操作サーバーでは、合成入力による来訪完了・ZIP回収と${Math.floor(soak.realElapsedSeconds)}秒の継続稼働を確認しました。Focus Vision本体の90分検証とは別です。\n\n`
         : `90分継続稼働は任意試験で、このソースでの成功証拠はありません。 合成入力による来訪完了・記録回収の確認結果と、残る検証は上記の導入資料・残作業表を参照してください。\n\n`) +
       `APKをダウンロードし、本体のDownloadへUSBでコピーしてファイルブラウザからインストールしてください。\n` +
-      `[導入・操作手順](https://github.com/${releaseRepository}/blob/${tag}/docs/development/android-build.md)\n`,
+      `[導入・操作手順](https://github.com/${releaseRepository}/blob/${tag}/docs/operations/setup.md)\n`,
   );
   let draftCreated = false;
   try {

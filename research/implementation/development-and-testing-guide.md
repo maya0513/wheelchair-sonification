@@ -51,4 +51,4 @@ Edit Modeは計算、Play Modeは実際のコンポーネント・画面・状�
 
 既存機器では公式サンプルから位置姿勢、単位・軸・ID・追跡状態を確かめ、固定・遮蔽・再接続・電池を確認する。マイコン自作を選ぶ場合だけWokwi等の回路模擬が役立つが、無線・固定・センサー実誤差は実機検証が要る。[Wokwi](https://docs.wokwi.com/)
 
-具体的なチェックは[検証計画](../../docs/specifications/validation.md)、実行コマンドは[開発ガイド](../../docs/development/guide.md)。API呼出し時刻は実音・実表示の時刻ではない。PNGとWAVは配置・波形の事前確認を増やす手段で、実機の精度や快適性を保証しない。
+具体的なチェックは[検証計画](../../docs/specifications/validation.md)、実行コマンドは[開発ガイド](../../docs/development/README.md)。API呼出し時刻は実音・実表示の時刻ではない。PNGとWAVは配置・波形の事前確認を増やす手段で、実機の精度や快適性を保証しない。

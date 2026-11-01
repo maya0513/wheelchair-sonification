@@ -1,6 +1,6 @@
 # 車輪速度フィードバックの仕様
 
-本研究で返す情報・音・表示の正本。課題と進行は[実験手順](../experiment-protocol.md)、時計と採点は[計測仕様](measurement.md)、記録列は[保存形式](../development/research-records.md)を参照する。
+本研究で返す情報・音・表示の正本。課題と進行は[実験手順](../experiment-protocol.md)、時計と採点は[計測仕様](measurement.md)、記録列は[保存形式](recording.md)を参照する。
 
 ## 返す情報
 
@@ -40,7 +40,7 @@
 
 ## ゴーグルの見せ方
 
-Unity公式XR Interaction Toolkit 3.4.1のWorld Space UIを手本に、編集可能なPrefabを使う。TextMeshProの日本語SDF、白系背景、黒文字、灰色と青のアクセントで構成する。文字は36以上、自動縮小なし。
+参加者用の表示は編集可能なWorld Space UIのPrefabを使う。TextMeshProの日本語SDFと縁取りで左右ラベルを描く。
 
 訓練中のV群は車いす前方下部に半透明の縦バー2本と「左」「右」だけを示す。左右の同じ値が同じ高さになり、下端を固定して上へ伸びる。数字・目標・履歴・設定を加えない。A・N群と全評価では消す。
 
@@ -64,7 +64,7 @@ Unity公式XR Interaction Toolkit 3.4.1のWorld Space UIを手本に、編集可
        左            右
 ```
 
-これらは本研究の試作用設定であり、文献で保証された最適値ではない。縦バーには[Rice 2010](../../research/papers/L59-rice-2010.md)の先例があるが正面モニターでの提示である。移動中の位置・透明度と車体固定の根拠は[追加調査](../../research/implementation/visual-placement-and-eye-logging.md)へ集約する。
+これらは本研究の試作用設定であり、文献で保証された最適値ではない。縦バーには[Rice 2010](../../research/papers/L59-rice-2010.md)の先例があるが正面モニターでの提示である。移動中の位置・透明度と車体固定の根拠は[追加調査](../../research/implementation/xr-ui-and-eye-tracking.md#表示配置と視線記録の根拠)へ集約する。
 
 画像で大きさ・重なりを確認し、実機では速度差の識別、床・コーンの視認、首と眼の負担を確認する。予備確認後、本計測前に全参加者共通の配置・透明度を固定する。[プレビュー](../development/xr-preview.md)
 

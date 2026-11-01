@@ -1,6 +1,6 @@
 # 補助スクリプト
 
-実行入口は`just --list`。仕様は[開発資料](../docs/development/guide.md)へ集約する。
+実行入口は`just --list`。仕様は[開発資料](../docs/development/README.md)へ集約する。
 
 | 入口 | 役割 |
 |---|---|

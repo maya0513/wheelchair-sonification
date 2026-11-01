@@ -25,7 +25,7 @@ Sigrist R; Rauter G; Riener R; Wolf P. Psychonomic bulletin & review. 2013.
 
 ## 本研究への示唆
 
-聴覚・視覚の比較では、提示する変数・時点・量を揃え、感覚だけの効果と混同しない。本研究の採用条件は[研究計画](../../docs/study-plan.md)を参照。
+聴覚・視覚の比較では提示する変数・時点・量を揃え、感覚だけの効果と混同しない。本研究の採用条件は[研究計画](../../docs/study-plan.md)を参照。
 
 ## 確認位置
 

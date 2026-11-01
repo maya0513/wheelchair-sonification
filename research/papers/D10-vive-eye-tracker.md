@@ -6,4 +6,4 @@
 
 Focus Vision AIOはVIVE OpenXR 2.5.0以降の対応対象。現行2.5.1の公開APIとソースも照合し、視線・瞳孔・眼の開きの有効性を分けて保存する。SDK配列APIで非公開の時刻をセンサー時刻として補完しない。
 
-採用する条件は[FB仕様](../../docs/specifications/feedback.md)、取得項目と時刻は[保存形式](../../docs/development/research-records.md)を参照。
+採用する条件は[FB仕様](../../docs/specifications/feedback.md)、取得項目と時刻は[保存形式](../../docs/specifications/recording.md)を参照。
