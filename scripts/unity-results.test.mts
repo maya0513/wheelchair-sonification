@@ -8,9 +8,10 @@ import { test } from 'node:test';
 
 const validator = join(dirname(fileURLToPath(import.meta.url)), 'unity-results.py');
 const python = process.env.UNITY_RESULTS_PYTHON || 'python3';
-const successful = '<test-run total="1" passed="1" failed="0" skipped="0" inconclusive="0" result="Passed"><test-suite><test-case fullname="test" result="Passed" /></test-suite></test-run>';
+const successful =
+  '<test-run total="1" passed="1" failed="0" skipped="0" inconclusive="0" result="Passed"><test-suite><test-case fullname="test" result="Passed" /></test-suite></test-run>';
 
-test('only a complete nonempty passing NUnit report succeeds', t => {
+test('only a complete nonempty passing NUnit report succeeds', (t) => {
   const root = mkdtempSync(join(tmpdir(), 'unity-results-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   const path = join(root, 'results.xml');

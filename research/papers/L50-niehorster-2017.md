@@ -25,7 +25,7 @@ Niehorster DC; Li L; Lappe M. i-Perception. 2017.
 
 ## 本研究への示唆
 
-この研究の対象・装置・提示情報と、本研究の左右速度FBを区別する。報告された接触・力・目標等の指標を、位置トラッカーで直接取得できるとはみなさない。現行の採用条件は[研究計画](../../docs/study-plan.md)、性能確認は[検証計画](../../docs/specifications/validation.md)へ集約する。
+追跡喪失後の基準ずれを確認し、必要なら校正と表示位置を取り直す。初期Viveの遅延・精度をUltimate Trackerへ移さず、[手元の系を検証する](../../docs/specifications/validation.md)。
 
 ## 確認位置
 

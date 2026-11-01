@@ -25,7 +25,7 @@ Guo L; Kwarciak AM; Rodriguez R; Sarkar N; Richter WM. Rehabilitation research a
 
 ## 本研究への示唆
 
-この研究の対象・装置・提示情報と、本研究の左右速度FBを区別する。報告された接触・力・目標等の指標を、位置トラッカーで直接取得できるとはみなさない。現行の採用条件は[研究計画](../../docs/study-plan.md)、性能確認は[検証計画](../../docs/specifications/validation.md)へ集約する。
+専用計測輪の力や接触区間を、位置トラッカーで直接取得できるとは扱わない。平均化・提示頻度の考え方と、本研究の[連続速度FB](../../docs/specifications/feedback.md)を区別する。
 
 ## 確認位置
 

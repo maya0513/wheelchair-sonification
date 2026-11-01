@@ -14,7 +14,12 @@ setup:
 # 補助スクリプトの構文と失敗時の動作を確認（Editor未実行）
 check:
     bash -n scripts/unity.sh
+    mise exec python -- python scripts/check-docs.py
     mise exec node python -- node --test scripts/*.test.mts
+
+# 文書のリンク・書誌・保存PDFを確認
+docs-check:
+    mise exec python -- python scripts/check-docs.py
 
 # HTC公式SDKを取得し、固定チェックサムを確認
 unity-prepare:

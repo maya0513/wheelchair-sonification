@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -8,17 +16,23 @@ import { apkName, buildRelease as actualBuildRelease, editorPath } from './unity
 
 const verified = { signatureVerified: true, xrManifestVerified: true };
 const dependencies = { prepare: async () => '', verify: () => verified };
-const buildRelease: typeof actualBuildRelease = (root, env, runUnity) => actualBuildRelease(root, env, runUnity, dependencies);
+const buildRelease: typeof actualBuildRelease = (root, env, runUnity) =>
+  actualBuildRelease(root, env, runUnity, dependencies);
 
 function fixture(t: { after: (cleanup: () => void) => void }) {
   const root = mkdtempSync(join(tmpdir(), 'unity release with spaces & '));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   mkdirSync(join(root, 'wheelchair-sonification/ProjectSettings'), { recursive: true });
-  writeFileSync(join(root, 'wheelchair-sonification/ProjectSettings/ProjectVersion.txt'), 'm_EditorVersion: 6000.6.4f1\r\n');
+  writeFileSync(
+    join(root, 'wheelchair-sonification/ProjectSettings/ProjectVersion.txt'),
+    'm_EditorVersion: 6000.6.4f1\r\n',
+  );
   const settings = join(root, 'wheelchair-sonification/ProjectSettings/ProjectSettings.asset');
   writeFileSync(settings, 'original settings\r\n');
-  const renderSettings = ['Mobile_RPAsset.asset', 'UniversalRenderPipelineGlobalSettings.asset']
-    .map(name => join(root, 'wheelchair-sonification/Assets/Settings', name));
+  const renderSettings = [
+    'Mobile_RPAsset.asset',
+    'UniversalRenderPipelineGlobalSettings.asset',
+  ].map((name) => join(root, 'wheelchair-sonification/Assets/Settings', name));
   mkdirSync(join(root, 'wheelchair-sonification/Assets/Settings'), { recursive: true });
   for (const path of renderSettings) writeFileSync(path, 'original render settings\r\n');
   mkdirSync(join(root, 'wheelchair-sonification/Assets/XR'), { recursive: true });
@@ -27,9 +41,14 @@ function fixture(t: { after: (cleanup: () => void) => void }) {
   renderSettings.push(xrSettings);
   const store = join(root, 'private signing key.jks');
   writeFileSync(store, 'fixture key');
-  const env = { ...process.env, UNITY_EDITOR: process.execPath, UNITY_ANDROID_KEYSTORE: store,
-    UNITY_ANDROID_KEY_ALIAS: 'wheelchair', UNITY_ANDROID_KEYSTORE_PASSWORD: 'do-not-log-this-store-secret',
-    UNITY_ANDROID_KEY_ALIAS_PASSWORD: 'do-not-log-this-alias-secret' };
+  const env = {
+    ...process.env,
+    UNITY_EDITOR: process.execPath,
+    UNITY_ANDROID_KEYSTORE: store,
+    UNITY_ANDROID_KEY_ALIAS: 'wheelchair',
+    UNITY_ANDROID_KEYSTORE_PASSWORD: 'do-not-log-this-store-secret',
+    UNITY_ANDROID_KEY_ALIAS_PASSWORD: 'do-not-log-this-alias-secret',
+  };
   delete env.UNITY_ANDROID_VERSION_CODE;
   const output = join(root, '.local/builds/android-release');
   mkdirSync(output, { recursive: true });
@@ -41,32 +60,61 @@ function fixture(t: { after: (cleanup: () => void) => void }) {
     const staging = request.env.WHEELCHAIR_BUILD_DIRECTORY!;
     writeFileSync(log, 'Android release built: ' + staging);
     writeFileSync(join(staging, apkName), 'new APK');
-    writeFileSync(join(staging, 'build-info.json'), JSON.stringify({ result: 'Succeeded', target: 'Android',
-      unityVersion: '6000.6.4f1', development: false, customSigning: true, architecture: 'ARM64', scriptingBackend: 'IL2CPP',
-      operatorProtocol: 3, headsetUi: 'guided-preparation-and-participant', androidTargetSdk: 36, targetDevice: 'VIVE Focus Vision', xrLoader: 'OpenXR', passthrough: true, inputMode: 'simulated-and-vive-ultimate-tracker',
-      scenes: ['Assets/Scenes/FeedbackDemoXR.unity'], version: '0.2.0', versionCode: 2 }));
+    writeFileSync(
+      join(staging, 'build-info.json'),
+      JSON.stringify({
+        result: 'Succeeded',
+        target: 'Android',
+        unityVersion: '6000.6.4f1',
+        development: false,
+        customSigning: true,
+        architecture: 'ARM64',
+        scriptingBackend: 'IL2CPP',
+        operatorProtocol: 3,
+        headsetUi: 'guided-preparation-and-participant',
+        androidTargetSdk: 36,
+        targetDevice: 'VIVE Focus Vision',
+        xrLoader: 'OpenXR',
+        passthrough: true,
+        inputMode: 'simulated-and-vive-ultimate-tracker',
+        scenes: ['Assets/Scenes/FeedbackDemoXR.unity'],
+        version: '0.2.0',
+        versionCode: 2,
+      }),
+    );
   };
   return { root, env, output, log, settings, renderSettings, complete };
 }
 
 test('Editor locations follow the OS and the exact project version', () => {
-  assert.equal(editorPath('6000.6.4f1', 'win32', { ProgramFiles: 'D:\\Program Files' }),
-    'D:\\Program Files\\Unity\\Hub\\Editor\\6000.6.4f1\\Editor\\Unity.exe');
-  assert.equal(editorPath('6000.6.4f1', 'linux', {}, '/home/student'), '/home/student/Unity/Hub/Editor/6000.6.4f1/Editor/Unity');
-  assert.equal(editorPath('6000.6.4f1', 'darwin', {}), '/Applications/Unity/Hub/Editor/6000.6.4f1/Unity.app/Contents/MacOS/Unity');
+  assert.equal(
+    editorPath('6000.6.4f1', 'win32', { ProgramFiles: 'D:\\Program Files' }),
+    'D:\\Program Files\\Unity\\Hub\\Editor\\6000.6.4f1\\Editor\\Unity.exe',
+  );
+  assert.equal(
+    editorPath('6000.6.4f1', 'linux', {}, '/home/student'),
+    '/home/student/Unity/Hub/Editor/6000.6.4f1/Editor/Unity',
+  );
+  assert.equal(
+    editorPath('6000.6.4f1', 'darwin', {}),
+    '/Applications/Unity/Hub/Editor/6000.6.4f1/Unity.app/Contents/MacOS/Unity',
+  );
 });
 
-test('signing must be configured before launching Unity and errors omit secrets', async t => {
+test('signing must be configured before launching Unity and errors omit secrets', async (t) => {
   const f = fixture(t);
   delete f.env.UNITY_ANDROID_KEY_ALIAS;
-  await assert.rejects(buildRelease(f.root, f.env, async () => assert.fail('Unity must not launch')), error => {
-    assert.match(String(error), /UNITY_ANDROID_KEY_ALIAS/);
-    assert.doesNotMatch(String(error), /do-not-log-this/);
-    return true;
-  });
+  await assert.rejects(
+    buildRelease(f.root, f.env, async () => assert.fail('Unity must not launch')),
+    (error) => {
+      assert.match(String(error), /UNITY_ANDROID_KEY_ALIAS/);
+      assert.doesNotMatch(String(error), /do-not-log-this/);
+      return true;
+    },
+  );
 });
 
-test('an open project or another release build prevents launching Unity', async t => {
+test('an open project or another release build prevents launching Unity', async (t) => {
   const f = fixture(t);
   const projectLock = join(f.root, 'wheelchair-sonification/Temp/UnityLockfile');
   mkdirSync(join(f.root, 'wheelchair-sonification/Temp'));
@@ -78,18 +126,27 @@ test('an open project or another release build prevents launching Unity', async 
   await assert.rejects(buildRelease(f.root, f.env, neverLaunch), /別のAPKビルド/);
 });
 
-test('a successful new APK is promoted with a matching hash and metadata', async t => {
+test('a successful new APK is promoted with a matching hash and metadata', async (t) => {
   const f = fixture(t);
-  await buildRelease(f.root, f.env, async request => {
+  await buildRelease(f.root, f.env, async (request) => {
     assert.equal(request.cwd, f.root);
-    assert.equal(request.args[request.args.indexOf('-projectPath') + 1], join(f.root, 'wheelchair-sonification'));
+    assert.equal(
+      request.args[request.args.indexOf('-projectPath') + 1],
+      join(f.root, 'wheelchair-sonification'),
+    );
     assert.equal(request.args[request.args.indexOf('-buildTarget') + 1], 'Android');
-    assert.equal(request.args[request.args.indexOf('-executeMethod') + 1], 'WheelchairSonification.Editor.ReleaseBuildTools.BuildAndroid');
+    assert.equal(
+      request.args[request.args.indexOf('-executeMethod') + 1],
+      'WheelchairSonification.Editor.ReleaseBuildTools.BuildAndroid',
+    );
     assert.ok(request.args.includes('-quit'));
-    assert.ok(!request.args.some(arg => /do-not-log-this/.test(arg)));
+    assert.ok(!request.args.some((arg) => /do-not-log-this/.test(arg)));
     f.complete(request);
     mkdirSync(join(f.root, 'wheelchair-sonification/Assets/XR 1'));
-    writeFileSync(join(f.root, 'wheelchair-sonification/Assets/XR 1.meta'), 'empty generated folder metadata');
+    writeFileSync(
+      join(f.root, 'wheelchair-sonification/Assets/XR 1.meta'),
+      'empty generated folder metadata',
+    );
     return 0;
   });
   const info = JSON.parse(readFileSync(join(f.output, 'build-info.json'), 'utf8'));
@@ -100,101 +157,151 @@ test('a successful new APK is promoted with a matching hash and metadata', async
   assert.equal(readFileSync(join(f.output + '.previous', apkName), 'utf8'), 'previous APK');
   assert.equal(readFileSync(f.settings, 'utf8'), 'original settings\r\n');
   assert.equal(existsSync(join(f.root, 'wheelchair-sonification/Assets/XR 1.meta')), false);
-  for (const path of f.renderSettings) assert.equal(readFileSync(path, 'utf8'), 'original render settings\r\n');
-  assert.deepEqual(readdirSync(join(f.root, '.local/builds')).sort(), ['android-release', 'android-release.previous']);
+  for (const path of f.renderSettings)
+    assert.equal(readFileSync(path, 'utf8'), 'original render settings\r\n');
+  assert.deepEqual(readdirSync(join(f.root, '.local/builds')).sort(), [
+    'android-release',
+    'android-release.previous',
+  ]);
 });
 
-test('failed Unity preserves the previous APK and removes incomplete output and lock', async t => {
+test('failed Unity preserves the previous APK and removes incomplete output and lock', async (t) => {
   const f = fixture(t);
   const resources = join(f.root, 'wheelchair-sonification/Assets/Experiment/Resources');
-  await assert.rejects(buildRelease(f.root, f.env, async () => {
-    writeFileSync(f.settings, 'Unity changed build settings\n');
-    for (const path of f.renderSettings) writeFileSync(path, 'Unity changed render settings\n');
-    mkdirSync(resources, { recursive: true });
-    writeFileSync(join(resources, 'BuildIdentity.txt'), 'interrupted build');
-    writeFileSync(join(resources, 'BuildIdentity.txt.meta'), 'interrupted build metadata');
-    const generated = join(f.root, 'wheelchair-sonification/Assets/Resources');
-    mkdirSync(generated, { recursive: true });
-    writeFileSync(generated + '.meta', 'generated folder metadata');
-    writeFileSync(join(generated, 'PerformanceTestRunInfo.json'), '{}');
-    writeFileSync(join(generated, 'PerformanceTestRunInfo.json.meta'), 'generated file metadata');
-    return 7;
-  }), /終了コード7/);
+  await assert.rejects(
+    buildRelease(f.root, f.env, async () => {
+      writeFileSync(f.settings, 'Unity changed build settings\n');
+      for (const path of f.renderSettings) writeFileSync(path, 'Unity changed render settings\n');
+      mkdirSync(resources, { recursive: true });
+      writeFileSync(join(resources, 'BuildIdentity.txt'), 'interrupted build');
+      writeFileSync(join(resources, 'BuildIdentity.txt.meta'), 'interrupted build metadata');
+      const generated = join(f.root, 'wheelchair-sonification/Assets/Resources');
+      mkdirSync(generated, { recursive: true });
+      writeFileSync(generated + '.meta', 'generated folder metadata');
+      writeFileSync(join(generated, 'PerformanceTestRunInfo.json'), '{}');
+      writeFileSync(join(generated, 'PerformanceTestRunInfo.json.meta'), 'generated file metadata');
+      return 7;
+    }),
+    /終了コード7/,
+  );
   assert.equal(existsSync(join(resources, 'BuildIdentity.txt')), false);
   assert.equal(existsSync(join(resources, 'BuildIdentity.txt.meta')), false);
   assert.equal(existsSync(join(f.root, 'wheelchair-sonification/Assets/Resources')), false);
   assert.equal(existsSync(join(f.root, 'wheelchair-sonification/Assets/Resources.meta')), false);
   assert.equal(readFileSync(join(f.output, apkName), 'utf8'), 'previous APK');
   assert.equal(readFileSync(f.settings, 'utf8'), 'original settings\r\n');
-  for (const path of f.renderSettings) assert.equal(readFileSync(path, 'utf8'), 'original render settings\r\n');
+  for (const path of f.renderSettings)
+    assert.equal(readFileSync(path, 'utf8'), 'original render settings\r\n');
   assert.deepEqual(readdirSync(join(f.root, '.local/builds')), ['android-release']);
 });
 
-test('a failed build preserves a pre-existing identity file for review', async t => {
+test('a failed build preserves a pre-existing identity file for review', async (t) => {
   const f = fixture(t);
   const resources = join(f.root, 'wheelchair-sonification/Assets/Experiment/Resources');
   mkdirSync(resources, { recursive: true });
   const identity = join(resources, 'BuildIdentity.txt');
   writeFileSync(identity, 'existing identity to review');
-  await assert.rejects(buildRelease(f.root, f.env, async () => { rmSync(identity); return 7; }), /終了コード7/);
+  await assert.rejects(
+    buildRelease(f.root, f.env, async () => {
+      rmSync(identity);
+      return 7;
+    }),
+    /終了コード7/,
+  );
   assert.equal(readFileSync(identity, 'utf8'), 'existing identity to review');
 });
 
-test('SDK preparation and APK validation failures cannot promote an artifact', async t => {
+test('SDK preparation and APK validation failures cannot promote an artifact', async (t) => {
   const f = fixture(t);
-  await assert.rejects(actualBuildRelease(f.root, f.env, async () => assert.fail('must not launch'), {
-    prepare: async () => { throw new Error('SDK download failed'); }, verify: () => verified,
-  }), /SDK download failed/);
-  await assert.rejects(actualBuildRelease(f.root, f.env, async request => { f.complete(request); return 0; }, {
-    prepare: async () => '', verify: () => { throw new Error('APK signature failed'); },
-  }), /APK signature failed/);
+  await assert.rejects(
+    actualBuildRelease(f.root, f.env, async () => assert.fail('must not launch'), {
+      prepare: async () => {
+        throw new Error('SDK download failed');
+      },
+      verify: () => verified,
+    }),
+    /SDK download failed/,
+  );
+  await assert.rejects(
+    actualBuildRelease(
+      f.root,
+      f.env,
+      async (request) => {
+        f.complete(request);
+        return 0;
+      },
+      {
+        prepare: async () => '',
+        verify: () => {
+          throw new Error('APK signature failed');
+        },
+      },
+    ),
+    /APK signature failed/,
+  );
   assert.equal(readFileSync(join(f.output, apkName), 'utf8'), 'previous APK');
   assert.equal(readFileSync(f.settings, 'utf8'), 'original settings\r\n');
   assert.deepEqual(readdirSync(join(f.root, '.local/builds')), ['android-release']);
 });
 
-test('a zero exit and an old success cannot mask missing or invalid current output', async t => {
-  for (const scenario of ['no-log', 'no-info', 'empty-apk', 'development', 'wrong-version', 'no-signing', 'compiler', '2d-scene']) {
-    await t.test(scenario, async t => {
+test('a zero exit and an old success cannot mask missing or invalid current output', async (t) => {
+  for (const scenario of [
+    'no-log',
+    'no-info',
+    'empty-apk',
+    'development',
+    'wrong-version',
+    'no-signing',
+    'compiler',
+    '2d-scene',
+  ]) {
+    await t.test(scenario, async (t) => {
       const f = fixture(t);
       mkdirSync(join(f.root, '.local/logs'), { recursive: true });
       writeFileSync(f.log, 'old successful log');
-      await assert.rejects(buildRelease(f.root, f.env, async request => {
-        f.complete(request);
-        const directory = request.env.WHEELCHAIR_BUILD_DIRECTORY!;
-        if (scenario === 'no-log') rmSync(f.log);
-        if (scenario === 'no-info') rmSync(join(directory, 'build-info.json'));
-        if (scenario === 'empty-apk') writeFileSync(join(directory, apkName), '');
-        if (scenario === 'compiler') writeFileSync(f.log, 'error CS1002: expected ;');
-        if (scenario === '2d-scene') {
-          const path = join(directory, 'build-info.json');
-          const value = JSON.parse(readFileSync(path, 'utf8'));
-          value.scenes = ['Assets/Scenes/FeedbackDemo.unity'];
-          writeFileSync(path, JSON.stringify(value));
-        }
-        const infoPath = join(directory, 'build-info.json');
-        if (existsSync(infoPath)) {
-          const info = JSON.parse(readFileSync(infoPath, 'utf8'));
-          if (scenario === 'development') info.development = true;
-          if (scenario === 'wrong-version') info.unityVersion = '6000.6.0f1';
-          if (scenario === 'no-signing') info.customSigning = false;
-          writeFileSync(infoPath, JSON.stringify(info));
-        }
-        return 0;
-      }));
+      await assert.rejects(
+        buildRelease(f.root, f.env, async (request) => {
+          f.complete(request);
+          const directory = request.env.WHEELCHAIR_BUILD_DIRECTORY!;
+          if (scenario === 'no-log') rmSync(f.log);
+          if (scenario === 'no-info') rmSync(join(directory, 'build-info.json'));
+          if (scenario === 'empty-apk') writeFileSync(join(directory, apkName), '');
+          if (scenario === 'compiler') writeFileSync(f.log, 'error CS1002: expected ;');
+          if (scenario === '2d-scene') {
+            const path = join(directory, 'build-info.json');
+            const value = JSON.parse(readFileSync(path, 'utf8'));
+            value.scenes = ['Assets/Scenes/FeedbackDemo.unity'];
+            writeFileSync(path, JSON.stringify(value));
+          }
+          const infoPath = join(directory, 'build-info.json');
+          if (existsSync(infoPath)) {
+            const info = JSON.parse(readFileSync(infoPath, 'utf8'));
+            if (scenario === 'development') info.development = true;
+            if (scenario === 'wrong-version') info.unityVersion = '6000.6.0f1';
+            if (scenario === 'no-signing') info.customSigning = false;
+            writeFileSync(infoPath, JSON.stringify(info));
+          }
+          return 0;
+        }),
+      );
       assert.equal(readFileSync(join(f.output, apkName), 'utf8'), 'previous APK');
       assert.equal(readFileSync(f.log + '.previous', 'utf8'), 'old successful log');
       assert.equal(readFileSync(f.settings, 'utf8'), 'original settings\r\n');
-      for (const path of f.renderSettings) assert.equal(readFileSync(path, 'utf8'), 'original render settings\r\n');
+      for (const path of f.renderSettings)
+        assert.equal(readFileSync(path, 'utf8'), 'original render settings\r\n');
       assert.deepEqual(readdirSync(join(f.root, '.local/builds')), ['android-release']);
     });
   }
 });
 
-test('invalid Android version codes are rejected before launching Unity', async t => {
+test('invalid Android version codes are rejected before launching Unity', async (t) => {
   const f = fixture(t);
   for (const code of ['0', '-1', '1.5', '2100000001', 'abc']) {
-    await assert.rejects(buildRelease(f.root, { ...f.env, UNITY_ANDROID_VERSION_CODE: code }, async () => assert.fail('Unity must not launch')),
-      /UNITY_ANDROID_VERSION_CODE/);
+    await assert.rejects(
+      buildRelease(f.root, { ...f.env, UNITY_ANDROID_VERSION_CODE: code }, async () =>
+        assert.fail('Unity must not launch'),
+      ),
+      /UNITY_ANDROID_VERSION_CODE/,
+    );
   }
 });

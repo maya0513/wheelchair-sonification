@@ -1,6 +1,6 @@
 # 文献・公式資料一覧
 
-**66件の研究・方法論・ガイドライン＋9件の公式資料**。本文重点確認・関連節・抄録・書誌のみを区別する。全件の全文精読を意味しない。
+**69件の研究・方法論・ガイドライン＋12件の公式資料**。本文重点確認・関連節・抄録・書誌のみを区別する。全件の全文精読を意味しない。
 
 本文は公開PDF・XML・HTML等。D09は公式Wordの関連節。閲覧範囲の詳細は各ノートを参照。
 
@@ -72,6 +72,9 @@
 | [L64](papers/L64-dyer-2017.md) | 2017 | Dyer et al. Advantages of melodic over rhythmic movement sonification | 左右の聴覚提示 | 本文関連節 | [PDF](pdfs/L64.pdf) |
 | [L65](papers/L65-bass-2024.md) | 2024 | Bass et al. Upper limb muscle strength and wheelchair-related abilities | 開始合図・手動採時 | 本文関連節 | 公開HTML |
 | [L66](papers/L66-dubus-bresin-2010.md) | 2010 | Dubus & Bresin. Sonification of sculler movements | 音の実装・快適性 | 本文関連節 | 未保存 |
+| [L67](papers/L67-rzayev-2018.md) | 2018 | Reading on Smart Glasses: The Effect of Text Position, Presentation Type and Walking | XR表示配置・透明度 | 本文関連節 | 公開本文 |
+| [L68](papers/L68-shin-park-2024.md) | 2024 | Evaluation of Interface Design for Video See-Through Head-Mounted Display: Focusing on Walking Users | XR表示配置・透明度 | 本文関連節 | 公開本文 |
+| [L69](papers/L69-he-2025.md) | 2025 | Designing Augmented Reality for Cyclists: How Text-Based Notification Placements Influence Attentional Tunneling and Cycling Experience | XR表示配置・透明度 | 本文関連節 | [PDF](pdfs/L69.pdf) |
 
 ## 公式資料
 
@@ -86,6 +89,9 @@
 | [D07](papers/D07-brainflow-boards.md) | BrainFlow contributors | BrainFlow: Supported Boards | 2026-10-14 |
 | [D08](papers/D08-nasa-tlx.md) | NASA | NASA Task Load Index | 2026-10-14 |
 | [D09](papers/D09-wheelchair-skills-program.md) | Dalhousie University／WSP | WSP Manual 5.5.1。[Word原本](sources/WSP-Manual-5.5.1.doc) | 2026-10-14 |
+| [D10](papers/D10-vive-eye-tracker.md) | HTC | Getting The Data of Eye Tracker (Beta) | 2026-11-02 |
+| [D11](papers/D11-vive-eye-calibration.md) | HTC | Focus Vision: Eye tracking | 2026-11-02 |
+| [D12](papers/D12-mixed-reality-coordinates.md) | Microsoft | Coordinate systems: Avoid head-locked content | 2026-11-02 |
 
 書誌：[references.bib](references.bib)。検索・採否：[search-method](search-method.md)、[照合ログ](search-log.md)。取得条件：[PDF一覧](pdfs/INDEX.md)・[Word一覧](sources/INDEX.md)。
 

@@ -15,9 +15,12 @@ namespace WheelchairSonification.Editor
         [MenuItem("Experiment/Open feedback demo")]
         public static void OpenDemo()
         {
-            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
-            if (File.Exists(ScenePath)) EditorSceneManager.OpenScene(ScenePath);
-            else CreateDemoScene();
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+                return;
+            if (File.Exists(ScenePath))
+                EditorSceneManager.OpenScene(ScenePath);
+            else
+                CreateDemoScene();
         }
 
         public static void CreateDemoScene()
@@ -38,22 +41,37 @@ namespace WheelchairSonification.Editor
         [MenuItem("Experiment/Build Linux feedback demo")]
         public static void BuildLinux()
         {
-            if (!File.Exists(ScenePath)) CreateDemoScene();
+            if (!File.Exists(ScenePath))
+                CreateDemoScene();
             string repository = Path.GetDirectoryName(Path.GetDirectoryName(Application.dataPath));
-            string output = Path.Combine(repository, ".local", "builds", "feedback-demo", "FeedbackDemo.x86_64");
+            string output = Path.Combine(
+                repository,
+                ".local",
+                "builds",
+                "feedback-demo",
+                "FeedbackDemo.x86_64"
+            );
             Directory.CreateDirectory(Path.GetDirectoryName(output));
-            var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
-            {
-                scenes = new[] { ScenePath }, locationPathName = output,
-                target = BuildTarget.StandaloneLinux64,
-                options = BuildOptions.Development | BuildOptions.StrictMode
-            });
+            var report = BuildPipeline.BuildPlayer(
+                new BuildPlayerOptions
+                {
+                    scenes = new[] { ScenePath },
+                    locationPathName = output,
+                    target = BuildTarget.StandaloneLinux64,
+                    options = BuildOptions.Development | BuildOptions.StrictMode,
+                }
+            );
             if (report.summary.result != BuildResult.Succeeded)
-                throw new InvalidOperationException("Linuxビルドに失敗しました: " + report.summary.result);
+                throw new InvalidOperationException(
+                    "Linuxビルドに失敗しました: " + report.summary.result
+                );
             string notices = Path.Combine(Path.GetDirectoryName(output), "ThirdPartyNotices");
             Directory.CreateDirectory(notices);
-            File.Copy(Path.Combine(Application.dataPath, "StreamingAssets", "Noto-OFL.txt"),
-                Path.Combine(notices, "Noto-OFL.txt"), true);
+            File.Copy(
+                Path.Combine(Application.dataPath, "StreamingAssets", "Noto-OFL.txt"),
+                Path.Combine(notices, "Noto-OFL.txt"),
+                true
+            );
             Debug.Log("Feedback demo built: " + output);
         }
     }

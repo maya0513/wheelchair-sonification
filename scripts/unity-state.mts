@@ -1,4 +1,12 @@
-import { existsSync, lstatSync, readFileSync, readdirSync, rmdirSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  lstatSync,
+  readFileSync,
+  readdirSync,
+  rmdirSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { join } from 'node:path';
 
 // Unity package hooks and dynamic fonts can serialize assets during read-only previews/builds.
@@ -9,33 +17,57 @@ export function snapshotUnitySettings(project: string) {
     for (const entry of readdirSync(directory, { withFileTypes: true })) {
       const path = join(directory, entry.name);
       if (entry.isDirectory()) visit(path);
-      else if (entry.isFile() && entry.name.endsWith('.asset')) originals.set(path, readFileSync(path));
+      else if (entry.isFile() && entry.name.endsWith('.asset'))
+        originals.set(path, readFileSync(path));
     }
   };
-  for (const relative of ['ProjectSettings', 'Assets/Settings', 'Assets/XR', 'Assets/XRI', 'Assets/VIVE',
-    'Assets/Experiment/Resources', 'Assets/TextMesh Pro/Resources']) visit(join(project, relative));
+  for (const relative of [
+    'ProjectSettings',
+    'Assets/Settings',
+    'Assets/XR',
+    'Assets/XRI',
+    'Assets/VIVE',
+    'Assets/Experiment/Resources',
+    'Assets/TextMesh Pro/Resources',
+  ])
+    visit(join(project, relative));
   const performanceDirectory = join(project, 'Assets/Resources');
   const hadPerformanceDirectory = existsSync(performanceDirectory);
   const temporaryFiles = [
-    ...['BuildIdentity.txt', 'BuildIdentity.txt.meta'].map(name => 'Assets/Experiment/Resources/' + name),
-    ...['PerformanceTestRunInfo.json', 'PerformanceTestRunInfo.json.meta', 'PerformanceTestRunSettings.json', 'PerformanceTestRunSettings.json.meta'].map(name => 'Assets/Resources/' + name),
-  ].map(relative => {
+    ...['BuildIdentity.txt', 'BuildIdentity.txt.meta'].map(
+      (name) => 'Assets/Experiment/Resources/' + name,
+    ),
+    ...[
+      'PerformanceTestRunInfo.json',
+      'PerformanceTestRunInfo.json.meta',
+      'PerformanceTestRunSettings.json',
+      'PerformanceTestRunSettings.json.meta',
+    ].map((name) => 'Assets/Resources/' + name),
+  ].map((relative) => {
     const path = join(project, relative);
     return { path, original: existsSync(path) ? readFileSync(path) : null };
   });
   return () => {
-    for (const [path, bytes] of originals) if (!existsSync(path) || !bytes.equals(readFileSync(path))) writeFileSync(path, bytes);
+    for (const [path, bytes] of originals)
+      if (!existsSync(path) || !bytes.equals(readFileSync(path))) writeFileSync(path, bytes);
     for (const { path, original } of temporaryFiles) {
       if (original === null) rmSync(path, { force: true });
-      else if (!existsSync(path) || !original.equals(readFileSync(path))) writeFileSync(path, original);
+      else if (!existsSync(path) || !original.equals(readFileSync(path)))
+        writeFileSync(path, original);
     }
-    if (!hadPerformanceDirectory && existsSync(performanceDirectory) && readdirSync(performanceDirectory).length === 0) {
-      rmdirSync(performanceDirectory); rmSync(performanceDirectory + '.meta', { force: true });
+    if (
+      !hadPerformanceDirectory &&
+      existsSync(performanceDirectory) &&
+      readdirSync(performanceDirectory).length === 0
+    ) {
+      rmdirSync(performanceDirectory);
+      rmSync(performanceDirectory + '.meta', { force: true });
     }
     for (const relative of ['Assets/XR 1', 'Assets/XR/Settings 1']) {
       const path = join(project, relative);
       if (existsSync(path) && lstatSync(path).isDirectory() && readdirSync(path).length === 0) {
-        rmdirSync(path); rmSync(path + '.meta', { force: true });
+        rmdirSync(path);
+        rmSync(path + '.meta', { force: true });
       }
     }
   };

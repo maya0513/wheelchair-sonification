@@ -1,4 +1,5 @@
 using WheelchairSonification.Core;
+
 namespace WheelchairSonification.Runtime
 {
     public interface IFeedbackGauge

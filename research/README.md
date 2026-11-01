@@ -1,6 +1,6 @@
 # 文献調査
 
-車いす推進、運動学習、情報フィードバック、ソニフィケーション、計測装置に関する調査をまとめています。まず[全体のまとめ](synthesis.md)を読み、必要な領域のレビューから個別文献へ進めます。本研究で実施する条件は[研究資料](../docs/README.md)にあります。
+車いす推進、運動学習、情報フィードバック、ソニフィケーション、計測装置に関する文献調査です。[全体のまとめ](synthesis.md)から、必要な領域のレビュー、個別文献の順に読めます。本研究で実施する条件は[研究資料](../docs/README.md)にあります。
 
 ## 読む目的と入口
 
@@ -14,6 +14,7 @@
 | 先行研究の装置と検証方法を調べる | [計測の読み方](topics/sensing-and-devices.md)・[装置比較](topics/device-comparison.md) |
 | 手元の装置で接触角・目標誤差を測れるか判断する | [推進角の計測可能性と先行研究との比較](topics/propulsion-angle-measurement-feasibility.md) |
 | 将来の脳波計測を検討する | [簡易EEG](topics/eeg.md)。本研究の測定には組み込まない |
+| 縦バーの配置・透明度、探索用の眼球取得 | [表示と視線](implementation/visual-placement-and-eye-logging.md) |
 | 案内付き準備とXR UIの設計根拠 | [技術ノート](implementation/guided-preparation-ui.md) |
 | 開発を進める | [入門解説](implementation/development-and-testing-guide.md)・[実行手順](../docs/development/guide.md) |
 

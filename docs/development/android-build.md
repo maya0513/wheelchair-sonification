@@ -12,7 +12,7 @@
 
 [アプリの概要](../app-overview.md)は画像付きの短い説明。`app-overview.zip`を展開するとMarkdownと画像をまとめて読める。`ui-preview.zip`は展開して`index.html`を開くと、Unity画像・PC画像・WAV見本を閲覧できる。`build-info.json`はソース・設定・検査結果、`SHA256SUMS.txt`は照合用。これらをHMDへ入れる必要はない。回収はアプリ内の[記録ページ](research-records.md)から行う。
 
-同じアプリID・署名鍵で更新する。署名不一致をアンインストールで回避すると元データを失うので、鍵と版を先に確認する。通信形式3のAPKとコンソールを使い、旧接触角版と混ぜない。
+同じアプリID・署名鍵で更新する。署名不一致をアンインストールで回避すると元データを失うので、鍵とアプリのバージョンを先に確認する。通信形式3のAPKとコンソールを使い、旧接触角版と混ぜない。
 
 ## 開発環境と署名
 
@@ -27,10 +27,10 @@ just unity-build-release
 
 既存の配布鍵はGit管理外の`.local/signing/`と`.local/android-signing.json`にある。バックアップは安全な別場所へ保存し、鍵・パスワードをGit・チャット・Releaseへ入れない。別環境では`UNITY_ANDROID_KEYSTORE`、`UNITY_ANDROID_KEY_ALIAS`、`UNITY_ANDROID_KEYSTORE_PASSWORD`、`UNITY_ANDROID_KEY_ALIAS_PASSWORD`から読み込める。
 
-版を指定する例：
+バージョンを指定する例を示す。
 
 ```sh
-UNITY_BUILD_VERSION=0.5.0 UNITY_ANDROID_VERSION_CODE=5 just unity-build-apk
+UNITY_BUILD_VERSION=0.6.0 UNITY_ANDROID_VERSION_CODE=6 just unity-build-apk
 ```
 
 出力は`.local/builds/android-release/`。署名、ARM64、IL2CPP、非デバッグ、XR Manifest、ローカルHTTP・権限、SDK・ライセンスを検査する。前のAPKと証明書が違えば更新互換性を認めない。実機動作は別途確認する。
@@ -38,7 +38,7 @@ UNITY_BUILD_VERSION=0.5.0 UNITY_ANDROID_VERSION_CODE=5 just unity-build-apk
 ## 公開する
 
 ```sh
-just release-apk v0.5.0 5
+just release-apk v0.6.0 6
 ```
 
 公開時はGitHub認証・公開先・クリーンなソース・GitHubにあるコミット、未使用のタグを確認する。Unity画像・WAV、PC画像、署名付きAPKを同じソースから新規生成し、DraftへAPK・コンソール・概要資料・プレビュー・ビルド情報・チェックサムを添付してプレリリース公開する。概要ZIPの画像は同梱し、詳細資料へのリンクはソースコミットへ固定する。既存Releaseは上書きしない。アップロード失敗はDraftで止め、ローカル成果物と復旧案内を残す。

@@ -21,3 +21,5 @@
 | 発表用 | [12枚相当の発表本文](presentation.md) |
 
 先行研究は[research/](../research/README.md)、原発表資料は[保存資料](archive/README.md)。実装済みであっても、本計測開始条件G1–G6を満たしたことにはならない。倫理手続き・正式保管先・現地での単独実施は責任者確認待ち。
+
+視覚FBは車体固定の半透明縦バー、視線は探索用に記録する。[表示仕様](specifications/feedback.md)・[視線を含む保存形式](development/research-records.md)。

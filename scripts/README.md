@@ -4,6 +4,7 @@
 
 | 入口 | 役割 |
 |---|---|
+| `just docs-check` | Markdownの参照先・見出し、文献一覧とBibTeX、保存PDFのSHA-256を検査 |
 | `just check` | Nodeのスクリプト・時計・HTTP・保存・配布のテスト。実Releaseは作らない |
 | `unity.sh` | Editor起動・コンパイル・Edit/Play Mode・Linux合成入力版 |
 | `unity-xr-sdk.mts` | HTC SDKの固定URL・ハッシュ・キャッシュ検証 |

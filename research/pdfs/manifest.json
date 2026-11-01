@@ -440,5 +440,18 @@
     "pages": 12,
     "bytes": 1315583,
     "sha256": "4eccb1840c5d0e3e9703792d3223c62d2d038061da68c1f243a2c613d75e1440"
+  },
+  {
+    "id": "L69",
+    "file": "pdfs/L69.pdf",
+    "title": "Designing Augmented Reality for Cyclists: How Text-Based Notification Placements Influence Attentional Tunneling and Cycling Experience",
+    "doi": "10.1145/3773071",
+    "source_url": "https://elib.dlr.de/219089/1/3773071.pdf",
+    "retrieved_on": "2026-11-02",
+    "version": "著者公開版・大学リポジトリ",
+    "license": "CC BY 4.0; license stated on PDF page 1",
+    "pages": 21,
+    "bytes": 11003902,
+    "sha256": "b7f5e2645ce2cc59584b0b4048db4f3a8755141408aa4e45ff667e41b137faba"
   }
 ]

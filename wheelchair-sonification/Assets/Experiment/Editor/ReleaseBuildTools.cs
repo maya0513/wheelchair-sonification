@@ -16,11 +16,19 @@ namespace WheelchairSonification.Editor
         public static void BuildAndroid()
         {
             if (Application.unityVersion != Required("WHEELCHAIR_EXPECTED_UNITY_VERSION"))
-                throw new InvalidOperationException("ProjectVersion.txtと同じUnity Editorを使用してください。");
-            if (!BuildPipeline.IsBuildTargetSupported(BuildTargetGroup.Android, BuildTarget.Android))
-                throw new InvalidOperationException("Unity HubでAndroid Build Support、SDK & NDK Tools、OpenJDKを追加してください。");
+                throw new InvalidOperationException(
+                    "ProjectVersion.txtと同じUnity Editorを使用してください。"
+                );
+            if (
+                !BuildPipeline.IsBuildTargetSupported(BuildTargetGroup.Android, BuildTarget.Android)
+            )
+                throw new InvalidOperationException(
+                    "Unity HubでAndroid Build Support、SDK & NDK Tools、OpenJDKを追加してください。"
+                );
             if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.Android)
-                throw new InvalidOperationException("-buildTarget Androidを指定して起動してください。");
+                throw new InvalidOperationException(
+                    "-buildTarget Androidを指定して起動してください。"
+                );
             ParticipantUiAssets.Prepare();
             FocusVisionProject.Validate();
             string directory = Required("WHEELCHAIR_BUILD_DIRECTORY");
@@ -28,22 +36,45 @@ namespace WheelchairSonification.Editor
             string alias = Required("UNITY_ANDROID_KEY_ALIAS");
             string storePassword = Required("UNITY_ANDROID_KEYSTORE_PASSWORD");
             string aliasPassword = Required("UNITY_ANDROID_KEY_ALIAS_PASSWORD");
-            if (!File.Exists(keystore)) throw new FileNotFoundException("署名用キーストアがありません。");
+            if (!File.Exists(keystore))
+                throw new FileNotFoundException("署名用キーストアがありません。");
             string[] scenes = { FocusVisionProject.ScenePath };
             if (scenes.Length == 0 || scenes.Any(scene => !File.Exists(scene)))
-                throw new InvalidOperationException("ビルド対象のSceneがないか、ファイルがありません。");
+                throw new InvalidOperationException(
+                    "ビルド対象のSceneがないか、ファイルがありません。"
+                );
             if (!File.Exists(Path.Combine(Application.dataPath, "StreamingAssets", "Noto-OFL.txt")))
                 throw new InvalidOperationException("同梱フォントのライセンスがありません。");
-            if (!File.Exists(Path.Combine(Application.dataPath, "StreamingAssets", "Liberation-OFL.txt")))
+            if (
+                !File.Exists(
+                    Path.Combine(Application.dataPath, "StreamingAssets", "Liberation-OFL.txt")
+                )
+            )
                 throw new InvalidOperationException("TMP既定フォントのライセンスがありません。");
-            if (!File.Exists(Path.Combine(Application.dataPath, "StreamingAssets", "HTC-OpenXR-LICENSE.txt")))
+            if (
+                !File.Exists(
+                    Path.Combine(Application.dataPath, "StreamingAssets", "HTC-OpenXR-LICENSE.txt")
+                )
+            )
                 throw new InvalidOperationException("HTC OpenXRのライセンス案内がありません。");
-            string version = Environment.GetEnvironmentVariable("UNITY_BUILD_VERSION") ?? PlayerSettings.bundleVersion;
-            if (string.IsNullOrWhiteSpace(version)) throw new InvalidOperationException("アプリのバージョンが空です。");
+            string version =
+                Environment.GetEnvironmentVariable("UNITY_BUILD_VERSION")
+                ?? PlayerSettings.bundleVersion;
+            if (string.IsNullOrWhiteSpace(version))
+                throw new InvalidOperationException("アプリのバージョンが空です。");
             int versionCode = PlayerSettings.Android.bundleVersionCode;
             string code = Environment.GetEnvironmentVariable("UNITY_ANDROID_VERSION_CODE");
-            if (code != null && (!int.TryParse(code, out versionCode) || versionCode < 1 || versionCode > 2100000000))
-                throw new InvalidOperationException("UNITY_ANDROID_VERSION_CODEは1〜2100000000の整数にしてください。");
+            if (
+                code != null
+                && (
+                    !int.TryParse(code, out versionCode)
+                    || versionCode < 1
+                    || versionCode > 2100000000
+                )
+            )
+                throw new InvalidOperationException(
+                    "UNITY_ANDROID_VERSION_CODEは1〜2100000000の整数にしてください。"
+                );
 
             var target = NamedBuildTarget.Android;
             var oldBackend = PlayerSettings.GetScriptingBackend(target);
@@ -54,19 +85,27 @@ namespace WheelchairSonification.Editor
             int oldCode = PlayerSettings.Android.bundleVersionCode;
             bool oldSplit = PlayerSettings.Android.useAPKExpansionFiles;
             bool oldSigning = PlayerSettings.Android.useCustomKeystore;
-            string oldStore = PlayerSettings.Android.keystoreName, oldAlias = PlayerSettings.Android.keyaliasName;
-            string oldStorePass = PlayerSettings.Android.keystorePass, oldAliasPass = PlayerSettings.Android.keyaliasPass;
-            bool oldDevelopment = EditorUserBuildSettings.development, oldDebugging = EditorUserBuildSettings.allowDebugging;
-            bool oldProfiler = EditorUserBuildSettings.connectProfiler, oldBundle = EditorUserBuildSettings.buildAppBundle;
+            string oldStore = PlayerSettings.Android.keystoreName,
+                oldAlias = PlayerSettings.Android.keyaliasName;
+            string oldStorePass = PlayerSettings.Android.keystorePass,
+                oldAliasPass = PlayerSettings.Android.keyaliasPass;
+            bool oldDevelopment = EditorUserBuildSettings.development,
+                oldDebugging = EditorUserBuildSettings.allowDebugging;
+            bool oldProfiler = EditorUserBuildSettings.connectProfiler,
+                oldBundle = EditorUserBuildSettings.buildAppBundle;
             bool oldExport = EditorUserBuildSettings.exportAsGoogleAndroidProject;
             string identityPath = "Assets/Experiment/Resources/BuildIdentity.txt";
-            if (File.Exists(identityPath)) throw new InvalidOperationException("一時ビルド識別ファイルが残っています。");
+            if (File.Exists(identityPath))
+                throw new InvalidOperationException("一時ビルド識別ファイルが残っています。");
             try
             {
                 File.WriteAllText(identityPath, Required("WHEELCHAIR_SOURCE_COMMIT"));
                 AssetDatabase.ImportAsset(identityPath, ImportAssetOptions.ForceSynchronousImport);
                 PlayerSettings.SetScriptingBackend(target, ScriptingImplementation.IL2CPP);
-                PlayerSettings.SetIl2CppCompilerConfiguration(target, Il2CppCompilerConfiguration.Release);
+                PlayerSettings.SetIl2CppCompilerConfiguration(
+                    target,
+                    Il2CppCompilerConfiguration.Release
+                );
                 PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
                 PlayerSettings.SetApplicationIdentifier(target, ApplicationId);
                 PlayerSettings.bundleVersion = version;
@@ -83,20 +122,38 @@ namespace WheelchairSonification.Editor
                 EditorUserBuildSettings.buildAppBundle = false;
                 EditorUserBuildSettings.exportAsGoogleAndroidProject = false;
                 Directory.CreateDirectory(directory);
-                var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
-                {
-                    scenes = scenes, locationPathName = Path.Combine(directory, "WheelchairSonification.apk"),
-                    target = BuildTarget.Android, options = BuildOptions.StrictMode
-                });
-                if (report.summary.result != BuildResult.Succeeded || report.summary.totalErrors != 0
-                    || (report.summary.options & BuildOptions.Development) != 0)
-                    throw new InvalidOperationException("Androidリリースビルドに失敗しました: " + report.summary.result);
-                File.WriteAllText(Path.Combine(directory, "build-info.json"), JsonUtility.ToJson(new BuildInfo
-                {
-                    result = report.summary.result.ToString(), unityVersion = Application.unityVersion,
-                    applicationId = PlayerSettings.GetApplicationIdentifier(target), version = version,
-                    versionCode = versionCode, scenes = scenes
-                }, true));
+                var report = BuildPipeline.BuildPlayer(
+                    new BuildPlayerOptions
+                    {
+                        scenes = scenes,
+                        locationPathName = Path.Combine(directory, "WheelchairSonification.apk"),
+                        target = BuildTarget.Android,
+                        options = BuildOptions.StrictMode,
+                    }
+                );
+                if (
+                    report.summary.result != BuildResult.Succeeded
+                    || report.summary.totalErrors != 0
+                    || (report.summary.options & BuildOptions.Development) != 0
+                )
+                    throw new InvalidOperationException(
+                        "Androidリリースビルドに失敗しました: " + report.summary.result
+                    );
+                File.WriteAllText(
+                    Path.Combine(directory, "build-info.json"),
+                    JsonUtility.ToJson(
+                        new BuildInfo
+                        {
+                            result = report.summary.result.ToString(),
+                            unityVersion = Application.unityVersion,
+                            applicationId = PlayerSettings.GetApplicationIdentifier(target),
+                            version = version,
+                            versionCode = versionCode,
+                            scenes = scenes,
+                        },
+                        true
+                    )
+                );
                 Debug.Log("Android release built: " + directory);
             }
             finally
@@ -126,26 +183,49 @@ namespace WheelchairSonification.Editor
         static string Required(string name)
         {
             string value = Environment.GetEnvironmentVariable(name);
-            if (string.IsNullOrEmpty(value)) throw new InvalidOperationException("環境変数がありません: " + name);
+            if (string.IsNullOrEmpty(value))
+                throw new InvalidOperationException("環境変数がありません: " + name);
             return value;
         }
 
         [Serializable]
         sealed class BuildInfo
         {
-            public string result, unityVersion, applicationId, version;
-            public string target = "Android", architecture = "ARM64", scriptingBackend = "IL2CPP";
-            public string application = "bilateral-wheel-speed-xr", inputMode = "simulated-and-vive-ultimate-tracker";
-            public string headsetUi = "guided-preparation-and-participant", operatorControl = "offline-pc-browser-http";
-            public int operatorProtocol = 3, androidTargetSdk = 36;
-            public bool visitAutomation = false, participantControlsRequired = false;
-            public bool standalonePreparation = true, motionRoleProposals = true, spatialRoleSelection = true;
-            public string preparationValidation = "pending_physical_role_inference_and_spatial_alignment";
-            public string measurementValidation = "pending_wheel_speed_accuracy_latency_and_field_validation";
-            public string targetDevice = "VIVE Focus Vision", xrLoader = "OpenXR";
-            public bool passthrough = true, deviceTested = false;
-            public string viveOpenXrVersion = "2.5.1", unityOpenXrVersion = "1.18.0";
-            public bool development = false, customSigning = true;
+            public string result,
+                unityVersion,
+                applicationId,
+                version;
+            public string target = "Android",
+                architecture = "ARM64",
+                scriptingBackend = "IL2CPP";
+            public string application = "bilateral-wheel-speed-xr",
+                inputMode = "simulated-and-vive-ultimate-tracker";
+            public string headsetUi = "guided-preparation-and-participant",
+                operatorControl = "offline-pc-browser-http";
+            public int operatorProtocol = 3,
+                androidTargetSdk = 36;
+            public bool visitAutomation = false,
+                participantControlsRequired = false;
+            public bool standalonePreparation = true,
+                motionRoleProposals = true,
+                spatialRoleSelection = true;
+            public string preparationValidation =
+                "pending_physical_role_inference_and_spatial_alignment";
+            public string measurementValidation =
+                "pending_wheel_speed_accuracy_latency_and_field_validation";
+            public string targetDevice = "VIVE Focus Vision",
+                xrLoader = "OpenXR";
+            public bool passthrough = true,
+                deviceTested = false;
+            public bool eyeTrackingLogging = true,
+                eyeTrackingDeviceTested = false;
+            public string visualFeedback = "body-anchored-translucent-vertical-bars",
+                eyeTrackingValidation =
+                    "software-only; physical gaze accuracy and sample rate pending";
+            public string viveOpenXrVersion = "2.5.1",
+                unityOpenXrVersion = "1.18.0";
+            public bool development = false,
+                customSigning = true;
             public int versionCode;
             public string[] scenes;
         }
