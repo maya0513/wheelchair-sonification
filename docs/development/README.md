@@ -7,7 +7,7 @@
 Unityのバージョンは[ProjectVersion.txt](../../wheelchair-sonification/ProjectSettings/ProjectVersion.txt)、依存パッケージは[manifest.json](../../wheelchair-sonification/Packages/manifest.json)と[ロック](../../wheelchair-sonification/Packages/packages-lock.json)を確認する。HTC SDKは既存スクリプトが固定URL・SHA-256で取得する。別のSDKや汎用実験エンジンは導入しない。
 
 ```sh
-mise install --locked just  # just未導入の場合
+mise install --locked      # just未導入の場合
 just setup
 just dev check             # 文書整合・補助スクリプト。実Releaseは作らない
 just dev unity-check
@@ -23,11 +23,13 @@ just dev console-preview
 
 ## ツールとスキルの管理
 
-`just setup`はmise.lockに従ってツールを導入し、固定版のHTC SDKを取得・検証する。初回の準備と更新にはインターネット接続が必要。Unity EditorとAndroid Build Supportの導入は[ビルド手順](android-build.md)に従う。通常の実行もmiseのロックされた環境を使う。
+`just setup`は[mise.toml](../../mise.toml)の全ツールをmise.lockに従って導入し、Unity側のMCPパッケージ指定をサーバーと同じリリースへ揃え、固定版のHTC SDKを取得・検証する。コマンドにツール名を列挙せず、ツールの追加・削除はmise.tomlで管理する。初回の準備と更新にはインターネット接続が必要。Unity EditorとAndroid Build Supportの導入は[ビルド手順](android-build.md)に従う。通常の実行もmiseのロックされた環境を使う。
 
-`just update`はツールの要求バージョンを再解決して環境を準備し、このプロジェクトのyomiyasuを更新する。更新後はmise.lock・`.mise/locks/`・`.agents/skills/yomiyasu/`・skills-lock.jsonの差分を確認する。Unity・SDKの固定バージョンはこの操作では変更しない。
+`just update`は全ツールの要求バージョンを再解決して環境を準備し、このプロジェクトで管理する全スキルを更新する。更新後はmise.lock・`.mise/locks/`・UnityのPackages/・`.agents/skills/`・skills-lock.jsonの差分を確認する。Unity EditorとVIVE SDKの固定バージョンはこの操作では変更しない。
 
-yomiyasuは[.agents/skills/yomiyasu/](../../.agents/skills/yomiyasu/SKILL.md)を使用する。更新用CLIはmiseで固定し、別のリポジトリcloneは置かない。スキルの更新は文書の推敲を実行する操作ではない。[公式の更新オプション](https://github.com/vercel-labs/skills/blob/main/docs/commands.md#skills-update)
+`pypi:mcpforunityserver`は`latest`を指定し、更新時点の最新安定版をロックする。`just setup`がUnityのmanifest.jsonを同じ版のGitタグへ揃え、Unityの次回起動でpackages-lock.jsonを更新する。更新後は`just dev unity-check`と`just dev unity-mcp`でコンパイル・接続・簡単な操作を確認する。[公式の版指定処理](https://github.com/CoplayDev/unity-mcp/blob/main/MCPForUnity/Editor/Helpers/AssetPathUtility.cs)
+
+yomiyasuは[.agents/skills/yomiyasu/](../../.agents/skills/yomiyasu/SKILL.md)を使用する。更新用CLIの`npm:skills`は`latest`を指定し、`just update`で最新版へ解決する。セットアップと通常実行はmise.lockの解決済みバージョンを使う。別のリポジトリcloneは置かない。スキルの更新は文書の推敲を実行する操作ではない。[公式の更新オプション](https://github.com/vercel-labs/skills/blob/main/docs/commands.md#skills-update)
 
 ## 実装の境界
 

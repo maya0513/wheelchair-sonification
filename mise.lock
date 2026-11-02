@@ -25,35 +25,35 @@ url = "https://nodejs.org/dist/v24.21.0/node-v24.21.0-linux-x64.tar.gz"
 version = "1.7.4"
 aube = { path = ".mise/locks/npm-skills/1.7.4", digest = "sha256:0fc828a5def0f23c2336c3e5094fc52f74b3b73e8f86a28c338a63c4324b902b" }
 backend = "npm:skills"
-specifiers = ["1.7.4"]
+specifiers = ["latest"]
 
 [[tools."pypi:mcpforunityserver"]]
-version = "10.2.0"
+version = "10.3.0"
 backend = "pypi:mcpforunityserver"
-specifiers = ["10.2.0"]
-uv = { path = ".mise/locks/pypi-mcpforunityserver/10.2.0~3f3c3010", digest = "sha256:cd2b2acf2c57351e639aa55fc8a132fd855f040bdfc2a07a7a15e477b22d635b" }
+specifiers = ["latest"]
+uv = { path = ".mise/locks/pypi-mcpforunityserver/10.3.0~3f3c3010", digest = "sha256:5431c1ea69f4d9ea4b63673b81f97eb93585ff7694f0317819c29fe8859b6bcb" }
 
 [tools."pypi:mcpforunityserver".options]
 python = "3.14"
 
 [[tools.python]]
-version = "3.15.0"
+version = "3.15.2"
 backend = "core:python"
 specifiers = ["latest"]
 
 [tools.python."platforms.linux-x64"]
-checksum = "sha256:69740dcd9b3480b3d53760f2d3b75582adb14fa54434628dea32480ddede542a"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.15.0+20261013-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz"
+checksum = "sha256:7b03163a980c607ba8194709d4a4086735a7a9c488cc475b098157306927b36b"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261026/cpython-3.15.2+20261026-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
 [[tools.python]]
-version = "3.14.8"
+version = "3.14.10"
 backend = "core:python"
 specifiers = ["3.14"]
 
 [tools.python."platforms.linux-x64"]
-checksum = "sha256:b88a4ac994ac55c35a03a3672103618d5c5d5bf342db7b2093b8d328b6516b42"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261020/cpython-3.14.8+20261020-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz"
+checksum = "sha256:4d3c16c59ed0802a3d1d34d8bce504b15ceeaff39d62dadecc6a9fa803412aed"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261026/cpython-3.14.10+20261026-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
 [[tools.typst]]

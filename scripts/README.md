@@ -20,6 +20,6 @@
 | `console-packaging.mts` | 機密・参加者ログを除いた配布ZIP |
 | `unity-results.py` | NUnit XMLの失敗・件数・空結果の検査 |
 | `unity-state.mts` | バッチ実行後にUnity設定・動的フォントの変更を戻す |
-| `unity-mcp.mts` | 任意のEditor接続。ビルドに不要 |
+| `unity-mcp.mts` | MCPサーバーとUnityパッケージの版合わせ、任意のEditor接続 |
 
 ローカル回収先は既定で`~/WheelchairSonificationData/`。テストの合成記録は`.local/`と一時ディレクトリへ分離する。固定時計で2分・20分を確認し、実時間待機を通常のテストに持ち込まない。`just dev experiment-soak`だけが任意で90分稼働を確認する。

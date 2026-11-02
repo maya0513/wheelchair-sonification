@@ -7,7 +7,7 @@ internal static class McpStartupPolicy
 {
     static McpStartupPolicy()
     {
-        // MCP for Unity 10.2.0の遅延処理が参照する、Editorセッション限定のガード。
+        // MCP for Unityの遅延処理が参照する、Editorセッション限定のガード。
         SessionState.SetBool(StartupConfigRewrite.SESSION_GUARD_KEY, true);
     }
 }

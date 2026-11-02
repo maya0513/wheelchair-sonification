@@ -1,8 +1,23 @@
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// MCP 10.2.0のINFOログから、このサーバーが作ったHTTPセッションだけを追跡する。
+export function syncUnityPackage(root: string, version: string) {
+  if (!/^\d+\.\d+\.\d+$/.test(version))
+    throw new Error(`MCPサーバーの安定版バージョンを確認できません: ${version}`);
+  const path = resolve(root, 'wheelchair-sonification/Packages/manifest.json');
+  const manifest = JSON.parse(readFileSync(path, 'utf8'));
+  if (!manifest.dependencies?.['com.coplaydev.unity-mcp'])
+    throw new Error('UnityプロジェクトにMCPパッケージの指定がありません。');
+  const source = `https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#v${version}`;
+  if (manifest.dependencies['com.coplaydev.unity-mcp'] === source) return false;
+  manifest.dependencies['com.coplaydev.unity-mcp'] = source;
+  writeFileSync(path, JSON.stringify(manifest, null, 2) + '\n');
+  return true;
+}
+
+// MCPのINFOログから、このサーバーが作ったHTTPセッションだけを追跡する。
 export function collectSessions(line: string, sessions: Set<string>) {
   const match = line.match(
     /mcp\.server\.streamable_http_manager - INFO - Created new transport with session ID: ([a-f0-9]{32})\b/,
@@ -104,19 +119,34 @@ export function startServer(command: string, args: string[], endpoint: string) {
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  process.exitCode = await startServer(
-    'mise',
-    [
-      'exec',
-      '--',
-      'mcp-for-unity',
-      '--transport',
-      'http',
-      '--http-host',
-      '127.0.0.1',
-      '--http-port',
-      '8080',
-    ],
-    'http://127.0.0.1:8080/mcp',
-  );
+  if (process.argv[2] === 'sync-package' && process.argv.length === 3) {
+    const tools = JSON.parse(
+      execFileSync('mise', ['ls', '--current', '--json'], { encoding: 'utf8' }),
+    );
+    const server = tools['pypi:mcpforunityserver']?.[0];
+    if (!server?.installed) throw new Error('先にmise install --lockedを実行してください。');
+    const root = fileURLToPath(new URL('..', import.meta.url));
+    const changed = syncUnityPackage(root, server.version);
+    console.log(
+      `Unity MCP ${server.version}: ${changed ? 'パッケージ指定を更新しました' : '同じ版を指定済みです'}。`,
+    );
+  } else if (process.argv.length !== 2) {
+    console.error('Usage: unity-mcp.mts [sync-package]');
+    process.exitCode = 2;
+  } else
+    process.exitCode = await startServer(
+      'mise',
+      [
+        'exec',
+        '--',
+        'mcp-for-unity',
+        '--transport',
+        'http',
+        '--http-host',
+        '127.0.0.1',
+        '--http-port',
+        '8080',
+      ],
+      'http://127.0.0.1:8080/mcp',
+    );
 }
