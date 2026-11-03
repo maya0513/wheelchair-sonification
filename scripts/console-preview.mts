@@ -253,6 +253,40 @@ export async function captureConsole(output = join(root, '.local/console-preview
       phase: 'Training',
       status: '訓練記録中',
     });
+    if (
+      !(await evaluate(`
+        !document.querySelector('#phase option[value="RetentionAssessment"]') &&
+        document.getElementById('training-timer').textContent === '訓練1分' &&
+        document.getElementById('rest-timer').textContent === '休憩1分'
+      `))
+    )
+      throw new Error('30分の実験手順と時点・目安タイマーが一致しません。');
+    for (const id of ['training-timer', 'rest-timer']) {
+      const beforeReminder = JSON.stringify(device.getSnapshot());
+      await evaluate(`
+        window.previewNow = performance.now.bind(performance);
+        window.previewClockOffset = 0;
+        Object.defineProperty(performance, 'now', { configurable:true,
+          value:()=>window.previewNow()+window.previewClockOffset });
+        document.getElementById('${id}').click();
+      `);
+      await sleep(100);
+      if (!(await evaluate(`/ 60 s$/.test(document.getElementById('reminder').textContent)`)))
+        throw new Error('目安タイマーが1分から始まりません。');
+      await evaluate('window.previewClockOffset = 61000');
+      await sleep(100);
+      if (
+        !(await evaluate(
+          `document.getElementById('reminder').textContent.includes('終了は手動')`,
+        )) ||
+        JSON.stringify(device.getSnapshot()) !== beforeReminder
+      )
+        throw new Error('目安タイマーが実験状態を変更しました。');
+      await evaluate(`
+        document.getElementById('timer-cancel').click();
+        delete performance.now; delete window.previewNow; delete window.previewClockOffset;
+      `);
+    }
     await capture('05-training-end', 'FB終了後も安全停止まで記録', 'progress', {
       ...recording,
       phase: 'Training',
@@ -351,6 +385,115 @@ export async function captureConsole(output = join(root, '.local/console-preview
       '#eye-state',
     );
     await evaluate(`document.querySelector('details.technical').open=false`);
+    await capture(
+      '28-four-entries',
+      '独立した4つの準備機能',
+      'setup',
+      { ...ready, preparation: preparationFixture('Home') },
+      1366,
+      768,
+    );
+    if (!(await evaluate(`document.querySelectorAll('#preparation-entries button').length===4`)))
+      throw new Error('準備機能の4つの入口がありません。');
+    const entryRects = await evaluate(
+      `Array.from(document.querySelectorAll('#preparation-entries button')).map(e=>{const r=e.getBoundingClientRect();return {top:r.top,right:r.right,bottom:r.bottom};})`,
+    );
+    if (
+      entryRects.some((r: any) => r.top !== entryRects[0].top || r.right > 1366 || r.bottom > 768)
+    )
+      throw new Error('準備機能の入口が横並びで画面内に収まりません。');
+    const beforeFree = readFileSync(operatorFile, 'utf8');
+    await evaluate(`document.querySelector('#preparation-entries>div:last-child button').click()`);
+    await sleep(1100);
+    await capture(
+      '29-free-menu',
+      '自由走行・停止中のモダリティ選択',
+      'setup',
+      device.getSnapshot(),
+      1366,
+      768,
+    );
+    await evaluate(`document.querySelector('#guide-actions button').click()`);
+    await sleep(1100);
+    if (device.getSnapshot().preparation.stage !== 'Free')
+      throw new Error('視覚の自由走行を開始できません。');
+    if (
+      !(await evaluate(
+        `document.getElementById('guide-instruction').textContent.includes('自由に走れます')`,
+      ))
+    )
+      throw new Error('自由走行中に接続待ちの説明が表示されています。');
+    await capture(
+      '30-free-visual',
+      '実測速度の確認・自由走行は保存しない',
+      'setup',
+      device.getSnapshot(),
+      1366,
+      768,
+    );
+    if (
+      !(await evaluate(
+        `document.getElementById('record-start').disabled&&document.getElementById('free-state').textContent.includes('保存なし')`,
+      ))
+    )
+      throw new Error('自由走行と研究記録を区別できません。');
+    await evaluate(`document.getElementById('prep-cancel').click()`);
+    await sleep(1100);
+    await capture('31-free-result', '自由走行の手動終了', 'setup', device.getSnapshot(), 1366, 768);
+    await evaluate(`document.querySelector('#preparation-entries>div:last-child button').click()`);
+    await sleep(1100);
+    await evaluate(`document.querySelectorAll('#guide-actions button')[1].click()`);
+    await sleep(1100);
+    await capture('32-free-auditory', '聴覚の自由走行', 'setup', device.getSnapshot(), 1366, 768);
+    const lost = structuredClone(device.getSnapshot());
+    lost.preparation.speedValid = false;
+    lost.devices[2].valid = false;
+    await capture('33-free-missing', '自由走行中の欠測・両FBを停止', 'setup', lost, 1366, 768);
+    if (!(await evaluate(`document.getElementById('free-state').textContent.includes('FB停止中')`)))
+      throw new Error('自由走行の欠測理由が表示されません。');
+    await evaluate(`document.getElementById('prep-cancel').click()`);
+    await sleep(1100);
+    if (readFileSync(operatorFile, 'utf8') !== beforeFree)
+      throw new Error('自由走行で既存の研究記録が変更されました。');
+    for (const stage of ['MotionMenu', 'FeedbackMenu'])
+      await capture(
+        '34-' + stage.toLowerCase(),
+        '独立した検査：' + stage,
+        'setup',
+        { ...ready, preparation: preparationFixture(stage) },
+        1366,
+        768,
+      );
+    const trackingWait = {
+      ...ready,
+      calibrationReady: false,
+      preparation: preparationFixture('TrackingWait'),
+      devices: ready.devices.slice(2).map((d: any, i: number) => ({ ...d, valid: i !== 0 })),
+    };
+    await capture(
+      '35-tracking-wait',
+      '開始不可の理由・追跡中2／3台',
+      'setup',
+      trackingWait,
+      1366,
+      768,
+    );
+    if (
+      !(await evaluate(
+        `document.querySelector('#preparation-entries button').disabled&&document.getElementById('preparation-entries').textContent.includes('2／3')`,
+      ))
+    )
+      throw new Error('追跡待ちの理由がありません。');
+    await capture(
+      '36-tracking-restored',
+      '追跡復帰後・再読込なしで開始可能',
+      'setup',
+      { ...ready, preparation: preparationFixture('Home') },
+      1366,
+      768,
+    );
+    if (await evaluate(`document.querySelector('#preparation-entries button').disabled`))
+      throw new Error('追跡復帰後も登録ボタンが無効です。');
     const orphan = { ...ready, running: true, trialId: 'reloaded-unowned-trial' };
     device.setSnapshot(orphan);
     await call('Page.reload');

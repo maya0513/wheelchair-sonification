@@ -7,7 +7,7 @@
 | 内容 | 文書 |
 |---|---|
 | 背景、目的、デザイン、結論の範囲 | [研究計画](study-plan.md) |
-| 課題、教示、90分の配分、中止・再試行 | [実験手順](experiment-protocol.md) |
+| 課題、教示、30分の配分、中止・再試行 | [実験手順](experiment-protocol.md) |
 | 評価指標、集約、群比較、欠測 | [分析計画](analysis-plan.md) |
 | 12枚相当の発表本文とメモ | [発表資料](presentation.md) |
 

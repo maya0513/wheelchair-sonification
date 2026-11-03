@@ -19,7 +19,7 @@ just dev console-preview
 
 実施者向けの入口は[ルートjustfile](../../justfile)の`setup`・`update`・`start`だけにする。開発・検証・ビルド・公開は[tasks/dev.just](../../tasks/dev.just)へまとめ、`just dev`または`just --list dev`で一覧を表示する。サブディレクトリから実行しても、コマンドはリポジトリ直下で動く。
 
-[画像・音確認](xr-preview.md)と[署名付きAPKのビルド・公開](android-build.md)は独立した手順として読む。20分の実待機は通常テストへ入れず、`just dev experiment-soak`の90分継続確認は任意とする。実Release作成・90分確認・機器設定の変更を`check`の依存先にしない。補助スクリプトの役割は[scripts/README](../../scripts/README.md)を参照する。
+[画像・音確認](xr-preview.md)と[署名付きAPKのビルド・公開](android-build.md)は独立した手順として読む。待ち時間は固定時計で確認する。`just dev experiment-soak`の90分耐久試験は来訪30分とは別の任意確認で、通常の`check`や公開の依存先にしない。実Release作成・機器設定の変更も`check`から実行しない。補助スクリプトの役割は[scripts/README](../../scripts/README.md)を参照する。
 
 ## ツールとスキルの管理
 

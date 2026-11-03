@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -70,7 +71,7 @@ namespace WheelchairSonification.Tests
             Assert.That(gauge.leftFill.pivot, Is.EqualTo(Vector2.zero));
             Assert.That(
                 gauge.leftFill.GetComponent<UnityEngine.UI.Image>().color.a,
-                Is.EqualTo(.7f).Within(.001)
+                Is.EqualTo(.85f).Within(.001)
             );
             UnityEngine.Object.Destroy(gauge.gameObject);
             UnityEngine.Object.Destroy(root);
@@ -87,6 +88,11 @@ namespace WheelchairSonification.Tests
             yield return null;
             xr.PreparationUi.ShowPreview(PreparationWorkflow.Preview("Home"));
             Canvas.ForceUpdateCanvases();
+            Assert.That(
+                xr.PreparationUi.Panel.GetComponentsInChildren<UnityEngine.UI.Button>()
+                    .Count(b => b.name.StartsWith("Preparation entry")),
+                Is.EqualTo(4)
+            );
             Assert.That(xr.PreparationUi.Panel.IsChildOf(xr.Rig.Camera.transform), Is.False);
             var position = xr.PreparationUi.Panel.position;
             xr.Rig.Camera.transform.rotation = Quaternion.Euler(0, 60, 0);
@@ -114,6 +120,21 @@ namespace WheelchairSonification.Tests
                 label.ForceMeshUpdate();
                 Assert.That(label.isTextOverflowing, Is.False, label.text);
             }
+            xr.PreparationUi.ShowPreview(PreparationWorkflow.Preview("Home", true));
+            var register = xr
+                .PreparationUi.Panel.Find("Preparation entry 0")
+                .GetComponent<UnityEngine.UI.Button>();
+            Assert.That(register.interactable, Is.False);
+            Assert.That(
+                xr.PreparationUi.Panel.Find("Detail").GetComponent<TMPro.TMP_Text>().text,
+                Does.Contain("2／3")
+            );
+            xr.PreparationUi.ShowPreview(PreparationWorkflow.Preview("Home"));
+            Assert.That(register.interactable, Is.True);
+            Assert.That(
+                xr.PreparationUi.Panel.Find("Detail").GetComponent<TMPro.TMP_Text>().text,
+                Does.Not.Contain("2／3")
+            );
             xr.PreparationUi.ShowPreview(PreparationWorkflow.Preview("Forward"));
             Assert.That(xr.PreparationUi.PanelVisible, Is.False);
             Assert.That(xr.PreparationUi.Footer.gameObject.activeSelf, Is.True);

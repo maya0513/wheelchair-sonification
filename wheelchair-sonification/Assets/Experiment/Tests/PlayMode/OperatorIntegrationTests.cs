@@ -411,6 +411,50 @@ namespace WheelchairSonification.Tests
         }
 
         [UnityTest]
+        public IEnumerator FreeRunDoesNotWriteAnExistingVisitOrCreateTrialData()
+        {
+            Assert.That(Send("createVisit", "P001").ok, Is.True);
+            var before = Directory
+                .GetFiles(folder, "*", SearchOption.AllDirectories)
+                .ToDictionary(p => p, File.ReadAllText);
+            string group = host.Snapshot().group;
+            r.enabled = host.enabled = false;
+            r.Tick(0);
+            void Tick(double time)
+            {
+                var frame = PreparationInference.Copy(r.Frame);
+                frame.time = time;
+                host.Preparation.Tick(frame, time, true, r.Settings, r.Volume);
+            }
+            Tick(0);
+            for (int i = 1; i <= 85; i++)
+                Tick(i * .025);
+            Assert.That(Send("prep.free").ok, Is.True);
+            Assert.That(Send("prep.freeAuditory").ok, Is.True);
+            Tick(7.2);
+            Assert.That(host.Preparation.Stage, Is.EqualTo("Free"));
+            Assert.That(Send("start").ok, Is.False);
+            Assert.That(Send("prep.register").ok, Is.False);
+            Assert.That(r.Active, Is.False);
+            Assert.That(Send("prep.cancel").ok, Is.True);
+            for (int i = 1; i <= 90; i++)
+                Tick(7.2 + i * .025);
+            Assert.That(host.Preparation.Stage, Is.EqualTo("Result"));
+            Assert.That(host.Snapshot().group, Is.EqualTo(group));
+            Assert.That(host.ExportPath, Is.Null);
+            Assert.That(Directory.Exists(r.SaveRoot), Is.False);
+            Assert.That(Directory.Exists(host.CheckRoot), Is.False);
+            var after = Directory
+                .GetFiles(folder, "*", SearchOption.AllDirectories)
+                .ToDictionary(p => p, File.ReadAllText);
+            CollectionAssert.AreEquivalent(before, after);
+            Assert.That(Send("start").ok, Is.True);
+            Assert.That(r.Active, Is.True);
+            Assert.That(host.Preparation.Mode, Is.Empty);
+            yield return null;
+        }
+
+        [UnityTest]
         public IEnumerator StandalonePreparationIgnoresPcLeaseButCannotOverlapResearch()
         {
             Send("createVisit", "P001");

@@ -595,3 +595,20 @@ output {
   max-height: 360px;
   overflow: auto;
 }
+.preparation-entries {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.preparation-entries button {
+  width: 100%;
+  min-height: 58px;
+}
+.preparation-entries .hint {
+  margin: 6px 0 0;
+}
+.preparation-entries button.selected {
+  background: var(--blue, #155cb3);
+  color: white;
+}

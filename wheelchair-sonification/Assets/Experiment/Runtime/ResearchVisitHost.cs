@@ -140,7 +140,6 @@ namespace WheelchairSonification.Runtime
             Preparation.Changed += () =>
             {
                 Revision++;
-                Save();
             };
             Preparation.Closed += QueueTrial;
         }
@@ -164,7 +163,8 @@ namespace WheelchairSonification.Runtime
                     Time.realtimeSinceStartupAsDouble,
                     Research.PresentationReady,
                     Research.Settings,
-                    Research.Volume
+                    Research.Volume,
+                    Research.DisplayReady?.Invoke() ?? true
                 );
         }
 
@@ -255,7 +255,6 @@ namespace WheelchairSonification.Runtime
                     StopPresentation?.Invoke();
                     Preparation.Execute(c.action.Substring(5), c.value, (int)c.number);
                     Revision++;
-                    Save();
                     result.ok = true;
                     result.message = "準備画面へ反映しました。";
                     Remember(result);
@@ -275,6 +274,8 @@ namespace WheelchairSonification.Runtime
                             throw new ArgumentException(
                                 "実名を使わず英数字の研究IDを入力してください。"
                             );
+                        if (Preparation.Selecting || Preparation.IsFreeSession)
+                            Preparation.Execute("home");
                         visitId = Guid.NewGuid().ToString("N");
                         participantId = c.value;
                         Research.VisitId = visitId;
@@ -330,6 +331,8 @@ namespace WheelchairSonification.Runtime
                             );
                         Error = null;
                         StopPresentation?.Invoke();
+                        if (Preparation.Selecting || Preparation.IsFreeSession)
+                            Preparation.Execute("home");
                         Research.BeginTrial();
                         break;
                     case "finishTrial":
@@ -396,7 +399,8 @@ namespace WheelchairSonification.Runtime
                 if (c.action != "abort")
                     Error = null;
                 Revision++;
-                Save();
+                if (c.action != "abort" || !Preparation.IsFreeSession)
+                    Save();
                 result.ok = true;
                 result.message = "反映しました。";
             }

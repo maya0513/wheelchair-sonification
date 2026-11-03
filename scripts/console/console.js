@@ -185,7 +185,6 @@ click('pair', async () => {
   await api('pair', { deviceId: candidate.deviceId, code: $('pair-code').value });
 });
 click('prep-cancel', () => command('prep.cancel'));
-click('short-check', () => command('prep.recheck', 'output'));
 click('manual-assign', () =>
   command('prep.select', $('manual-device').value, state?.preparation?.manualRole),
 );
@@ -261,11 +260,11 @@ click('reset-calibration', () => command('resetCalibration'));
 click('export', () => command('export'));
 click('export-usb', () => command('exportUsb'));
 click('training-timer', () => {
-  reminderEnd = performance.now() + 120000;
+  reminderEnd = performance.now() + 60000;
   reminderName = '訓練';
 });
 click('rest-timer', () => {
-  reminderEnd = performance.now() + 1200000;
+  reminderEnd = performance.now() + 60000;
   reminderName = '休憩';
 });
 click('timer-cancel', () => {
@@ -390,7 +389,9 @@ function render() {
     : state?.transferring
       ? 'PCへコピー中'
       : state?.preparation?.active
-        ? '準備チェック中'
+        ? state.preparation.mode === 'free'
+          ? '自由走行・保存なし'
+          : '準備チェック中'
         : '停止中';
   const problems = {
     operator_connection_lost:
@@ -607,17 +608,71 @@ function render() {
 }
 function renderPreparation(usable, active, busy) {
   const p = state?.preparation;
+  const entries = p?.entries || [];
+  const entriesKey = JSON.stringify(entries.map((e) => [e.id, e.label]));
+  if ($('preparation-entries').dataset.key !== entriesKey) {
+    $('preparation-entries').dataset.key = entriesKey;
+    $('preparation-entries').replaceChildren(
+      ...entries.map((entry) => {
+        const item = document.createElement('div');
+        const button = document.createElement('button');
+        button.textContent = entry.label;
+        button.onclick = safe(() => command('prep.' + entry.id));
+        const reason = document.createElement('p');
+        reason.className = 'hint';
+        item.append(button, reason);
+        return item;
+      }),
+    );
+  }
+  for (const [i, item] of [...$('preparation-entries').children].entries()) {
+    const entry = entries[i];
+    const reason = !view.connected
+      ? 'ゴーグルを接続してください。'
+      : active
+        ? '研究試行の記録中です。'
+        : state?.transferring
+          ? 'コピーの完了をお待ちください。'
+          : busy
+            ? '操作を反映中です。'
+            : !state?.presentationReady
+              ? 'ゴーグルの追跡と表示を確認してください。'
+              : entry?.reason || '';
+    item.querySelector('button').disabled =
+      !usable || active || !state?.presentationReady || entry?.enabled === false;
+    item
+      .querySelector('button')
+      .classList.toggle(
+        'selected',
+        entry?.id === (p?.mode === 'registration' ? 'register' : p?.mode),
+      );
+    item.querySelector('p').textContent = reason;
+  }
   $('guide-title').textContent = p?.title || 'ゴーグルの接続を待っています';
-  $('guide-instruction').textContent = p?.instruction || '接続後に案内付きチェックを始められます。';
-  $('guide-detail').textContent = p?.detail || 'ゴーグル単体でも準備・チェックを行えます。';
-  $('guide-step').textContent = p?.step ? `準備 ${Math.min(p.step, 6)} / 6` : '案内付きチェック';
+  $('guide-instruction').textContent =
+    p?.stage === 'Free'
+      ? 'FBを確かめながら自由に走れます。'
+      : p?.instruction || '接続後に案内付きチェックを始められます。';
+  $('guide-detail').textContent =
+    p?.stage === 'Free'
+      ? '終了でFBを止めます。データは保存しません。'
+      : p?.detail || 'ゴーグル単体でも準備・チェックを行えます。';
+  $('guide-step').textContent =
+    {
+      registration: 'トラッカー登録',
+      motion: '動作確認',
+      feedback: 'FB検査',
+      free: '自由走行・保存なし',
+    }[p?.mode] || '準備機能を選択';
   $('guide-running').textContent = busy
     ? '変更を反映中…'
-    : p?.moving
-      ? '動作を確認中'
-      : p?.active
-        ? 'チェック中'
-        : '';
+    : p?.stage === 'Free'
+      ? '自由走行中'
+      : p?.moving
+        ? '動作を確認中'
+        : p?.active
+          ? 'チェック中'
+          : '';
   $('prep-issue').hidden = !p?.problem;
   $('prep-issue').textContent = p?.problem || '';
   $('guide-disabled').textContent = !view.connected
@@ -641,21 +696,22 @@ function renderPreparation(usable, active, busy) {
       }),
     );
   }
-  const tooFew =
-    (state?.devices?.filter((d) => d.valid).length || 0) < 3 &&
-    ['Home', 'Result'].includes(p?.stage);
   for (const [i, b] of [...$('guide-actions').children].entries())
-    b.disabled =
-      !usable ||
-      active ||
-      !state?.presentationReady ||
-      (tooFew && ['start', 'retry'].includes(actions[i]?.id));
-  if (usable && tooFew)
-    $('guide-disabled').textContent =
-      '走行用3台の追跡を待っています。ゴーグルの「設定 → 入力 → モーショントラッカー」で接続・環境スキャンを確認してください。';
+    b.disabled = !usable || active || !state?.presentationReady || actions[i]?.enabled === false;
+  const actionReasons = [...new Set(actions.map((a) => a.reason).filter(Boolean))];
+  if (usable && actionReasons.length) $('guide-disabled').textContent = actionReasons.join(' ');
   $('prep-cancel').hidden = !p?.active;
   $('prep-cancel').disabled = !view.connected;
-  $('short-check').disabled = !usable || active || p?.active;
+  $('prep-cancel').textContent = p?.mode === 'free' ? '自由走行を終了・FB停止' : 'チェックを中断';
+  $('free-state').hidden = p?.mode !== 'free';
+  const rps = (v) => (Number.isFinite(v) ? v.toFixed(2) : '—');
+  $('free-state').textContent =
+    `自由走行・保存なし ／ ${groupNames[p?.freeGroup] || ''} ／ ` +
+    (p?.stage === 'Free' && p?.speedValid
+      ? `左 ${rps(p.leftRps)}、右 ${rps(p.rightRps)} 回転/秒`
+      : p?.stage === 'Free'
+        ? '追跡欠測・FB停止中'
+        : '停止中・準備中');
   $('manual-selection').hidden = p?.stage !== 'Manual';
   const devicesKey = JSON.stringify(state?.devices?.map((d) => [d.key, d.valid]));
   if ($('manual-device').dataset.key !== devicesKey) {

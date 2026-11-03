@@ -83,7 +83,7 @@ namespace WheelchairSonification.Editor
                 else
                     gauge.rightFill = fill;
                 // A uGUI Outline duplicates the entire translucent quad and makes its interior opaque.
-                // Draw actual narrow edge rectangles, leaving the track interior at 20% opacity.
+                // Draw actual narrow edges without increasing the configured track opacity.
                 foreach (
                     var edge in new[]
                     {

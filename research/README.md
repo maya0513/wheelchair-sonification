@@ -18,6 +18,7 @@
 |---|---|
 | センサー、処理、音生成、遅延、検証 | [計測・FB装置の比較](implementation/sensing-and-feedback-devices.md) |
 | 準備画面、縦バー、透明度、眼球取得 | [XR画面と視線記録](implementation/xr-ui-and-eye-tracking.md) |
+| 開始地点から離れたときのVIVE警告 | [境界警告の調査](implementation/vive-boundary-warnings.md) |
 | 会場回線なしのPC操作と時計 | [オフライン通信](implementation/offline-local-control.md) |
 | モック・記録再生・テストで開発する | [開発とテストの入門](implementation/development-and-testing-guide.md) |
 

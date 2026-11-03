@@ -55,6 +55,8 @@ namespace WheelchairSonification.Editor
             public string provenance =
                 "Generated from PreparationWorkflow.Preview; synthetic UI states, not device measurements";
             public PreparationSnapshot[] stages;
+            public PreparationSnapshot freeResult;
+            public PreparationSnapshot trackingWait;
         }
 
         IEnumerator Start()
@@ -141,6 +143,11 @@ namespace WheelchairSonification.Editor
                 var stages = new[]
                 {
                     "Home",
+                    "MotionMenu",
+                    "FeedbackMenu",
+                    "FreeMenu",
+                    "Free",
+                    "FreeStopping",
                     "Still",
                     "ForwardReady",
                     "Forward",
@@ -149,27 +156,51 @@ namespace WheelchairSonification.Editor
                     "Manual",
                     "WristsChoice",
                     "VerifyReady",
+                    "VerifyForwardReady",
+                    "VerifyBackwardReady",
+                    "VerifyLeftReady",
+                    "VerifyRightReady",
                     "VerifyLeft",
+                    "VisualReady",
+                    "AudioReady",
                     "VisualAnswer",
                     "AudioAnswer",
                     "Paused",
                     "Result",
                     "Waiting",
                 };
-                var fixtures = stages.Select(PreparationWorkflow.Preview).ToArray();
+                var fixtures = stages.Select(stage => PreparationWorkflow.Preview(stage)).ToArray();
                 File.WriteAllText(
                     Path.Combine(OutputDirectory, "preparation-fixtures.json"),
-                    JsonUtility.ToJson(new PreparationFixtures { stages = fixtures }, true)
+                    JsonUtility.ToJson(
+                        new PreparationFixtures
+                        {
+                            stages = fixtures,
+                            freeResult = PreparationWorkflow.Preview("FreeResult"),
+                            trackingWait = PreparationWorkflow.Preview("Home", true),
+                        },
+                        true
+                    )
                 );
                 int index = 23;
                 foreach (var stage in fixtures)
                 {
+                    xr.Gauge.SetVisible(stage.stage == "Free");
+                    if (stage.stage == "Free")
+                        xr.Gauge.SetValues(.3, .6);
                     xr.PreparationUi.ShowPreview(stage);
                     ShotImage(
                         $"{index++:00}-prep-{stage.stage.ToLowerInvariant()}",
                         "準備：" + stage.title
                     );
                 }
+                xr.Gauge.SetVisible(false);
+                xr.PreparationUi.ShowPreview(PreparationWorkflow.Preview("FreeResult"));
+                ShotImage($"{index++:00}-free-result", "自由走行の終了・保存なし");
+                xr.PreparationUi.ShowPreview(PreparationWorkflow.Preview("Home", true));
+                ShotImage($"{index++:00}-tracking-wait", "開始不可の理由・追跡中2／3台");
+                xr.PreparationUi.ShowPreview(PreparationWorkflow.Preview("Home"));
+                ShotImage($"{index++:00}-tracking-restored", "再接続後・開始可能へ更新");
                 foreach (float fov in new[] { 70f, 90f })
                 foreach (bool light in new[] { true, false })
                 {

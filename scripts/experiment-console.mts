@@ -158,7 +158,7 @@ export function createConsoleServer(
           if (data.schema !== 3)
             return send(response, 409, {
               error:
-                '通信形式が異なります。v0.5.0の対応するAPKとコンソールを組み合わせてください。',
+                '通信形式が異なります。同じ配布物のAPKとコンソールを組み合わせてください。',
             });
           if (!/^[a-f0-9]{32}$/.test(data.deviceId) || !/^[a-f0-9]{64}$/.test(data.codeHash))
             return send(response, 400, { error: '接続識別が不正です。' });
@@ -190,7 +190,14 @@ export function createConsoleServer(
           stateSeen = now();
           if (body.result?.id) {
             const command = pending.find((c) => c.id === body.result.id);
-            if (command && body.state?.visitId)
+            // Preparation actions are logged by the HMD's DeviceChecks, never in a research visit.
+            // Free running has no log at either end of this channel.
+            if (
+              command &&
+              body.state?.visitId &&
+              !command.action.startsWith('prep.') &&
+              !(body.state.preparation?.mode === 'free' && command.action === 'abort')
+            )
               persistOperator(body.state.visitId, {
                 id: command.id,
                 type: 'operator_command',
@@ -359,6 +366,20 @@ export function createConsoleServer(
           'exportUsb',
           'quick',
           'prep.start',
+          'prep.register',
+          'prep.motion',
+          'prep.feedback',
+          'prep.free',
+          'prep.freeVisual',
+          'prep.freeAuditory',
+          'prep.check.motion',
+          'prep.check.still',
+          'prep.check.forward',
+          'prep.check.backward',
+          'prep.check.left',
+          'prep.check.right',
+          'prep.check.visual',
+          'prep.check.audio',
           'prep.next',
           'prep.manual',
           'prep.select',

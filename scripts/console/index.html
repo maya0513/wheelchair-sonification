@@ -52,6 +52,7 @@
             </div>
             <p>ゴーグルでも、ここからでも進められます。</p>
           </div>
+          <div id="preparation-entries" class="preparation-entries" aria-label="準備機能"></div>
           <div class="setup-grid">
             <div class="card guide">
               <div class="guide-top">
@@ -65,6 +66,7 @@
               <p id="prep-issue" class="issue" hidden></p>
               <div id="guide-actions" class="actions"></div>
               <p id="guide-disabled" class="hint"></p>
+              <p id="free-state" class="hint" hidden></p>
               <div id="manual-selection" class="row" hidden>
                 <label id="manual-label">実物を選ぶ<select id="manual-device"></select></label
                 ><button id="manual-assign" class="primary">選択を確定</button>
@@ -108,11 +110,8 @@
           <div class="card">
             <div class="section-heading">
               <h2>チェック結果</h2>
-              <button id="short-check">装着後の短い確認</button>
             </div>
-            <p class="hint">
-              見本の表示・音だけを確認できます。機能の確認と測定精度の検証は別です。
-            </p>
+            <p class="hint">登録・動作確認・FB検査は別々に保存します。自由走行は保存しません。</p>
             <div id="prep-results" class="check-results">
               <p>まだチェックを行っていません。</p>
             </div>
@@ -190,7 +189,6 @@
                   <option value="Baseline">事前</option>
                   <option value="Training">訓練</option>
                   <option value="ImmediateAssessment">直後</option>
-                  <option value="RetentionAssessment">保持</option>
                   <option value="Preparation">習熟</option>
                 </select></label
               ><label
@@ -233,8 +231,8 @@
             </p>
           </div>
           <div class="card timer-card">
-            <strong>目安タイマー</strong><button id="training-timer">訓練2分</button
-            ><button id="rest-timer">休憩20分</button
+            <strong>目安タイマー</strong><button id="training-timer">訓練1分</button
+            ><button id="rest-timer">休憩1分</button
             ><button id="timer-cancel" class="text-button">取消</button
             ><output id="reminder">未開始</output>
           </div>

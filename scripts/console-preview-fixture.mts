@@ -6,7 +6,12 @@ const preparationFixtures = JSON.parse(
 );
 export function preparationFixture(stage = 'Home') {
   return structuredClone(
-    preparationFixtures.stages.find((s: any) => s.stage === stage) || preparationFixtures.stages[0],
+    (stage === 'TrackingWait'
+      ? preparationFixtures.trackingWait
+      : stage === 'FreeResult'
+        ? preparationFixtures.freeResult
+        : preparationFixtures.stages.find((s: any) => s.stage === stage)) ||
+      preparationFixtures.stages[0],
   );
 }
 const previewDeviceId = 'de000000000000000000000000000004';
@@ -104,13 +109,30 @@ export async function startPreviewDevice(endpoint: string, options: { snapshot?:
             if (c.action.startsWith('prep.')) {
               const action = c.action.slice(5),
                 stage = state.preparation?.stage;
-              if (action === 'start' || action === 'retry') {
+              if (action === 'start' || action === 'register' || action === 'retry') {
                 show('Still');
                 advance('ForwardReady');
+              } else if (['motion', 'feedback', 'free'].includes(action)) {
+                show({ motion: 'MotionMenu', feedback: 'FeedbackMenu', free: 'FreeMenu' }[action]!);
+              } else if (action.startsWith('check.')) {
+                const item = action.slice(6);
+                show(
+                  item === 'audio'
+                    ? 'AudioReady'
+                    : item === 'visual'
+                      ? 'VisualReady'
+                      : ['still', 'motion'].includes(item)
+                        ? 'VerifyReady'
+                        : 'Verify' + item[0].toUpperCase() + item.slice(1) + 'Ready',
+                );
+              } else if (action === 'freeVisual' || action === 'freeAuditory') {
+                show('Free');
+                state.preparation.freeGroup = action === 'freeVisual' ? 'Visual' : 'Auditory';
               } else if (action === 'cancel') {
                 advanceAt = 0;
-                show('Result');
-                state.preparation.problem = '画像検証用のチェックを中断しました。';
+                const free = state.preparation?.mode === 'free';
+                show(free ? 'FreeResult' : 'Result');
+                if (!free) state.preparation.problem = '画像検証用のチェックを中断しました。';
               } else if (action === 'wait') show('Waiting');
               else if (action === 'home') show('Home');
               else if (action === 'recheck')
@@ -131,9 +153,8 @@ export async function startPreviewDevice(endpoint: string, options: { snapshot?:
                 else if (c.number === 3) p.manualRole = 4;
                 else show('ForwardReady');
               } else if (action === 'skip') {
-                show('VerifyReady');
-              } else if (action === 'yes' || action === 'no')
-                show(stage === 'VisualAnswer' ? 'AudioAnswer' : 'Result');
+                show('Result');
+              } else if (action === 'yes' || action === 'no') show('Result');
               else if (action === 'next') {
                 if (stage === 'ForwardReady') {
                   show('Forward');
@@ -146,7 +167,9 @@ export async function startPreviewDevice(endpoint: string, options: { snapshot?:
                   show('VerifyReady');
                 } else if (stage === 'VerifyReady') {
                   show('VerifyLeft');
-                  advance('VisualAnswer');
+                  advance('Result');
+                } else if (stage === 'VisualReady' || stage === 'AudioReady') {
+                  show(stage === 'VisualReady' ? 'VisualAnswer' : 'AudioAnswer');
                 } else show('Result');
               }
             } else if (c.action === 'createVisit')

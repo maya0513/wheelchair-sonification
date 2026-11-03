@@ -10,8 +10,10 @@ namespace WheelchairSonification.Runtime
     [Serializable]
     public sealed class ResearchSessionSettings
     {
+        public const string StudyProtocol = "single-visit-30min-pre-post";
         public int format = 2,
             repetition;
+        public string study_protocol;
         public string participant_id,
             visit_id,
             trial_id,

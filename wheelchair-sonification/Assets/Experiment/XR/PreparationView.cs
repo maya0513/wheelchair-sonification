@@ -21,6 +21,7 @@ namespace WheelchairSonification.XR
             footerText,
             connection;
         readonly List<Button> buttons = new List<Button>();
+        readonly List<Button> entries = new List<Button>();
         readonly Button cancel,
             alignDisplay;
         readonly Dictionary<string, RectTransform> markers =
@@ -40,31 +41,55 @@ namespace WheelchairSonification.XR
         {
             this.rig = rig;
             this.host = host;
-            panel = XrUi.Canvas("Preparation panel", parent, new Vector2(1000, 650));
+            panel = XrUi.Canvas("Preparation panel", parent, new Vector2(1000, 700));
             rig.WorldCanvas(
                 panel,
                 parent,
                 Vector3.zero,
-                new Vector2(1000, 650),
+                new Vector2(1000, 700),
                 2 * 1.4f * Mathf.Tan(18 * Mathf.Deg2Rad) / 1000
             );
             XrUi.Fill(panel, XrUi.Paper);
             title = XrUi.Text(panel, "Heading", "準備とチェック", 40, 12, 920, 95, 56);
-            instruction = XrUi.Text(panel, "Instruction", "", 40, 108, 920, 150, 48);
-            detail = XrUi.Text(panel, "Detail", "", 40, 260, 920, 110, 36);
-            connection = XrUi.Text(panel, "Connection", "", 400, 580, 340, 54, 34);
-            for (int i = 0; i < 2; i++)
+            instruction = XrUi.Text(panel, "Instruction", "", 40, 208, 920, 142, 48);
+            detail = XrUi.Text(panel, "Detail", "", 40, 350, 920, 60, 36);
+            connection = XrUi.Text(panel, "Connection", "", 400, 638, 340, 54, 34);
+            for (int i = 0; i < 4; i++)
             {
                 int slot = i;
-                var b = Button(panel, "Action " + i, 40, 376 + i * 104, 920, 96);
+                float width = i == 0 ? 320 : 184;
+                var b = Button(
+                    panel,
+                    "Preparation entry " + i,
+                    i == 0 ? 40 : 376 + (i - 1) * 200,
+                    108,
+                    width,
+                    96
+                );
+                b.GetComponentInChildren<TMP_Text>().fontSize = 36;
+                b.GetComponentInChildren<TMP_Text>().rectTransform.anchoredPosition = new Vector2(
+                    10,
+                    0
+                );
+                b.GetComponentInChildren<TMP_Text>().rectTransform.sizeDelta = new Vector2(
+                    width - 20,
+                    96
+                );
+                b.onClick.AddListener(() => Send(host.Preparation.View.entries[slot].id));
+                entries.Add(b);
+            }
+            for (int i = 0; i < 6; i++)
+            {
+                int slot = i;
+                var b = Button(panel, "Action " + i, 40, 414, 920, 88);
                 b.onClick.AddListener(() => RunAction(slot));
                 buttons.Add(b);
             }
-            cancel = Button(panel, "Cancel", 760, 582, 200, 54);
+            cancel = Button(panel, "Cancel", 760, 638, 200, 54);
             cancel.GetComponentInChildren<TMP_Text>().fontSize = 36;
             cancel.GetComponentInChildren<TMP_Text>().text = "中断";
             cancel.onClick.AddListener(() => Send("cancel"));
-            alignDisplay = Button(panel, "Align display", 40, 582, 340, 54);
+            alignDisplay = Button(panel, "Align display", 40, 638, 340, 54);
             alignDisplay.GetComponentInChildren<TMP_Text>().fontSize = 36;
             alignDisplay.GetComponentInChildren<TMP_Text>().text = "表示を合わせる";
             alignDisplay.onClick.AddListener(() =>
@@ -102,6 +127,7 @@ namespace WheelchairSonification.XR
             var colors = b.colors;
             colors.highlightedColor = new Color(.82f, .9f, 1);
             colors.pressedColor = new Color(.6f, .75f, 1);
+            colors.fadeDuration = 0;
             b.colors = colors;
             var label = XrUi.Text(rect, "Label", "", 24, 0, width - 48, height, 48);
             label.color = Color.white;
@@ -138,6 +164,12 @@ namespace WheelchairSonification.XR
             if (host.Research.Active)
             {
                 host.Suspend("hmd_menu_requested");
+                menuOpen = true;
+                return;
+            }
+            if (host.Preparation.IsFreeSession && host.Preparation.Active)
+            {
+                Send("cancel");
                 menuOpen = true;
                 return;
             }
@@ -189,6 +221,8 @@ namespace WheelchairSonification.XR
                 && !waiting
                 && !awaitingStop;
             cancel.gameObject.SetActive(state.active);
+            cancel.GetComponentInChildren<TMP_Text>().text =
+                state.mode == "free" ? "FB終了" : "中断";
             alignDisplay.gameObject.SetActive(
                 host.Research.Wizard.Calibration.Complete && !active && !state.moving
             );
@@ -198,7 +232,10 @@ namespace WheelchairSonification.XR
                 Recenter();
             wasPanelVisible = showPanel;
             footer.gameObject.SetActive(
-                !active && !example && (state.moving || waiting || !ready || awaitingStop)
+                !active
+                    && !example
+                    && state.stage != "Free"
+                    && (state.moving || waiting || !ready || awaitingStop)
             );
             footerText.text =
                 !ready ? "停止してお待ちください"
@@ -218,12 +255,18 @@ namespace WheelchairSonification.XR
                 + "|"
                 + state.problem
                 + "|"
-                + localProblem;
+                + localProblem
+                + "|"
+                + string.Join("|", state.actions.Select(a => a.id + a.label + a.enabled + a.reason))
+                + string.Join("|", state.entries.Select(a => a.enabled + a.reason));
             if (contentKey != key)
             {
                 contentKey = key;
                 title.text = state.title;
                 instruction.text = state.instruction;
+                bool grid = state.actions.Length > 2;
+                instruction.rectTransform.sizeDelta = new Vector2(920, grid ? 76 : 142);
+                detail.gameObject.SetActive(!grid);
                 detail.text =
                     !string.IsNullOrEmpty(localProblem) ? localProblem
                     : !string.IsNullOrEmpty(state.problem) && state.stage != "Paused"
@@ -234,6 +277,13 @@ namespace WheelchairSonification.XR
                     buttons[i].gameObject.SetActive(i < state.actions.Length);
                     if (i < state.actions.Length)
                     {
+                        var rect = (RectTransform)buttons[i].transform;
+                        rect.anchoredPosition = grid
+                            ? new Vector2(40 + i % 2 * 476, -(304 + i / 2 * 96))
+                            : new Vector2(40, -(414 + i * 96));
+                        rect.sizeDelta = new Vector2(grid ? 444 : 920, 88);
+                        var labelRect = buttons[i].GetComponentInChildren<TMP_Text>().rectTransform;
+                        labelRect.sizeDelta = new Vector2((grid ? 444 : 920) - 48, 88);
                         buttons[i].GetComponentInChildren<TMP_Text>().text = state.actions[i].label;
                         buttons[i].targetGraphic.color =
                             i == 0 ? XrUi.Blue : new Color(.9f, .93f, .97f);
@@ -243,19 +293,23 @@ namespace WheelchairSonification.XR
                 }
             }
             connection.text = paired ? "PCに接続済み" : "PC番号 " + code;
-            int tracked = host.Research.Frame?.poses.Count(p => p.valid) ?? 0;
-            bool few = tracked < 3 && (state.stage == "Home" || state.stage == "Result");
-            for (int i = 0; i < buttons.Count && i < state.actions.Length; i++)
-                buttons[i].interactable =
-                    !few || (state.actions[i].id != "start" && state.actions[i].id != "retry");
-            if (state.stage == "VisualReady" && host.Research.DisplayReady?.Invoke() == false)
+            for (int i = 0; i < entries.Count; i++)
             {
-                detail.text = "正面を向いて「表示を合わせる」を押します。";
-                foreach (var b in buttons)
-                    b.interactable = false;
+                var entry = state.entries[i];
+                var label = entries[i].GetComponentInChildren<TMP_Text>();
+                label.text = entry.label;
+                entries[i].interactable = ready && !active && entry.enabled;
             }
-            if (few)
-                detail.text = "PCで3台の接続・追跡を確認してください。";
+            for (int i = 0; i < buttons.Count && i < state.actions.Length; i++)
+                buttons[i].interactable = ready && state.actions[i].enabled;
+            string unavailable = state.actions.FirstOrDefault(a => !a.enabled)?.reason;
+            if (
+                string.IsNullOrEmpty(unavailable)
+                && (state.stage == "Home" || state.stage == "Result")
+            )
+                unavailable = state.entries.FirstOrDefault(a => !a.enabled)?.reason;
+            if (!string.IsNullOrEmpty(unavailable))
+                detail.text = unavailable;
             LabelsVisible =
                 !active && state.showLabels && !state.moving && menuOpen && !awaitingStop;
             RenderMarkers(state, LabelsVisible);

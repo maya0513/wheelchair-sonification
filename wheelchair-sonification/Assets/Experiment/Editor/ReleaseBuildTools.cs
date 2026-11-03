@@ -206,9 +206,14 @@ namespace WheelchairSonification.Editor
                 androidTargetSdk = 36;
             public bool visitAutomation = false,
                 participantControlsRequired = false;
+            public string studyProtocol = Runtime.ResearchSessionSettings.StudyProtocol;
             public bool standalonePreparation = true,
                 motionRoleProposals = true,
                 spatialRoleSelection = true;
+            public string[] preparationModes = { "registration", "motion", "feedback", "free" };
+            public bool freeRunRecording = false;
+            public string boundaryWarningControl =
+                "headset-configuration-only; physical-check-pending";
             public string preparationValidation =
                 "pending_physical_role_inference_and_spatial_alignment";
             public string measurementValidation =

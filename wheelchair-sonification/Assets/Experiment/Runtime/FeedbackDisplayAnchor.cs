@@ -11,8 +11,8 @@ namespace WheelchairSonification.Runtime
             downwardDegrees = 12,
             barWidthDegrees = 1.2f,
             barHeightDegrees = 8;
-        public float fillOpacity = .7f,
-            trackOpacity = .2f,
+        public float fillOpacity = .85f,
+            trackOpacity = .4f,
             labelOpacity = .9f;
         public Vector3 bodyLocalPosition;
         public Quaternion bodyLocalRotation = Quaternion.identity;

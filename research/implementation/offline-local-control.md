@@ -7,7 +7,7 @@
 | 出典 | 確認した内容 | この研究で未確認のこと |
 |---|---|---|
 | [Ubuntu：Create a wireless hotspot](https://help.ubuntu.com/stable/ubuntu-help/net-wireless-adhoc.html.en) | PCを無線アクセスポイントにし、別のネットワークなしで端末をつなげる。既存Wi-Fiとの切替が必要になる場合がある | このPCとFocus Visionの実際の接続・到達範囲 |
-| [NetworkManager：Wi-Fi device capabilities](https://www.networkmanager.dev/docs/api/latest/nm-dbus-types.html) | `NM_WIFI_DEVICE_CAP_AP`はアクセスポイント対応の能力を表す | 対応フラグだけから90分の安定性・5 GHz動作を保証しない |
+| [NetworkManager：Wi-Fi device capabilities](https://www.networkmanager.dev/docs/api/latest/nm-dbus-types.html) | `NM_WIFI_DEVICE_CAP_AP`はアクセスポイント対応の能力を表す | 対応フラグだけから実験中の安定性・5 GHz動作を保証しない |
 | [NetworkManager：nmcli](https://networkmanager.pages.freedesktop.org/NetworkManager/NetworkManager/nmcli.html) | `device wifi hotspot`は対応機器で接続を作成・有効化する | 読取り確認と接続変更を区別する。現段階で自動切替はしていない |
 | [Android：Local network permission](https://developer.android.com/privacy-and-security/local-network-permission) | ローカルネットワークの入出力にもOS・target SDKに応じた権限制御がある。Android 16のopt-inとAndroid 17/target 37以降の規則を区別する | Focus Visionの実際のOSとアプリtarget SDKに照らした動作。実装では対象SDKを36へ固定する。現在の機器がAndroid 17であるとは仮定しない |
 | [Unity 6000.6：Android permissions](https://docs.unity3d.com/6000.6/Documentation/Manual/android-permissions-in-unity.html) | Manifestと実行時権限を機能に合わせて扱う | UnityのHTTPクライアントとManifestをAndroidビルド・実機で検証すること |

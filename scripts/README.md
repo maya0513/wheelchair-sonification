@@ -22,4 +22,4 @@
 | `unity-state.mts` | バッチ実行後にUnity設定・動的フォントの変更を戻す |
 | `unity-mcp.mts` | MCPサーバーとUnityパッケージの版合わせ、任意のEditor接続 |
 
-ローカル回収先は既定で`~/WheelchairSonificationData/`。テストの合成記録は`.local/`と一時ディレクトリへ分離する。固定時計で2分・20分を確認し、実時間待機を通常のテストに持ち込まない。`just dev experiment-soak`だけが任意で90分稼働を確認する。
+ローカル回収先は既定で`~/WheelchairSonificationData/`。テストの合成記録は`.local/`と一時ディレクトリへ分離する。準備の3秒と訓練・休憩の1分は固定時計で確認し、実時間待機を通常のテストに持ち込まない。`just dev experiment-soak`の90分耐久試験は来訪30分とは別の任意確認。

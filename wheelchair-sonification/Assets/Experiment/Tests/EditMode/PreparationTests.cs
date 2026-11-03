@@ -211,6 +211,7 @@ namespace WheelchairSonification.Tests
 
         string folder;
         PreparationWorkflow workflow;
+        CalibrationWizard wizard;
         double time,
             distance,
             lt,
@@ -222,8 +223,9 @@ namespace WheelchairSonification.Tests
         {
             folder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
             time = distance = lt = rt = 0;
+            wizard = new CalibrationWizard();
             workflow = new PreparationWorkflow(
-                new CalibrationWizard(),
+                wizard,
                 () => folder,
                 () => "synthetic_kinematic_fixture",
                 v => output = v,
@@ -281,7 +283,10 @@ namespace WheelchairSonification.Tests
         {
             Assert.That(workflow.Stage, Is.EqualTo(stage));
             workflow.Execute("next");
-            Hold(5.1);
+            Hold(2.9);
+            Assert.That(workflow.Stage, Is.EqualTo("Countdown"));
+            Hold(.2);
+            Assert.That(workflow.Stage, Is.Not.EqualTo("Countdown"));
         }
 
         void Calibrate()
@@ -296,12 +301,17 @@ namespace WheelchairSonification.Tests
             workflow.Execute("next");
             Assert.That(workflow.Stage, Is.EqualTo("WristsChoice"));
             workflow.Execute("skip");
+            Assert.That(workflow.Stage, Is.EqualTo("Result"));
+            Assert.That(workflow.View.scope, Is.EqualTo("registration"));
         }
 
         [Test]
         public void StandaloneWholeCheckUsesVirtualClockAndRetainsSeparateRecords()
         {
             Calibrate();
+            var registered = JsonUtility.ToJson(wizard.Calibration);
+            workflow.Execute("motion");
+            workflow.Execute("check.motion");
             Ready("VerifyReady");
             Hold(2.3);
             Ready("VerifyForwardReady");
@@ -312,7 +322,14 @@ namespace WheelchairSonification.Tests
             Move(.3, .1, .3);
             Ready("VerifyRightReady");
             Move(.6, .4, .4);
-            Assert.That(workflow.Stage, Is.EqualTo("VisualReady"));
+            Assert.That(workflow.Stage, Is.EqualTo("Result"));
+            Assert.That(JsonUtility.ToJson(wizard.Calibration), Is.EqualTo(registered));
+            Assert.That(
+                workflow.View.results.Single(r => r.id == "visual").status,
+                Is.EqualTo("not_in_scope")
+            );
+            workflow.Execute("feedback");
+            workflow.Execute("check.visual");
             workflow.Execute("next");
             Hold(1);
             Assert.That(output.enabled, Is.True);
@@ -321,6 +338,9 @@ namespace WheelchairSonification.Tests
             Assert.That(workflow.Stage, Is.EqualTo("VisualAnswer"));
             Assert.That(output.enabled, Is.False);
             workflow.Execute("yes");
+            Assert.That(workflow.Stage, Is.EqualTo("Result"));
+            workflow.Execute("feedback");
+            workflow.Execute("check.audio");
             workflow.Execute("next");
             Hold(8);
             workflow.Execute("no");
@@ -384,6 +404,7 @@ namespace WheelchairSonification.Tests
         public void InterruptionCannotAutoResumeAndDoesNotRequireAController()
         {
             Calibrate();
+            workflow.Execute("check.motion");
             Ready("VerifyReady");
             workflow.Interrupt("fixture disconnect");
             Hold(3);
@@ -473,6 +494,120 @@ namespace WheelchairSonification.Tests
             Assert.That(workflow.Stage, Is.EqualTo("Stopping"));
             Assert.That(workflow.View.problem, Does.Contain("位置姿勢"));
             Assert.That(output.enabled, Is.False);
+        }
+
+        [Test]
+        public void ReconnectionUpdatesEntryReasonWithoutASecondMenuAction()
+        {
+            var missing = ChairFixture.Frame(1, 0, 0, 0, false);
+            missing.Find("fixture-2").valid = false;
+            workflow.Tick(missing, 1, true, new FeedbackSettings(), .1f);
+            var entry = workflow.View.entries.Single(e => e.id == "register");
+            Assert.That(entry.enabled, Is.False);
+            Assert.That(entry.reason, Does.Contain("2／3"));
+            Assert.Throws<InvalidOperationException>(() => workflow.Execute("register"));
+            workflow.Tick(
+                ChairFixture.Frame(1.025, 0, 0, 0, false),
+                1.025,
+                true,
+                new FeedbackSettings(),
+                .1f
+            );
+            Assert.That(workflow.View.entries.Single(e => e.id == "register").enabled, Is.True);
+            workflow.Execute("register");
+            Assert.That(workflow.Stage, Is.EqualTo("Still"));
+        }
+
+        Dictionary<string, string> Files() =>
+            Directory.Exists(folder)
+                ? Directory
+                    .GetFiles(folder, "*", SearchOption.AllDirectories)
+                    .ToDictionary(p => p, File.ReadAllText)
+                : new Dictionary<string, string>();
+
+        [TestCase(StudyGroup.Visual)]
+        [TestCase(StudyGroup.Auditory)]
+        public void FreeRunUsesActualSpeedAndNeverWritesFiles(StudyGroup group)
+        {
+            Calibrate();
+            Hold(2.3);
+            var before = Files();
+            int closed = 0;
+            workflow.Closed += _ => closed++;
+            workflow.Execute("free");
+            workflow.Execute(group == StudyGroup.Visual ? "freeVisual" : "freeAuditory");
+            Assert.That(workflow.Stage, Is.EqualTo("Countdown"));
+            Assert.That(output.enabled, Is.False);
+            Hold(2.9);
+            Assert.That(workflow.Stage, Is.EqualTo("Countdown"));
+            Assert.That(output.enabled, Is.False);
+            Hold(.2);
+            Assert.That(workflow.Stage, Is.EqualTo("Free"));
+            for (int i = 0; i < 20; i++)
+            {
+                time += .025;
+                distance += .01;
+                lt += .005;
+                rt += .015;
+                Tick();
+            }
+            Assert.That(output.enabled, Is.True);
+            Assert.That(output.group, Is.EqualTo(group));
+            Assert.That(output.right.normalized, Is.GreaterThan(output.left.normalized));
+            Assert.Throws<InvalidOperationException>(() => workflow.Execute("register"));
+            Assert.Throws<InvalidOperationException>(() => workflow.Execute("freeAuditory"));
+            var missing = ChairFixture.Frame(time + .025, distance, lt, rt, false);
+            missing.Find("fixture-3").valid = false;
+            workflow.Tick(missing, time + .025, true, new FeedbackSettings(), .1f);
+            Assert.That(output.enabled, Is.False);
+            time += .05;
+            Tick();
+            Hold(.2);
+            Assert.That(workflow.Stage, Is.EqualTo("Free"));
+            workflow.Execute("cancel");
+            Assert.That(output.enabled, Is.False);
+            Assert.That(workflow.Stage, Is.EqualTo("FreeStopping"));
+            Hold(2.3);
+            Assert.That(workflow.Stage, Is.EqualTo("Result"));
+            Assert.That(closed, Is.Zero);
+            Assert.That(workflow.View.directory, Is.Empty);
+            CollectionAssert.AreEquivalent(before, Files());
+        }
+
+        [Test]
+        public void FreeInterruptionNeverResumesAndRequiresRegistrationAfterReconnection()
+        {
+            Calibrate();
+            Hold(2.3);
+            workflow.Execute("freeVisual");
+            Hold(5.2);
+            workflow.Interrupt("application_pause");
+            Assert.That(output.enabled, Is.False);
+            Hold(3);
+            Assert.That(workflow.Stage, Is.EqualTo("Result"));
+            Hold(10);
+            Assert.That(workflow.Stage, Is.EqualTo("Result"));
+            wizard.Calibration.Invalidate("critical_device_reconnected");
+            Assert.Throws<InvalidOperationException>(() => workflow.Execute("freeVisual"));
+        }
+
+        [Test]
+        public void AudioInspectionDoesNotRequireTrackersButVisualRequiresAlignment()
+        {
+            time = 1;
+            workflow.Tick(new PoseFrame { time = 1 }, 1, true, new FeedbackSettings(), .1f, false);
+            workflow.Execute("feedback");
+            Assert.That(workflow.View.actions.Single(a => a.id == "check.audio").enabled, Is.True);
+            Assert.That(
+                workflow.View.actions.Single(a => a.id == "check.visual").enabled,
+                Is.False
+            );
+            workflow.Execute("check.audio");
+            workflow.Execute("next");
+            Hold(8);
+            workflow.Execute("yes");
+            Assert.That(workflow.Stage, Is.EqualTo("Result"));
+            Assert.That(workflow.Mode, Is.EqualTo("feedback"));
         }
     }
 }

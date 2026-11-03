@@ -2,11 +2,14 @@
 
 実装、PC上の確認、実機での測定性能、研究の実施許可を区別する。本計測の判断と担当は[開始条件G1–G6](operations/study-operations.md#本計測開始条件)に集約する。
 
+来訪は合計30分、事前・直後の2時点に変更した。保持評価は設けない。訓練量と配分は[実験手順](experiment-protocol.md)、主要評価は[分析計画](analysis-plan.md)を参照する。
+
 ## 使える機能と確認範囲
 
 | 対象 | 実装・PC上の確認 | 次に行うこと |
 |---|---|---|
-| 準備・チェック | 案内付き割当・校正、実物選択、部分再確認、HMD単体操作を合成入力で確認 | 実物との対応、目印の位置、装着・キャンバー、全走路を確認 |
+| 準備・チェック | 登録・動作確認・FB検査を独立化。実物選択、HMD単体操作を合成入力で確認 | 実物との対応、目印の位置、装着・キャンバー、全走路を確認 |
+| 自由走行 | 実際の左右速度によるFB、手動終了、欠測・中断、保存なしを合成入力で確認 | HMDで開始・終了、実走行とOS警告の発生位置を確認 |
 | 速度FB | 左右独立の連続音、車体固定の半透明縦バーを実装。計算・無提示条件・画像・波形を確認 | 独立参照で速度・追跡・実出力を測り、左右音・可読性・床やコーンの視認を確認 |
 | 視線 | 全群の試行記録に左右眼球・頭部・表示配置を保存。合成入力で欠測・例外・座標変換・保存を確認 | HMD標準の眼球校正、取得率・取得間隔、再装着、処理負荷を実機で確認 |
 | PC操作・回収 | 手動課題選択・正式計時・回答・試行別ZIP回収を確認 | 実際の合図音、手動停止、無線、WindowsへのUSBコピー、単独見守りを確認 |
@@ -16,23 +19,24 @@
 
 ## 確認証拠を探す
 
-以下はアプリv0.6.0、ソース`ae2055d4e06ba484374637fb4feeaf7171b7a780`のPC上の確認記録。証拠ファイルはこの開発PCのGit管理外にあり、別PCでは[開発手順](development/README.md)から再実行する。
+以下はアプリv0.7.0の作業ツリーで行ったPC上の確認。コミット前の変更を含むため、ビルド情報の`gitCommit`だけではこの実装を再現できない。検証の記録と対象ファイルのハッシュは`.local/verification/v070/`に保存する。実機での確認は含まない。
 
 | 確認 | 結果・記録 |
 |---|---|
-| 自動試験 | Unity Edit Mode 57件、Play Mode 17件、Node 66件成功。`.local/logs/final-verification.json`と同ディレクトリのテストXML |
-| 実通信・回収 | Linux Unityの合成入力18試行を約76.1秒で記録・回収。`.local/console-integration-2026-11-01T18-34-15-438Z/result.json` |
-| 回収照合 | 同ディレクトリの`archive-verification.json`。18 ZIP・内部198ファイルのSHA-256が一致。視線・表示2232フレーム分を含み、Linuxでは視線を取得不可として記録 |
-| 再生 | 同じ元データ・時刻・校正から速度・提示値を再現。`.local/replay-reports/ResearchSessions-1793558147747/` |
-| 画面・音 | Unity 44画像、Chrome 27画像を生成・目視確認。9 WAV（連続2分を含む）の左右分離・無音・クリップ・不連続を検査。実機試聴は未確認 |
-| 梱包 | `.local/logs/distribution-verification.json`。コンソールをリポジトリ外へ展開しNodeだけで起動、ZIPとチェックサムを照合 |
+| 自動試験 | Unity Edit Mode 62件、Play Mode 18件、Node 68件成功。UnityのXMLは`.local/logs/unity-test-*.xml` |
+| 独立した準備 | 登録のみで終了し、動作・FB検査で校正を維持。追跡中2／3台の理由表示と、復帰後のボタン・文言の更新を確認 |
+| 自由走行 | 左右差、視覚・聴覚の選択、欠測時のFB停止、中断後の手動再開を確認。開始・終了前後でHMDのファイルとPCの既存来訪記録が変わらないことを照合 |
+| 画面 | Unity 58画像、Chrome 37画像。4つの入口、各検査、自由走行、終了、追跡待ち・復帰を生成し目視確認 |
+| APK | 署名付きv0.7.0／versionCode 7。ARM64・IL2CPP・非デバッグ・XR・通信・ライセンスと、既存APKとの署名一致を検査 |
 
-現在の文書リンク・文献一覧・BibTeX・PDFの対応は`just dev docs-check`で検査する。配置整理後の推敲・参照確認は`.local/logs/document-reorganization-review.json`に記録する。文献の閲覧範囲は[文献一覧](../research/catalog.md)、原著と提案の区別は各ノートで確認する。
+従来の研究試行・回収・記録再生の確認は`.local/logs/final-verification.json`等にある。Linux UnityとPCを接続した18試行の記録はソース`ae2055d4e06ba484374637fb4feeaf7171b7a780`でのもので、v0.7.0で再実行した証拠とは区別する。
 
-画像とWAVは`.local/ui-preview/index.html`、PC画面は`.local/console-preview/index.html`で開く。[画像付き概要](app-overview.md)は要点だけを掲載する。90分継続試験は任意で、上のソースでの成功証拠はない。20分休憩を実際に待つ自動試験は行わない。
+現在の文書リンク・文献一覧・BibTeX・PDFの対応は`just dev docs-check`で検査する。今回更新した文書の推敲・照合記録は`.local/verification/30min-ui/yomiyasu/`に保存する。文献の閲覧範囲は[文献一覧](../research/catalog.md)、原著と提案の区別は各ノートで確認する。
+
+画像とWAVは`.local/ui-preview/index.html`、PC画面は`.local/console-preview/index.html`で開く。[画像付き概要](app-overview.md)は要点だけを掲載する。来訪30分の通し予備実験は未実施。90分耐久試験は別の任意確認で、上のソースでの成功証拠はない。準備の3秒・目安の1分は時計を進めて検証し、実時間の待機は行わない。
 
 ## 配布物
 
-生成済みのローカル一式は`.local/builds/android-release/`。署名付きv0.6.0／versionCode 6のAPK、対応コンソール、概要・画像・音見本、ビルド情報、チェックサムを含む。ARM64・IL2CPP・非デバッグ・XR・通信形式3・ライセンス・署名・既存鍵との一致を検査済み。対象ソースと検査結果は一式の`build-info.json`を確認する。
+生成済みのローカル一式は`.local/builds/android-release/`。署名付きv0.7.0／versionCode 7のAPK、対応コンソール、画像・音見本、ビルド情報、チェックサムを含む。概要は[画像付き説明](app-overview.md)で読める。ARM64・IL2CPP・非デバッグ・XR・通信形式3・ライセンス・署名・既存鍵との一致を検査済み。対象ソースと検査結果は一式の`build-info.json`を確認する。今回の作業でGitHubのReleaseは作成していない。
 
 実際に公開されたバージョンと添付物は[Releases](https://github.com/maya0513/wheelchair-sonification/releases)を参照する。導入は[実施者の準備手順](operations/setup.md)、再生成・公開は[開発者のビルド手順](development/android-build.md)に従う。

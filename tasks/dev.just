@@ -71,7 +71,7 @@ unity-replay session_directory:
 console-preview:
     mise exec --locked -- node scripts/console-preview.mts
 
-# 短時間のUnity＋PC確認（先にunity-build。実際の20分待機なし）
+# 短時間のUnity＋PC確認（先にunity-build。実時間の休憩待機なし）
 experiment-integration:
     mise exec --locked -- node scripts/console-integration.mts 180
 

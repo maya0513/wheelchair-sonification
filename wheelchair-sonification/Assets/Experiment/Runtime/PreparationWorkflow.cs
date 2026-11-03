@@ -11,7 +11,9 @@ namespace WheelchairSonification.Runtime
     public sealed class PreparationAction
     {
         public string id,
-            label;
+            label,
+            reason = "";
+        public bool enabled = true;
 
         public PreparationAction(string id, string label)
         {
@@ -42,7 +44,9 @@ namespace WheelchairSonification.Runtime
             problem,
             technicalProblem,
             directory,
-            scope;
+            scope,
+            mode,
+            freeGroup;
         public bool active,
             moving,
             showLabels,
@@ -54,6 +58,7 @@ namespace WheelchairSonification.Runtime
             step;
         public string[] proposedBindings;
         public PreparationAction[] actions;
+        public PreparationAction[] entries;
         public CheckItem[] results;
         public double leftRps,
             rightRps;
@@ -64,6 +69,7 @@ namespace WheelchairSonification.Runtime
     // One state owner for the headset and PC. Clock and frames are supplied, so tests never wait.
     public sealed class PreparationWorkflow : IDisposable
     {
+        const int CountdownSeconds = 3;
         readonly CalibrationWizard wizard;
         readonly Func<string> root;
         readonly Func<string> sourceKind;
@@ -79,14 +85,20 @@ namespace WheelchairSonification.Runtime
         public string Stage { get; private set; } = "Home";
         public string Problem { get; private set; } = "";
         public string TechnicalProblem { get; private set; } = "";
-        public bool Active => Stage != "Home" && Stage != "Result" && Stage != "Waiting";
+        public bool Active =>
+            Stage != "Home" && Stage != "Result" && Stage != "Waiting" && !Selecting;
         public bool Moving =>
             Stage == "Countdown"
             || Stage == "Stopping"
             || Stage == "Still"
             || IsMotion(Stage)
             || Stage == "WristLeft"
-            || Stage == "WristRight";
+            || Stage == "WristRight"
+            || Stage == "Free"
+            || Stage == "FreeStopping";
+        public string Mode { get; private set; } = "";
+        public bool IsFreeSession => Mode == "free";
+        public bool Selecting => Stage.EndsWith("Menu", StringComparison.Ordinal);
         public bool ShowLabels => Stage == "Candidate" || Stage == "Manual";
         public int ManualRole { get; private set; } = 2;
         public PreparationCandidate Candidate { get; private set; }
@@ -102,7 +114,10 @@ namespace WheelchairSonification.Runtime
             nextMotion = "",
             manualNext = "",
             sourceAtStart = "";
-        string scope = "full";
+        string scope = "registration";
+        StudyGroup freeGroup = StudyGroup.Visual;
+        bool presentationReady,
+            displayReady = true;
         string[] proposed = new string[5];
         double now,
             entered,
@@ -139,14 +154,32 @@ namespace WheelchairSonification.Runtime
 
         public void Execute(string action, string value = "", int role = -1)
         {
-            if (action == "start")
+            if (action == "start" || action == "register")
             {
                 Start();
                 return;
             }
+            if (action == "motion" || action == "feedback" || action == "free")
+            {
+                OpenMenu(action);
+                return;
+            }
+            if (action.StartsWith("check.", StringComparison.Ordinal))
+            {
+                Start(action.Substring(6));
+                return;
+            }
+            if (action == "freeVisual" || action == "freeAuditory")
+            {
+                BeginFree(action == "freeVisual" ? StudyGroup.Visual : StudyGroup.Auditory);
+                return;
+            }
             if (action == "recheck")
             {
-                Start(value);
+                if (value == "output")
+                    OpenMenu("feedback");
+                else
+                    Start(value);
                 return;
             }
             if (action == "settings")
@@ -154,14 +187,28 @@ namespace WheelchairSonification.Runtime
                 Configure(value);
                 return;
             }
-            if (action == "home" && !Active)
+            if (action == "home" && (!Active || Selecting))
             {
+                Mode = "";
                 Enter("Home");
                 return;
             }
             log?.Action(now, action, value);
             if (action == "cancel")
             {
+                if (Selecting)
+                {
+                    Mode = "";
+                    Enter("Home");
+                    return;
+                }
+                if (!Active)
+                    return;
+                if (IsFreeSession)
+                {
+                    StopFree("自由走行を終了しました。");
+                    return;
+                }
                 Finish(false, "実施者がチェックを中断しました。");
                 return;
             }
@@ -170,7 +217,7 @@ namespace WheelchairSonification.Runtime
                 Enter("Waiting");
                 return;
             }
-            if (action == "manual" && !Moving && Active)
+            if (action == "manual" && !Moving && Active && Mode == "registration")
             {
                 manual = true;
                 proposed = new string[5];
@@ -220,7 +267,7 @@ namespace WheelchairSonification.Runtime
             }
             if (action == "skip" && Stage == "WristsChoice")
             {
-                Mark("wrists", "not_tested", "手首は今回省略。走行用3台の機能チェックを継続。");
+                Mark("wrists", "not_tested", "手首は今回省略。走行用3台の登録を保存。");
                 BeginVerification();
                 return;
             }
@@ -236,10 +283,7 @@ namespace WheelchairSonification.Runtime
                         ? "装着者が確認。実出力遅延は未測定。"
                         : "装着者から見え方・聞こえ方の問題あり。"
                 );
-                if (Stage == "VisualAnswer" && scope != "visual")
-                    Enter("AudioReady");
-                else
-                    Finish(true, "");
+                Finish(true, "");
                 return;
             }
             if (action != "next")
@@ -280,6 +324,9 @@ namespace WheelchairSonification.Runtime
                     PrepareMove("VerifyRight");
                     break;
                 case "VisualReady":
+                    string visualReason = StartReason("visual");
+                    if (visualReason != "")
+                        throw new InvalidOperationException(visualReason);
                     Enter("Visual");
                     break;
                 case "AudioReady":
@@ -294,9 +341,85 @@ namespace WheelchairSonification.Runtime
             }
         }
 
-        void Start(string requestedScope = "full")
+        void OpenMenu(string mode)
         {
-            if (Active)
+            if (Active && !Selecting)
+                throw new InvalidOperationException("現在の確認を終了してから選んでください。");
+            stop();
+            Mode = mode;
+            if (IsFreeSession)
+                id = directory = "";
+            Problem = TechnicalProblem = "";
+            Enter(
+                mode == "motion" ? "MotionMenu"
+                : mode == "feedback" ? "FeedbackMenu"
+                : "FreeMenu"
+            );
+        }
+
+        public string StartReason(string requestedScope)
+        {
+            if (!presentationReady)
+                return "ゴーグルの追跡と表示を確認してください。";
+            bool registration = new[] { "full", "roles", "axes", "registration" }.Contains(
+                requestedScope
+            );
+            bool audio = requestedScope == "audio";
+            if (!audio)
+            {
+                int tracked = registration
+                    ? frame?.poses.Where(p => p.valid).Select(p => p.key).Distinct().Count() ?? 0
+                    : new[] { 2, 3, 4 }.Count(i =>
+                        frame?.Find(wizard.Calibration.roles[i].key)?.valid == true
+                    );
+                if (!registration && !wizard.Calibration.Complete)
+                    return "トラッカー登録・校正が必要です。";
+                if (tracked < 3)
+                    return "追跡中 " + Math.Min(3, tracked) + "／3台。接続を確認してください。";
+                if (!registration && wizard.Calibration.BindingError(frame) != null)
+                    return "再接続後の登録・校正を確認してください。";
+            }
+            if ((requestedScope == "visual" || requestedScope == "freeVisual") && !displayReady)
+                return "停止して正面を向き、表示位置を合わせてください。";
+            if (requestedScope.StartsWith("free", StringComparison.Ordinal) && !SnapshotStill())
+                return "車いすを止めて、静止の確認をお待ちください。";
+            return "";
+        }
+
+        bool SnapshotStill() =>
+            !double.IsNaN(uiStillSince) && now - uiStillSince >= Settings.stillSeconds;
+
+        void BeginFree(StudyGroup group)
+        {
+            if (Active && !Selecting)
+                throw new InvalidOperationException("現在の確認を終了してから始めてください。");
+            string reason = StartReason(group == StudyGroup.Visual ? "freeVisual" : "freeAuditory");
+            if (reason != "")
+                throw new InvalidOperationException(reason);
+            Mode = "free";
+            scope = "free";
+            freeGroup = group;
+            id = directory = "";
+            sourceAtStart = sourceKind();
+            Problem = TechnicalProblem = "";
+            speed = default;
+            estimator = new WheelSpeedEstimator(wizard.Calibration);
+            engine = null;
+            PrepareMove("Free");
+        }
+
+        void StopFree(string reason)
+        {
+            stop();
+            Problem = reason;
+            if (Stage == "FreeStopping")
+                return;
+            Enter("FreeStopping");
+        }
+
+        void Start(string requestedScope = "registration")
+        {
+            if (Active && !Selecting)
                 throw new InvalidOperationException(
                     "進行中のチェックを終了してから始めてください。"
                 );
@@ -304,6 +427,8 @@ namespace WheelchairSonification.Runtime
                 !new[]
                 {
                     "full",
+                    "registration",
+                    "motion",
                     "roles",
                     "axes",
                     "wrists",
@@ -314,26 +439,19 @@ namespace WheelchairSonification.Runtime
                     "right",
                     "visual",
                     "audio",
-                    "output",
                 }.Contains(requestedScope)
             )
                 throw new ArgumentException("再確認する項目を選んでください。");
-            if (requestedScope == "roles" || requestedScope == "axes")
-                requestedScope = "full";
-            bool outputOnly = new[] { "visual", "audio", "output" }.Contains(requestedScope);
-            if (!outputOnly && (frame == null || frame.poses.Count(p => p.valid) < 3))
-                throw new InvalidOperationException(
-                    "車体と左右車輪の3台を追跡できる場所で始めてください。"
-                );
-            if (
-                requestedScope != "full"
-                && !outputOnly
-                && (!wizard.Calibration.Complete || wizard.Calibration.BindingError(frame) != null)
-            )
-                throw new InvalidOperationException(
-                    "先に走行用3台の割当と校正を確認してください。"
-                );
+            if (new[] { "full", "roles", "axes" }.Contains(requestedScope))
+                requestedScope = "registration";
+            string reason = StartReason(requestedScope);
+            if (reason != "")
+                throw new InvalidOperationException(reason);
             scope = requestedScope;
+            Mode =
+                scope == "registration" || scope == "wrists" ? "registration"
+                : scope == "visual" || scope == "audio" ? "feedback"
+                : "motion";
             id = Guid.NewGuid().ToString("N");
             sourceAtStart = sourceKind();
             log = new DeviceCheckLog(root(), id, Settings, sourceAtStart);
@@ -358,10 +476,18 @@ namespace WheelchairSonification.Runtime
                 results[item.Item1] = new CheckItem { id = item.Item1, label = item.Item2 };
             foreach (var item in results.Values)
                 if (
-                    scope != "full"
-                    && item.id != "storage"
+                    item.id != "storage"
                     && item.id != scope
-                    && !(scope == "output" && (item.id == "visual" || item.id == "audio"))
+                    && !(
+                        scope == "registration"
+                        && new[] { "roles", "axes", "wrists" }.Contains(item.id)
+                    )
+                    && !(
+                        scope == "motion"
+                        && new[] { "still", "forward", "backward", "left", "right" }.Contains(
+                            item.id
+                        )
+                    )
                 )
                 {
                     item.status = "not_in_scope";
@@ -374,7 +500,9 @@ namespace WheelchairSonification.Runtime
             manual = false;
             Problem = "";
             TechnicalProblem = "";
-            if (scope == "full")
+            engine = null;
+            speed = default;
+            if (scope == "registration")
             {
                 wizard.Reset();
                 Enter("Still");
@@ -390,10 +518,10 @@ namespace WheelchairSonification.Runtime
                     proposed[0] = proposed[1] = null;
                 }
                 Enter(
-                    scope == "visual" || scope == "output" ? "VisualReady"
+                    scope == "visual" ? "VisualReady"
                     : scope == "audio" ? "AudioReady"
                     : scope == "wrists" ? "WristsChoice"
-                    : scope == "still" ? "VerifyReady"
+                    : scope == "still" || scope == "motion" ? "VerifyReady"
                     : scope == "forward" ? "VerifyForwardReady"
                     : scope == "backward" ? "VerifyBackwardReady"
                     : scope == "left" ? "VerifyLeftReady"
@@ -443,6 +571,7 @@ namespace WheelchairSonification.Runtime
             results.Clear();
             Candidate = null;
             proposed = new string[5];
+            Mode = "";
             Problem = "判定設定を変更しました。割当と校正を確認してください。";
             Enter("Home");
         }
@@ -484,11 +613,14 @@ namespace WheelchairSonification.Runtime
             double time,
             bool presentationReady,
             FeedbackSettings feedback,
-            float volume
+            float volume,
+            bool displayReady = true
         )
         {
             now = time;
             frame = current;
+            this.presentationReady = presentationReady;
+            this.displayReady = displayReady;
             if (frame == null)
             {
                 uiStillSince = double.NaN;
@@ -526,10 +658,37 @@ namespace WheelchairSonification.Runtime
                     Interrupt("ゴーグルの表示・追跡を確認してください。");
                     return;
                 }
+                if (Stage == "FreeStopping")
+                {
+                    if (StillLongEnough())
+                        Enter("Result");
+                    return;
+                }
+                if (IsFreeSession && !wizard.Calibration.Complete)
+                {
+                    StopFree("校正が無効です。安全に止まり、登録を確認してください。");
+                    return;
+                }
                 if (Stage == "Countdown")
                 {
-                    if (time - entered >= 5)
+                    if (time - entered >= CountdownSeconds)
                         Enter(nextMotion);
+                    return;
+                }
+                if (Stage == "Free")
+                {
+                    speed = estimator.Update(frame);
+                    engine ??= new SpeedFeedbackEngine(feedback);
+                    present(
+                        engine.Update(
+                            time,
+                            speed.leftRps,
+                            speed.rightRps,
+                            speed.valid,
+                            freeGroup,
+                            true
+                        )
+                    );
                     return;
                 }
                 if (Stage == "Stopping")
@@ -716,7 +875,7 @@ namespace WheelchairSonification.Runtime
 
         void BeginVerification()
         {
-            if (scope == "wrists")
+            if (scope == "wrists" || scope == "registration")
             {
                 Finish(true, "");
                 return;
@@ -847,11 +1006,16 @@ namespace WheelchairSonification.Runtime
                 Finish(true, "");
                 return;
             }
+            if (Stage == "VerifyRight")
+            {
+                Finish(true, "");
+                return;
+            }
             Enter(
                 Stage == "VerifyForward" ? "VerifyBackwardReady"
                 : Stage == "VerifyBackward" ? "VerifyLeftReady"
                 : Stage == "VerifyLeft" ? "VerifyRightReady"
-                : "VisualReady"
+                : "VerifyRightReady"
             );
         }
 
@@ -860,6 +1024,12 @@ namespace WheelchairSonification.Runtime
             if (!Active)
             {
                 stop();
+                return;
+            }
+            if (IsFreeSession)
+            {
+                TechnicalProblem = reason;
+                StopFree("自由走行を中断しました。安全に止まってください。");
                 return;
             }
             stop();
@@ -903,6 +1073,12 @@ namespace WheelchairSonification.Runtime
 
         void StorageFailure(Exception e)
         {
+            if (IsFreeSession)
+            {
+                TechnicalProblem = e.ToString();
+                StopFree("入力を確認できません。安全に止まってください。");
+                return;
+            }
             stop();
             TechnicalProblem = e.ToString();
             Problem = "入力・保存を確認できません。PCで確認してください。";
@@ -926,6 +1102,8 @@ namespace WheelchairSonification.Runtime
                 checkId = id,
                 stage = Stage,
                 scope = scope,
+                mode = Mode,
+                freeGroup = freeGroup.ToString(),
                 title = content.title,
                 instruction = content.instruction,
                 detail = content.detail,
@@ -936,18 +1114,26 @@ namespace WheelchairSonification.Runtime
                 active = Active,
                 moving = Moving,
                 showLabels = ShowLabels,
-                safeToShowPanel =
-                    !double.IsNaN(uiStillSince) && now - uiStillSince >= Settings.stillSeconds,
+                safeToShowPanel = SnapshotStill(),
                 manualRole = Stage == "Manual" ? ManualRole : -1,
                 proposedBindings = (string[])proposed.Clone(),
-                actions = content.actions,
+                actions = content.actions.Select(AvailableAction).ToArray(),
+                entries = new[]
+                {
+                    new PreparationAction("register", "トラッカー登録"),
+                    new PreparationAction("motion", "動作確認"),
+                    new PreparationAction("feedback", "FB検査"),
+                    new PreparationAction("free", "自由走行"),
+                }
+                    .Select(AvailableAction)
+                    .ToArray(),
                 requiredTracked = new[] { 2, 3, 4 }.Count(i =>
                     frame?.Find(proposed[i] ?? wizard.Calibration.roles[i].key)?.valid == true
                 ),
                 wristTracked = new[] { 0, 1 }.Count(i =>
                     frame?.Find(wizard.Calibration.roles[i].key)?.valid == true
                 ),
-                results = results.Values.ToArray(),
+                results = IsFreeSession ? Array.Empty<CheckItem>() : results.Values.ToArray(),
                 step =
                     Stage == "Home" ? 0
                     : Stage == "Still"
@@ -966,6 +1152,29 @@ namespace WheelchairSonification.Runtime
             };
         }
 
+        PreparationAction AvailableAction(PreparationAction action)
+        {
+            string reason = "";
+            if (new[] { "register", "motion", "feedback", "free" }.Contains(action.id))
+            {
+                if (Active)
+                    reason = "現在の確認を終了してください。";
+                else if (action.id == "register")
+                    reason = StartReason("registration");
+                else if (action.id == "motion" || action.id == "free")
+                    reason = StartReason("motion");
+            }
+            else if (action.id.StartsWith("check.", StringComparison.Ordinal))
+                reason = StartReason(action.id.Substring(6));
+            else if (action.id == "freeVisual" || action.id == "freeAuditory")
+                reason = StartReason(action.id);
+            else if (action.id == "next" && Stage == "VisualReady")
+                reason = StartReason("visual");
+            action.reason = reason;
+            action.enabled = reason == "";
+            return action;
+        }
+
         (string title, string instruction, string detail, PreparationAction[] actions) Content()
         {
             PreparationAction A(string action, string label) =>
@@ -976,16 +1185,61 @@ namespace WheelchairSonification.Runtime
                 case "Home":
                     return (
                         "準備とチェック",
-                        "車いすの動きを確かめます",
-                        "実施者用。広い平地で確認します。",
-                        new[] { A("start", "チェックを始める"), A("wait", "実験を待つ") }
+                        "上から、行うことを選びます",
+                        "登録・動作・出力を個別に確認できます。",
+                        new[] { A("wait", "実験を待つ") }
+                    );
+                case "MotionMenu":
+                    return (
+                        "動作確認",
+                        "確認する動きを選んでください",
+                        "登録・校正は変更しません。",
+                        new[]
+                        {
+                            A("check.motion", "一通り確認"),
+                            A("check.still", "静止"),
+                            A("check.forward", "前進"),
+                            A("check.backward", "後退"),
+                            A("check.left", "左旋回"),
+                            A("check.right", "右旋回"),
+                        }
+                    );
+                case "FeedbackMenu":
+                    return (
+                        "FB検査",
+                        "止まったまま、見本を確かめます",
+                        "視覚は先に表示位置を合わせます。",
+                        new[] { A("check.visual", "視覚の見本"), A("check.audio", "聴覚の見本") }
+                    );
+                case "FreeMenu":
+                    return (
+                        "自由走行・保存なし",
+                        "実際の車輪の速さを返します",
+                        "停止中に選択。メニューでFBを終了。",
+                        new[] { A("freeVisual", "視覚で走る"), A("freeAuditory", "聴覚で走る") }
+                    );
+                case "Free":
+                    return ("自由走行・保存なし", "", "", Array.Empty<PreparationAction>());
+                case "FreeStopping":
+                    return (
+                        "自由走行を終了",
+                        "安全に止まってください",
+                        Problem,
+                        Array.Empty<PreparationAction>()
+                    );
+                case "Result" when IsFreeSession:
+                    return (
+                        "自由走行を終了しました",
+                        "データは保存していません",
+                        Problem,
+                        new[] { A("free", "もう一度走る"), A("home", "準備画面へ") }
                     );
                 case "Waiting":
                     return (
                         "実験を待っています",
                         "実施者の案内をお待ちください",
                         "準備の変更は停止中に行います。",
-                        new[] { A("start", "準備を確認する") }
+                        new[] { A("home", "準備画面へ") }
                     );
                 case "Still":
                     return (
@@ -998,7 +1252,8 @@ namespace WheelchairSonification.Runtime
                     return (
                         "動く準備",
                         "コントローラーを置いてください",
-                        Math.Max(0, 5 - (int)(now - entered)) + "秒後に案内を始めます。",
+                        Math.Max(0, CountdownSeconds - (int)(now - entered))
+                            + "秒後に案内を始めます。",
                         Array.Empty<PreparationAction>()
                     );
                 case "ForwardReady":
@@ -1152,8 +1407,12 @@ namespace WheelchairSonification.Runtime
                     return (
                         "確認をやり直します",
                         Problem,
-                        "動きや追跡を確認するか、実物を選んでください。",
-                        new[] { A("retry", "最初からやり直す"), A("manual", "実物を選ぶ") }
+                        Mode == "registration"
+                            ? "動きや追跡を確認するか、実物を選びます。"
+                            : "追跡を確認してから、同じ検査を選び直します。",
+                        Mode == "registration"
+                            ? new[] { A("retry", "登録をやり直す"), A("manual", "実物を選ぶ") }
+                            : new[] { A("retry", "同じ検査をやり直す"), A("cancel", "検査を中断") }
                     );
                 default:
                     int confirmed = results.Values.Count(x => x.status == "confirmed"),
@@ -1170,7 +1429,7 @@ namespace WheelchairSonification.Runtime
                         issue != null
                             ? issue + "をPCで確認してください。"
                             : "測定精度の検証は別に行います。",
-                        new[] { A("wait", "実験待機へ"), A("retry", "もう一度確認する") }
+                        new[] { A("home", "準備画面へ"), A("wait", "実験待機へ") }
                     );
             }
         }
@@ -1192,7 +1451,7 @@ namespace WheelchairSonification.Runtime
         }
 
 #if UNITY_EDITOR
-        public static PreparationSnapshot Preview(string stage)
+        public static PreparationSnapshot Preview(string stage, bool missingTracker = false)
         {
             var workflow = new PreparationWorkflow(
                 new CalibrationWizard(),
@@ -1201,7 +1460,31 @@ namespace WheelchairSonification.Runtime
                 _ => { },
                 () => { }
             );
-            workflow.Stage = stage;
+            workflow.Stage = stage == "FreeResult" ? "Result" : stage;
+            workflow.Mode =
+                stage.StartsWith("Free") ? "free"
+                : stage == "MotionMenu" ? "motion"
+                : stage == "FeedbackMenu" || stage.StartsWith("Visual") || stage.StartsWith("Audio")
+                    ? "feedback"
+                : stage == "Home" || stage == "Waiting" ? ""
+                : "registration";
+            workflow.presentationReady = true;
+            workflow.frame = new SyntheticPoseSource().Read(0);
+            if (missingTracker)
+            {
+                workflow.frame.poses.RemoveAll(p =>
+                    p.key == "synthetic-0" || p.key == "synthetic-1"
+                );
+                workflow.frame.Find("synthetic-2").valid = false;
+            }
+            workflow.wizard.UseSynthetic(SyntheticPoseSource.Calibration());
+            if (stage == "Free")
+                workflow.speed = new WheelSpeedSample
+                {
+                    valid = true,
+                    leftRps = .45,
+                    rightRps = .9,
+                };
             workflow.uiStillSince = -3;
             workflow.id = "preview-only";
             workflow.proposed = new[]

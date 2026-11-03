@@ -116,6 +116,60 @@ test('expired browser leases and old queued commands cannot drive the headset', 
     401,
   );
 });
+test('independent preparation and free-run commands do not persist operator data', async (t) => {
+  const f = await fixture(t);
+  const token = await f.pair();
+  await f.api('/api/heartbeat', {});
+  await f.api('/api/record', {
+    visitId: 'existing',
+    entry: { id: 'before', type: 'understanding', notes: 'keep' },
+  });
+  const before = readFileSync(join(f.directory, 'existing/operator.json'), 'utf8');
+  const exchange = async (result?: any) =>
+    (
+      await fetch(f.url + '/device/exchange', {
+        method: 'POST',
+        headers: { 'X-Device-Token': token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          state: {
+            schema: 3,
+            visitId: 'existing',
+            revision: 1,
+            running: false,
+            preparation: { mode: 'free' },
+          },
+          result,
+        }),
+      })
+    ).json();
+  await exchange();
+  for (const action of [
+    'prep.register',
+    'prep.motion',
+    'prep.feedback',
+    'prep.free',
+    'prep.check.motion',
+    'prep.check.still',
+    'prep.check.forward',
+    'prep.check.backward',
+    'prep.check.left',
+    'prep.check.right',
+    'prep.check.visual',
+    'prep.check.audio',
+    'prep.freeVisual',
+    'prep.freeAuditory',
+    'prep.cancel',
+    'abort',
+  ]) {
+    const reply = await f.api('/api/command', { action, visitId: 'existing', revision: 1 });
+    assert.equal(reply.status, 202, action);
+    const id = (await reply.json()).id;
+    assert.equal((await exchange()).command.action, action);
+    await exchange({ id, ok: true });
+  }
+  assert.equal(readFileSync(join(f.directory, 'existing/operator.json'), 'utf8'), before);
+  assert.deepEqual(readdirSync(f.directory), ['existing']);
+});
 test('record transfer verifies checksums, keeps originals and removes incomplete copies', async (t) => {
   const f = await fixture(t);
   const token = await f.pair();

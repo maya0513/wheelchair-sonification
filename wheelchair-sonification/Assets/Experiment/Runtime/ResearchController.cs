@@ -78,6 +78,7 @@ namespace WheelchairSonification.Runtime
             var settings = new ResearchSessionSettings
             {
                 participant_id = ParticipantId,
+                study_protocol = ResearchSessionSettings.StudyProtocol,
                 visit_id = VisitId,
                 trial_id = TrialId,
                 phase = Selection.phase.ToString(),
