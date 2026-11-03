@@ -68,4 +68,4 @@ PCの初期保存先は `~/WheelchairSonificationData/`。USB用ZIPはHMDの `Do
 
 PC上の計算・状態遷移・保存・転送、Unity画像とブラウザー画面を確認します。実機での自動候補の正しさ、目印の位置、追跡、音の左右分離、可読性、計測精度、現地での単独実施は別に確認が必要です。[確認証拠と残作業](status.md)
 
-Releaseの `app-overview.zip` でこのMarkdownと画像、`ui-preview.zip` で全画面と音見本を確認できます。
+ReleaseにはAPKだけを添付します。この説明と画像はリポジトリで読めます。全画面と音見本は[プレビュー手順](development/xr-preview.md)で確認できます。

@@ -8,28 +8,21 @@
 |---|---|
 | VIVE Focus Vision、VIVE Wireless Dongle | Android単体で計測・提示・保存 |
 | Ultimate Tracker | 左車輪・右車輪・車体の3台が走行用。左右手首の2台は元データの追加記録用 |
-| ノートPC、対応する`operator-console.zip` | オフライン接続、実験操作、正式計時、回収 |
+| ノートPC、対応する版のリポジトリ | オフライン接続、実験操作、正式計時、回収 |
 | 対応する`WheelchairSonification.apk` | ゴーグルに入れるアプリ |
 
 走行用3台でも機能チェックできる。研究計画の5台構成や本計測の受入れ条件を変更するものではない。実機で確認できた範囲は[確認状況](../status.md)に残す。
 
 ## 1. アプリとPCを用意する
 
-1. [Releases](https://github.com/maya0513/wheelchair-sonification/releases)または配布一式からAPKとコンソールを入手する。Source codeのZIPは不要。
+1. [Releases](https://github.com/maya0513/wheelchair-sonification/releases)から`WheelchairSonification.apk`を入手する。
 2. Focus VisionをWindows PCへUSB接続し、ゴーグルでファイル転送を許可する。APKを「内部共有ストレージ → Download」へコピーする。
 3. ゴーグルのファイルブラウザーでAPKを開き、不明のアプリの許可を確認してインストールする。[HTC公式手順](https://www.vive.com/jp/support/focusvision/category_howto/installing-apk-on-headset.html)
-4. 実施者用Ubuntu PCにNode.js 24以降を事前に用意し、対応コンソールを展開する。
+4. 実施者用Ubuntu PCではリポジトリを同じReleaseの版へ更新し、初回は`just setup`で準備する。
 
-APKとコンソールは同じ配布物を使う。通信形式は3。同じアプリID・署名鍵で更新し、署名不一致ならアプリのバージョンと鍵を確認する。アンインストールすると元データを失うため、更新の代わりに行わない。自分でAPKを作る場合は[ビルド手順](../development/android-build.md)を参照する。
+APKとPC側のリポジトリは同じ版を使う。通信形式は3。同じアプリID・署名鍵で更新し、署名不一致ならアプリのバージョンと鍵を確認する。アンインストールすると元データを失うため、更新の代わりに行わない。自分でAPKを作る場合は[ビルド手順](../development/android-build.md)を参照する。
 
-| その他の同梱物 | 読み方 |
-|---|---|
-| app-overview.zip | 展開してMarkdownと画像付きの説明を読む |
-| ui-preview.zip | 展開して`index.html`を開く。Unity・PC画像とWAV見本を閲覧する |
-| build-info.json | ソース・ビルド設定・検査結果を確認する |
-| SHA256SUMS.txt | ダウンロードしたファイルの一致を照合する |
-
-これらの資料をHMDへコピーする必要はない。プレビューは実機の光学系・計測性能を再現するものではない。[画像・音の確認範囲](../development/xr-preview.md)
+公開する添付物はAPKだけ。[画像付き説明](../app-overview.md)と[画面・音の確認](../development/xr-preview.md)はリポジトリで読む。プレビューは実機の光学系・計測性能を再現するものではない。
 
 ## 2. トラッカーを接続・固定する
 
@@ -40,7 +33,7 @@ HMDへドングルを取り付け、「設定 → 入力 → モーショント�
 ## 3. PCとゴーグルをつなぐ
 
 1. PCのWi-Fi設定でホットスポットを作り、Focus Visionを接続する。会場のWi-Fiや外部回線は不要。
-2. 展開したコンソールで`sh start.sh`を実行し、`http://127.0.0.1:8765/`を開く。リポジトリからは初回に`just setup`で準備し、`just start`で起動する。
+2. リポジトリで`just start`を実行し、`http://127.0.0.1:8765/`を開く。更新前から起動していた場合は終了して再起動し、ブラウザーも再読み込みする。
 3. ゴーグルでアプリを起動する。PCがゴーグルを検出したら、表示された6桁番号を照合し「接続を承認」を押す。
 
 Unity・VIVE Hub・外部回線の常時実行は不要。コンソールはネットワークを切り替えず、起動時のホットスポットだけで機器通信を受ける。ホットスポットを後から有効にした場合はコンソールを起動し直す。HMDはWi-Fiゲートウェイを検出するため、接続先アドレスを手入力して固定する必要はない。

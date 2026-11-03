@@ -37,6 +37,6 @@
 
 ## 配布物
 
-生成済みのローカル一式は`.local/builds/android-release/`。署名付きv0.7.0／versionCode 7のAPK、対応コンソール、画像・音見本、ビルド情報、チェックサムを含む。概要は[画像付き説明](app-overview.md)で読める。ARM64・IL2CPP・非デバッグ・XR・通信形式3・ライセンス・署名・既存鍵との一致を検査済み。対象ソースと検査結果は一式の`build-info.json`を確認する。今回の作業でGitHubのReleaseは作成していない。
+Releaseの添付物は署名付きAPK一件。PCは同じ版のリポジトリから起動する。ローカル出力は`.local/builds/android-release/`で、APK・`build-info.json`・`SHA256SUMS.txt`を保持する。ARM64・IL2CPP・非デバッグ・XR・通信形式3・ライセンス・署名・既存鍵との一致を検査する。対象ソースと検査結果は`build-info.json`、使い方は[画像付き説明](app-overview.md)で確認する。
 
 実際に公開されたバージョンと添付物は[Releases](https://github.com/maya0513/wheelchair-sonification/releases)を参照する。導入は[実施者の準備手順](operations/setup.md)、再生成・公開は[開発者のビルド手順](development/android-build.md)に従う。

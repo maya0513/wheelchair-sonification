@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync }
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { validPreviewFixture } from './preview-test-fixture.mts';
+import { createHash } from 'node:crypto';
 import { publishRelease, releaseRepository } from './github-apk-release.mts';
 
 function fixture(t: { after: (fn: () => void) => void }, scenario = '') {
@@ -44,13 +44,12 @@ function fixture(t: { after: (fn: () => void) => void }, scenario = '') {
       return ok(
         JSON.stringify({
           assets: [
-            'WheelchairSonification.apk',
-            'build-info.json',
-            'ui-preview.zip',
-            'operator-console.zip',
-            'app-overview.zip',
-            'SHA256SUMS.txt',
-          ].map((name) => ({ name, size: statSync(join(output, name)).size })),
+            {
+              name: 'WheelchairSonification.apk',
+              size: statSync(join(output, 'WheelchairSonification.apk')).size,
+            },
+            ...(scenario === 'extra-asset' ? [{ name: 'unexpected.zip', size: 1 }] : []),
+          ],
         }),
       );
     if (text.includes('--json url'))
@@ -63,6 +62,7 @@ function fixture(t: { after: (fn: () => void) => void }, scenario = '') {
     gitDirty: false,
     version: '0.2.0',
     versionCode: 2,
+    sha256: createHash('sha256').update('apk').digest('hex'),
     targetDevice: 'VIVE Focus Vision',
     operatorProtocol: 3,
     headsetUi: 'guided-preparation-and-participant',
@@ -81,48 +81,15 @@ function fixture(t: { after: (fn: () => void) => void }, scenario = '') {
     writeFileSync(join(output, 'build-info.json'), JSON.stringify(info));
     for (const name of ['WheelchairSonification.apk', 'SHA256SUMS.txt'])
       writeFileSync(join(output, name), 'apk');
+    if (scenario === 'tampered-apk')
+      writeFileSync(join(output, 'WheelchairSonification.apk'), 'changed');
     return output;
   };
-  const preview = async () => {
-    if (scenario === 'preview') throw new Error('preview failed');
-    const directory = join(root, 'preview');
-    validPreviewFixture(directory, scenario === 'wrong-preview-commit' ? 'b'.repeat(40) : commit);
-    return directory;
-  };
-  const soakValidation = () => ({
-    report: 'fixture-only',
-    realElapsedSeconds: 5400,
-    runtimeSourceFingerprint: 'fixture',
-    physicalDeviceMeasured: false,
-  });
-  const consolePreview = async () => {
-    const directory = join(root, 'operator-preview');
-    validPreviewFixture(directory, commit);
-    return directory;
-  };
-  const consolePackage = (_root: string, output: string) =>
-    writeFileSync(output, 'test console package');
-  const previewPackage = (_a: string, _b: string, output: string) =>
-    writeFileSync(output, 'test preview package');
-  const overviewPackage = (_root: string, output: string) =>
-    writeFileSync(output, 'test overview package');
-  return {
-    root,
-    env,
-    run,
-    build,
-    preview,
-    soakValidation,
-    consolePreview,
-    consolePackage,
-    previewPackage,
-    overviewPackage,
-    calls,
-    wasBuilt: () => built,
-  };
+
+  return { root, env, run, build, calls, wasBuilt: () => built };
 }
 
-test('Release publishes only after fresh build and all assets including the illustrated overview are uploaded', async (t) => {
+test('Release publishes a freshly built APK as the only attached asset', async (t) => {
   const f = fixture(t);
   const url = await publishRelease('v0.2.0', '2', f);
   assert.match(url, /releases\/tag\/v0.2.0$/);
@@ -132,13 +99,10 @@ test('Release publishes only after fresh build and all assets including the illu
   assert.ok(f.calls.find((call) => call[2] === 'edit')!.includes('--draft=false'));
   assert.ok(f.calls.every((call) => !call.includes('--clobber')));
   assert.ok(!JSON.stringify(f.calls).includes('private-password'));
-  const info = JSON.parse(readFileSync(join(f.root, 'output/build-info.json'), 'utf8'));
-  assert.equal(info.applicationOverview.file, 'app-overview.zip');
-  assert.equal(info.applicationOverview.sourceCommit, 'a'.repeat(40));
-  assert.match(
-    readFileSync(join(f.root, 'output/release-notes.md'), 'utf8'),
-    /画像でわかるアプリの概要/,
-  );
+  const upload = f.calls.find((call) => call[1] === 'release' && call[2] === 'upload')!;
+  assert.equal(upload.filter((argument) => argument.startsWith(join(f.root, 'output'))).length, 1);
+  assert.ok(upload.includes(join(f.root, 'output/WheelchairSonification.apk')));
+  assert.match(readFileSync(join(f.root, 'output/release-notes.md'), 'utf8'), /画像付きの説明/);
 });
 
 test('invalid version arguments, dirty source, unavailable commit and existing releases stop before building', async (t) => {
@@ -159,7 +123,7 @@ test('invalid version arguments, dirty source, unavailable commit and existing r
 });
 
 test('failed or mismatched build never creates a Release', async (t) => {
-  for (const scenario of ['build', 'mismatched-commit', 'preview', 'wrong-preview-commit']) {
+  for (const scenario of ['build', 'mismatched-commit', 'tampered-apk']) {
     const f = fixture(t, scenario);
     await assert.rejects(publishRelease('v0.2.0', '2', f));
     assert.ok(!f.calls.some((call) => call[2] === 'create'));
@@ -173,15 +137,8 @@ test('failed uploads leave the Release as a draft and report the recovery locati
   assert.ok(!f.calls.some((call) => call[2] === 'edit'));
 });
 
-test('publication never requires a real 90 minute wait', async (t) => {
-  const f = fixture(t);
-  await publishRelease('v0.2.0', '2', {
-    ...f,
-    soakValidation: () => {
-      throw new Error('not run');
-    },
-  });
-  const info = JSON.parse(readFileSync(join(f.root, 'output/build-info.json'), 'utf8'));
-  assert.equal(info.soakValidation.status, 'not_run');
-  assert.equal(info.soakValidation.optional, true);
+test('an unexpected extra asset leaves the release unpublished', async (t) => {
+  const f = fixture(t, 'extra-asset');
+  await assert.rejects(publishRelease('v0.2.0', '2', f), /APK一件/);
+  assert.ok(!f.calls.some((call) => call[2] === 'edit'));
 });

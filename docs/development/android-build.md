@@ -19,7 +19,7 @@ just dev unity-build-apk
 バージョンを指定する例を示す。
 
 ```sh
-UNITY_BUILD_VERSION=0.6.0 UNITY_ANDROID_VERSION_CODE=6 just dev unity-build-apk
+UNITY_BUILD_VERSION=0.7.0 UNITY_ANDROID_VERSION_CODE=7 just dev unity-build-apk
 ```
 
 出力は`.local/builds/android-release/`。署名、ARM64、IL2CPP、非デバッグ、XR Manifest、ローカルHTTP・権限、SDK・ライセンスを検査する。前のAPKと証明書が違えば更新互換性を認めない。実機動作は別途確認する。
@@ -27,11 +27,11 @@ UNITY_BUILD_VERSION=0.6.0 UNITY_ANDROID_VERSION_CODE=6 just dev unity-build-apk
 ## 公開する
 
 ```sh
-just dev release-apk v0.6.0 6
+just dev release-apk v0.7.0 7
 ```
 
-公開時はGitHub認証・公開先・クリーンなソース・GitHubにあるコミット、未使用のタグを確認する。Unity画像・WAV、PC画像、署名付きAPKを同じソースから新規生成し、DraftへAPK・コンソール・概要資料・プレビュー・ビルド情報・チェックサムを添付してプレリリース公開する。概要ZIPの画像は同梱し、詳細資料へのリンクはソースコミットへ固定する。既存Releaseは上書きしない。アップロード失敗はDraftで止め、ローカル成果物と復旧案内を残す。
+公開時はGitHub認証・公開先・クリーンなソース・GitHubにあるコミット、未使用のタグを確認する。署名付きAPKを新規ビルド・検査し、DraftへAPK一件だけを添付する。ファイル名・サイズを照合してプレリリース公開する。既存Releaseは上書きしない。アップロード失敗はDraftで止め、ローカル成果物と復旧案内を残す。
 
 参加者の来訪は30分。任意の90分耐久試験はそれと別で、実時間の待機を通常ビルド・公開の必須条件にしない。実機インストール、左右の知覚、速度精度、出力遅延、現地の単独実施、正式保管先・倫理は成功証拠が得られるまで未確認と明記する。
 
-配布物はAPK、`operator-console.zip`、`app-overview.zip`、`ui-preview.zip`、`build-info.json`、`SHA256SUMS.txt`。画像付き概要と音見本の読み方は[導入手順](../operations/setup.md)・[プレビュー](xr-preview.md)にまとめる。
+Releaseの添付物は`WheelchairSonification.apk`だけ。ソースコミット・SHA-256・実機未確認事項はRelease本文に記載する。`build-info.json`と`SHA256SUMS.txt`はローカル出力に残す。PCは同じ版のリポジトリから`just start`で起動する。画像・音は[プレビュー](xr-preview.md)で独立して確認し、公開のたびには生成しない。

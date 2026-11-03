@@ -9,7 +9,7 @@
 | `unity.sh` | Editor起動・コンパイル・Edit/Play Mode・Linux合成入力版 |
 | `unity-xr-sdk.mts` | HTC SDKの固定URL・ハッシュ・キャッシュ検証 |
 | `unity-release.mts` | 署名付きAPK、ARM64／XR／権限／ライセンス・更新署名の検証 |
-| `github-apk-release.mts` | 同じソースのAPK・コンソール・画像とWAV、画像付き概要資料をDraft添付後に公開 |
+| `github-apk-release.mts` | push済みのクリーンなソースからAPKをビルドし、DraftへAPK一件だけを添付して公開 |
 | `android-signing.mts` | ローカル鍵の初回作成・読込み。秘密は出力しない |
 | `unity-preview.mts` | 共通Unity UIのPNG・WAV・閲覧HTML |
 | `console-preview.mts` | 実ブラウザーのPNG・切り出し・閲覧HTML |
@@ -17,7 +17,7 @@
 | `experiment-console.mts` / `console/` | オフラインの手動操作・PC時計・回答保存 |
 | `console-integration.mts` | Unity合成入力とPCの短時間結合確認／任意の継続確認 |
 | `console-validation.mts` | 継続確認の成功証拠がある場合だけ採用。未実施でも公開を妨げない |
-| `console-packaging.mts` | 機密・参加者ログを除いた配布ZIP |
+| `console-packaging.mts` | ローカル確認用ZIPの作成。Release公開からは呼ばない |
 | `unity-results.py` | NUnit XMLの失敗・件数・空結果の検査 |
 | `unity-state.mts` | バッチ実行後にUnity設定・動的フォントの変更を戻す |
 | `unity-mcp.mts` | MCPサーバーとUnityパッケージの版合わせ、任意のEditor接続 |
