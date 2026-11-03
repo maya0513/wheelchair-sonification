@@ -64,7 +64,7 @@ export function packageOverview(root: string, output: string, commit: string) {
       throw new Error('概要資料の画像・撮影情報がありません: ' + file);
   // Keep images local in the ZIP; detailed documents remain readable through the immutable source commit.
   const portable = document.replace(
-    /\]\(((?:development|specifications|operations)\/[^)]+\.md(?:#[^)]*)?|status\.md(?:#[^)]*)?)\)/g,
+    /\]\(((?:development|specifications|operations)\/[^)]+\.md(?:#[^)]*)?|[A-Za-z0-9-]+\.md(?:#[^)]*)?)\)/g,
     (_, path) =>
       `](https://github.com/maya0513/wheelchair-sonification/blob/${commit}/docs/${path})`,
   );
