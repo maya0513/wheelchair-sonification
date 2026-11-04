@@ -177,11 +177,20 @@ export async function captureConsole(output = join(root, '.local/console-preview
       device.setSnapshot({ ...snapshot, running: false, trialId: '' });
       await sleep(1100);
       await evaluate(`document.querySelector('[data-page="progress"]').click()`);
+      await evaluate(`
+        document.getElementById('phase').value=${JSON.stringify(snapshot.phase)};
+        document.getElementById('task').value=${JSON.stringify(snapshot.task)};
+        document.getElementById('repetition').value=${JSON.stringify(snapshot.repetition)};
+        document.getElementById('phase').dispatchEvent(new Event('change'));
+      `);
       if (await evaluate(`document.getElementById('record-start').disabled`))
         throw new Error('画像検証用の記録を開始できません。');
       await evaluate(`document.getElementById('record-start').click()`);
       await sleep(1100);
-      if (await evaluate(`document.getElementById('cue').disabled`))
+      if (
+        snapshot.phase !== 'Training' &&
+        (await evaluate(`document.getElementById('cue').disabled`))
+      )
         throw new Error('記録を開始したブラウザーが計時できません。');
       return device.getSnapshot();
     };
@@ -248,16 +257,16 @@ export async function captureConsole(output = join(root, '.local/console-preview
       throw new Error('PCの正式計時が保存されていません。');
     if (!(await evaluate(`document.getElementById('cue').disabled`)))
       throw new Error('計時済み試行の開始合図が再び有効になっています。');
-    await capture('04-training', '訓練終了と記録終了', 'progress', {
-      ...recording,
-      phase: 'Training',
-      status: '訓練記録中',
-    });
+    const training = await startTrial({ ...ready, phase: 'Training', status: '訓練記録中' });
+    await capture('04-training', '訓練終了と記録終了', 'progress', training);
     if (
       !(await evaluate(`
         !document.querySelector('#phase option[value="RetentionAssessment"]') &&
         document.getElementById('training-timer').textContent === '訓練1分' &&
-        document.getElementById('rest-timer').textContent === '休憩1分'
+        document.getElementById('rest-timer').textContent === '休憩1分' &&
+        document.getElementById('next-action').textContent.includes('目安1分') &&
+        document.getElementById('phase').value === 'Training' &&
+        document.getElementById('stopwatch').textContent === '0.0 s'
       `))
     )
       throw new Error('30分の実験手順と時点・目安タイマーが一致しません。');
@@ -287,15 +296,29 @@ export async function captureConsole(output = join(root, '.local/console-preview
         delete performance.now; delete window.previewNow; delete window.previewClockOffset;
       `);
     }
-    await capture('05-training-end', 'FB終了後も安全停止まで記録', 'progress', {
-      ...recording,
-      phase: 'Training',
-      trainingEnded: true,
-      status: '記録中',
-    });
+    await evaluate(`document.getElementById('training-end').click()`);
+    await sleep(1100);
+    await capture(
+      '05-training-end',
+      'FB終了後も安全停止まで記録',
+      'progress',
+      device.getSnapshot(),
+    );
     await capture('06-small-pc', '小さいPC画面', 'progress', ready, 1000, 900);
     await capture('07-settings', '入力・5台・左右軸校正', 'setup', ready);
     await capture('08-understanding', '左右の見本と口頭回答', 'answers', ready);
+    await evaluate(`document.querySelector('#examples button[data-modality="Auditory"]').click()`);
+    await sleep(1100);
+    const exampleRecord = JSON.parse(readFileSync(operatorFile, 'utf8')).entries.findLast(
+      (e: any) => e.type === 'example',
+    );
+    if (
+      exampleRecord?.leftRps !== 0.375 ||
+      exampleRecord?.rightRps !== 0 ||
+      exampleRecord?.rangeRps !== 0.75 ||
+      exampleRecord?.physicalOutputConfirmed !== false
+    )
+      throw new Error('理解確認の見本がHMDの提示範囲に従っていません。');
     await capture(
       '09-questionnaire',
       '6領域と未回答の区別',
@@ -395,6 +418,12 @@ export async function captureConsole(output = join(root, '.local/console-preview
     );
     if (!(await evaluate(`document.querySelectorAll('#preparation-entries button').length===4`)))
       throw new Error('準備機能の4つの入口がありません。');
+    if (
+      !(await evaluate(
+        `(()=>{const e=document.getElementById('align-display'),r=e.getBoundingClientRect();return !e.disabled&&r.top>=0&&r.bottom<=innerHeight;})()`,
+      ))
+    )
+      throw new Error('表示位置の合わせ直しを詳細欄なしで操作できません。');
     const entryRects = await evaluate(
       `Array.from(document.querySelectorAll('#preparation-entries button')).map(e=>{const r=e.getBoundingClientRect();return {top:r.top,right:r.right,bottom:r.bottom};})`,
     );
@@ -453,6 +482,38 @@ export async function captureConsole(output = join(root, '.local/console-preview
       throw new Error('自由走行の欠測理由が表示されません。');
     await evaluate(`document.getElementById('prep-cancel').click()`);
     await sleep(1100);
+    const stoppedWithMissing = {
+      ...ready,
+      calibrationReady: false,
+      canAlignDisplay: false,
+      displayAlignmentReason: '走行用3台の登録・追跡と校正を確認してください。',
+      preparation: {
+        ...preparationFixture('FreeStopping'),
+        safeToShowPanel: false,
+        canConfirmStopped: true,
+      },
+      devices: ready.devices.map((d: any, i: number) => ({ ...d, valid: i !== 2 })),
+    };
+    await capture(
+      '38-free-stop-confirmation',
+      '欠測時・実施者による停止確認',
+      'setup',
+      stoppedWithMissing,
+      1366,
+      768,
+    );
+    await evaluate(`document.getElementById('confirm-stopped').click()`);
+    await sleep(1100);
+    if (device.getSnapshot().preparation?.stopConfirmedManually !== true)
+      throw new Error('欠測中の停止確認から準備へ戻れません。');
+    await capture(
+      '39-free-stop-result',
+      '停止確認後・再開には追跡が必要',
+      'setup',
+      device.getSnapshot(),
+      1366,
+      768,
+    );
     if (readFileSync(operatorFile, 'utf8') !== beforeFree)
       throw new Error('自由走行で既存の研究記録が変更されました。');
     for (const stage of ['MotionMenu', 'FeedbackMenu'])

@@ -1,6 +1,6 @@
 {
-  "capturedAtUtc": "2026-11-03T05:11:44.372715+00:00",
-  "sourceCommit": "f4f1cb405ebf9ed0a1ef09ea327c3ff9d38a0a95",
+  "capturedAtUtc": "2026-11-04T03:03:59.027754+00:00",
+  "sourceCommit": "f2ec1a1bb533941a6f7d08f39cc048075d56a925",
   "sourceDirty": true,
   "physicalDeviceMeasured": false,
   "unityVersion": "6000.6.4f1",
@@ -8,37 +8,50 @@
     {
       "file": "hmd-preparation.png",
       "source": ".local/ui-preview/23-prep-home.png",
-      "sha256": "2a571d31a00af7694759e27804db3f7d4fe7b2c193e4a998713f428799f56bf9"
+      "sha256": "ac7751cd18234a1f8f203d93595cabfe46e004414b04ae7b03ff3c1e555b8e95"
     },
     {
       "file": "hmd-view.png",
-      "source": ".local/ui-preview/03-bilateral.png",
-      "sha256": "cf4dc543f604d5d184f2279503d2c8b0bb29d4f86011804528c5f59a516e2a51"
+      "source": ".local/ui-preview/61-range-dark.png",
+      "sha256": "6376ee80b83e3f0cea6d55c3f9b2e1505940b43db6ae67d91ecc28dc1fe86184"
     },
     {
       "file": "hmd-gauge.png",
-      "source": ".local/ui-preview/03-bilateral-gauge.png",
-      "sha256": "90a626a87a917c2c5d133fb0ec268ba9cbaabc16f4e76d14f14d251813657bcf"
+      "source": ".local/ui-preview/61-range-dark-gauge.png",
+      "sha256": "e49039986aa73b495c64ca011f08d3393e60b339cdc0d1d4e8027aa1dcda0cce"
     },
     {
       "file": "pc-settings.png",
       "source": ".local/console-preview/28-four-entries.png",
-      "sha256": "9c77c3de4f47d3bf1e9a9dd4105627c91dfe1398dcd8ff1732fa00808aa9081c"
+      "sha256": "b8971b5471a8df799d0b6e8aa3cd5a7da1aa243d480cb6ff717f769ec41e8bca"
     },
     {
       "file": "pc-free-run.png",
       "source": ".local/console-preview/30-free-visual.png",
-      "sha256": "95f4b2ed7cb4b47d1f5808aa500b736b905835cd1e4d3be9079e32b5d906dc4b"
+      "sha256": "49f50af982d1e772a92544c30b1ab37c8c922c817fc2b7b85895920663b894aa"
     },
     {
       "file": "pc-timing.png",
       "source": ".local/console-preview/18-laptop.png",
-      "sha256": "6a7b8dc78330778fa6d9361c03ea05d3e11cc97e5e92784c9d116640dd41bcaa"
+      "sha256": "70e06fe5abe45dbc0b3857574d7f1ec4531674fb413da31ab1111b3b19d597cb"
     },
     {
       "file": "pc-records.png",
       "source": ".local/console-preview/10-records.png",
-      "sha256": "3a0554ddc09a16c025d77bbaf31c9bcd47118703cd45103d1eb0fa157966a932"
+      "sha256": "6ce1ea62054c86bbb999ac648395b373a12372cdaf438d188dce944558d7507e"
     }
-  ]
+  ],
+  "sourceFiles": {
+    "scripts/console/console.js": "feeb4869a9c69db73bc9b6ce1482c3958b012c0380072290eb97e48e3c4970a4",
+    "scripts/console/console.css": "3eacac626619561d6b0238cd24a861793a0c3993bde9fc4430fc677028b615a5",
+    "scripts/console/index.html": "449044395f10991e02bcc41347956488f0b59bc52929fd30bb346220e0307d13",
+    "scripts/console/timing.mjs": "e542b3a3f9e1f4824ef41dbb764c27fece497747c9107b965ac95113c8a7c104",
+    "wheelchair-sonification/Assets/Experiment/Core/ExperimentModel.cs": "c092aefc8c37eb8569d43e45692b3a49003d4492028c295afdde106d2608a168",
+    "wheelchair-sonification/Assets/Experiment/Core/FeedbackProtocol.cs": "a053c5743cfaedba88f84eb9ac9fdf84ff48a6f0ca9786924770bebaba2623d2",
+    "wheelchair-sonification/Assets/Experiment/Core/ExperimentEngine.cs": "95a457399b6d3b9a94a829e3d763f1ead0799b26b4c70a69f5445a9d65c8bbeb",
+    "wheelchair-sonification/Assets/Experiment/XR/PreparationView.cs": "fc5e5464908c197a68a3cb202eb2c8a4b9520a0d3451646e769ec84bcc81df69",
+    "wheelchair-sonification/Assets/Experiment/XR/XrPreviewRunner.cs": "b64f39e21fd2761f3df8bd74c680284cd427ac0e5bbaa199ebaf196b44b00573",
+    "wheelchair-sonification/Assets/Experiment/Runtime/PreparationWorkflow.cs": "218e2ef5fa238863e9edc957d47b4186426d63869eb84a37d79e1487bd556369",
+    "wheelchair-sonification/Assets/Experiment/Runtime/ResearchVisitHost.cs": "4fca3b781dc6cbdbd810e8557514c603c60aad9a7fb63c376e554498fae62584"
+  }
 }

@@ -19,6 +19,24 @@ test('PC cue timer starts after exactly three seconds and manual stop ignores ne
   assert.equal(clock.elapsed(), 12.345);
   assert.equal(clock.stop(), null);
 });
+test('a new recording clears the displayed clock without forgetting completed trials', () => {
+  let now = 0;
+  const clock = new TrialClock(() => now);
+  clock.prepare(3000, 'completed');
+  now = 4500;
+  const saved = clock.stop();
+  clock.reset();
+  now = 10000;
+  assert.equal(clock.elapsed(), 0);
+  assert.equal(clock.tick(), 'idle');
+  assert.equal(clock.result().seconds, null);
+  assert.equal(saved.seconds, 1.5);
+  assert.equal(clock.hasResultFor('completed'), true);
+  assert.throws(() => clock.prepare(3000, 'completed'), /計時済み/);
+  clock.prepare(3000, 'new');
+  now = 14000;
+  assert.equal(clock.stop().seconds, 1);
+});
 test('cue cancellation and restart never join browser clocks', () => {
   let now = 0;
   const clock = new TrialClock(() => now);

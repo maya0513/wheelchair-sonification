@@ -388,6 +388,7 @@ export function createConsoleServer(
           'prep.no',
           'prep.retry',
           'prep.cancel',
+          'prep.confirmStopped',
           'prep.wait',
           'prep.home',
           'prep.recheck',

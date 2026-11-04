@@ -63,6 +63,7 @@ namespace WheelchairSonification.XR
             VisitHost.Initialize(Research);
             VisitHost.SourceFactory = _ => new BorrowedPoseSource(actualInput);
             VisitHost.Present = PresentExample;
+            VisitHost.ExamplePresenting = () => exampleEngine != null;
             VisitHost.StopPresentation = StopExample;
             VisitHost.AlignDisplay = AlignDisplay;
             VisitHost.InvalidateDisplay = Gauge.Invalidate;

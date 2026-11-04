@@ -474,6 +474,13 @@ output {
 #examples .row {
   margin: 10px 0;
 }
+
+.display-tools {
+  max-width: 390px;
+}
+.display-tools .hint {
+  margin: 4px 0 0;
+}
 #archives a {
   display: block;
   margin: 15px 0;

@@ -20,6 +20,9 @@ export function previewSnapshot(overrides: any = {}) {
   return {
     schema: 3,
     displayAligned: true,
+    canAlignDisplay: true,
+    displayAlignmentReason: '',
+    feedbackRangeRps: 0.75,
     eyeStatus: '取得不可',
     eyeReason: 'UI preview fixture; no eye sensor',
     eyeCalibrationConfirmed: false,
@@ -101,6 +104,23 @@ export async function startPreviewDevice(endpoint: string, options: { snapshot?:
           });
           token = hello.pairToken || '';
         } else {
+          // Screenshot fixture only; real availability is calculated once by ResearchVisitHost.
+          const p = state.preparation;
+          const reason = state.running
+            ? '記録を終了してから表示位置を合わせてください。'
+            : !state.presentationReady
+              ? 'ゴーグルの追跡と表示を確認してください。'
+              : !state.calibrationReady
+                ? '走行用3台の登録・追跡と校正を確認してください。'
+                : p?.moving
+                  ? '走行・動作確認を終了してから表示位置を合わせてください。'
+                  : ['Visual', 'Audio'].includes(p?.stage)
+                    ? '見本の提示終了をお待ちください。'
+                    : !p?.safeToShowPanel
+                      ? '車いすを止めて、静止の確認をお待ちください。'
+                      : '';
+          state.canAlignDisplay = !reason;
+          state.displayAlignmentReason = reason;
           const reply = await request('/device/exchange', { state, result });
           if (reply.command && reply.command.id !== lastId) {
             const c = reply.command;
@@ -133,6 +153,10 @@ export async function startPreviewDevice(endpoint: string, options: { snapshot?:
                 const free = state.preparation?.mode === 'free';
                 show(free ? 'FreeResult' : 'Result');
                 if (!free) state.preparation.problem = '画像検証用のチェックを中断しました。';
+              } else if (action === 'confirmStopped') {
+                show(state.preparation.mode === 'free' ? 'FreeResult' : 'Result');
+                state.preparation.safeToShowPanel = true;
+                state.preparation.stopConfirmedManually = true;
               } else if (action === 'wait') show('Waiting');
               else if (action === 'home') show('Home');
               else if (action === 'recheck')

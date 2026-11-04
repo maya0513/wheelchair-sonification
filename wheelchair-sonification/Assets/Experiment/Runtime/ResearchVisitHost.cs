@@ -71,7 +71,10 @@ namespace WheelchairSonification.Runtime
         public string[] bindings;
         public PreparationSnapshot preparation;
         public bool displayAligned,
+            canAlignDisplay,
             eyeCalibrationConfirmed;
+        public string displayAlignmentReason;
+        public double feedbackRangeRps;
         public string eyeStatus,
             eyeReason;
         public EyeTrackingQuality eyeQuality;
@@ -95,6 +98,7 @@ namespace WheelchairSonification.Runtime
         public bool Transferring { get; private set; }
         public int Revision { get; private set; }
         public Action<StudyGroup, double, double> Present;
+        public Func<bool> ExamplePresenting;
         public Action StopPresentation;
         public Action AlignDisplay,
             InvalidateDisplay;
@@ -110,6 +114,20 @@ namespace WheelchairSonification.Runtime
         OperatorResult lastResult;
         readonly Dictionary<string, OperatorResult> results =
             new Dictionary<string, OperatorResult>();
+
+        public string DisplayAlignmentReason =>
+            Research.Active ? "記録を終了してから表示位置を合わせてください。"
+            : Transferring ? "記録のコピー完了をお待ちください。"
+            : !Research.PresentationReady ? "ゴーグルの追跡と表示を確認してください。"
+            : !Research.Wizard.Calibration.Complete
+            || Research.Wizard.Calibration.BindingError(Research.Frame) != null
+                ? "走行用3台の登録・追跡と校正を確認してください。"
+            : Preparation.Moving ? "走行・動作確認を終了してから表示位置を合わせてください。"
+            : Preparation.Presenting || ExamplePresenting?.Invoke() == true
+                ? "見本の提示終了をお待ちください。"
+            : !Preparation.TrackedStill ? "車いすを止めて、静止の確認をお待ちください。"
+            : AlignDisplay == null ? "XR表示のあるアプリで操作してください。"
+            : "";
 
         public void Initialize(ResearchController research)
         {
@@ -286,18 +304,9 @@ namespace WheelchairSonification.Runtime
                         InvalidateDisplay?.Invoke();
                         break;
                     case "alignDisplay":
-                        if (
-                            !Research.PresentationReady
-                            || !Preparation.View.safeToShowPanel
-                            || Preparation.Moving
-                        )
-                            throw new InvalidOperationException(
-                                "車いすを止めて正面を向き、追跡が安定するまでお待ちください。"
-                            );
-                        if (AlignDisplay == null)
-                            throw new InvalidOperationException(
-                                "XR表示のあるアプリで操作してください。"
-                            );
+                        string alignmentReason = DisplayAlignmentReason;
+                        if (alignmentReason != "")
+                            throw new InvalidOperationException(alignmentReason);
                         AlignDisplay();
                         break;
                     case "eyeCalibration":
@@ -576,6 +585,9 @@ namespace WheelchairSonification.Runtime
                 exportStatus = ExportStatus,
                 transferring = Transferring,
                 displayAligned = Research.DisplayReady?.Invoke() ?? false,
+                canAlignDisplay = DisplayAlignmentReason == "",
+                displayAlignmentReason = DisplayAlignmentReason,
+                feedbackRangeRps = Research.Settings.rangeRps,
                 eyeStatus = Research.EyeStatus,
                 eyeReason = Research.EyeReason,
                 eyeQuality = Research.EyeQuality,

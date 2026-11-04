@@ -166,8 +166,9 @@ namespace WheelchairSonification.Tests
             );
         }
 
-        [Test]
-        public void RecordedDataReplaysIdenticallyAndOldFormatRejected()
+        [TestCase(.75)]
+        [TestCase(1.5)]
+        public void RecordedDataReplaysIdenticallyAndOldFormatRejected(double recordedRange)
         {
             string root = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
             try
@@ -175,13 +176,15 @@ namespace WheelchairSonification.Tests
                 using var source = new SyntheticPoseSource();
                 var c = SyntheticPoseSource.Calibration();
                 var estimator = new WheelSpeedEstimator(c);
-                var engine = new SpeedFeedbackEngine(new FeedbackSettings());
+                var recordedSettings = new FeedbackSettings { rangeRps = recordedRange };
+                var engine = new SpeedFeedbackEngine(recordedSettings);
                 var settings = new ResearchSessionSettings
                 {
                     trial_id = "test-trial",
                     input_source = source.Kind,
                     phase = "Training",
                     group = "Visual",
+                    feedback = recordedSettings,
                 };
                 using (var log = new ResearchSessionLog(root, settings, c))
                 {

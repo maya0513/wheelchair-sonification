@@ -120,3 +120,9 @@ GrefのTable 1を再確認し左右の和と独立提示を区別。Dyer2017（D
 車いすの縦バー（L59）、歩行中の読字・VST動画（L67–L68）、自転車の通知（L69）の対象・表示・結果を区別して確認した。L69は公開PDFの方法・結果・限界と第1ページのCC BY 4.0を確認し保存。L67は大学公開PDF、L68は出版社HTMLの関連節を確認した。D10–D12は眼球取得・標準校正・座標系の公式資料。詳細は[表示と視線の技術ノート](implementation/xr-ui-and-eye-tracking.md#表示配置と視線記録の根拠)。
 
 既存書誌はCrossrefのメタデータ38件を照合し、取得した英語タイトルとの対応を確認した。L60の英語タイトルと日本語タイトルは同じ文献である。HTTP 429、登録機関の違いによる404、DOIのない資料は今回のAPI照合成功件数に含めず、既存の閲覧範囲と出典を保持した。ローカルの照合記録は`.local/reference-audit/`。本文の再精読件数とは区別する。
+
+## 車輪速度の提示範囲（2026-11-04）
+
+`manual wheelchair propulsion novice able bodied self selected comfortable speed m/s overground`と`manual wheelchair propulsion preferred speed peak velocity instantaneous wheel speed novice 1.2 m/s`で探索した。初心者の統制課題と日常移動を区別するため、L70・L71の出版社公開本文の関連節を採用。PMCの直接閲覧では確認画面になったため、Springer・Wileyの原著を読んだ。抄録だけを全文精読と扱わず、関連節の確認として一覧に追加した。
+
+設定速度・区間平均を瞬間最大速度と区別し、採用値の換算と未確認事項を[提示範囲の検討](implementation/feedback-speed-range.md)へまとめた。

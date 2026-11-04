@@ -29,7 +29,7 @@ namespace WheelchairSonification.Core
     [Serializable]
     public sealed class FeedbackSettings
     {
-        public double rangeRps = 1.5,
+        public double rangeRps = .75,
             smoothingSeconds = .05,
             startRps = .05,
             stopRps = .03;

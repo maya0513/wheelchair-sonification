@@ -28,6 +28,8 @@ namespace WheelchairSonification.XR
             new Dictionary<string, RectTransform>();
         string contentKey = "",
             localProblem = "";
+        int localMessageRevision;
+        double localMessageUntil;
         bool menuOpen = true,
             wasPanelVisible,
             awaitingStop;
@@ -96,6 +98,8 @@ namespace WheelchairSonification.XR
             {
                 var r = host.ExecuteLocal("alignDisplay");
                 localProblem = r.ok ? "表示位置を合わせました" : r.message;
+                localMessageRevision = host.Revision;
+                localMessageUntil = Time.realtimeSinceStartupAsDouble + 3;
                 contentKey = "";
             });
             footer = XrUi.Canvas(
@@ -149,6 +153,8 @@ namespace WheelchairSonification.XR
                 result.ok ? ""
                 : result.message.Length < 40 ? result.message
                 : "操作できません。PCで理由を確認してください。";
+            localMessageRevision = host.Revision;
+            localMessageUntil = Time.realtimeSinceStartupAsDouble + 3;
             menuOpen = true;
         }
 
@@ -161,10 +167,26 @@ namespace WheelchairSonification.XR
 
         public void Toggle()
         {
+            if (host.Preparation.CanConfirmStopped)
+            {
+                Send("confirmStopped");
+                menuOpen = true;
+                Recenter();
+                return;
+            }
             if (host.Research.Active)
             {
                 host.Suspend("hmd_menu_requested");
                 menuOpen = true;
+                return;
+            }
+            if (host.ExamplePresenting?.Invoke() == true || host.Preparation.Presenting)
+            {
+                host.StopPresentation?.Invoke();
+                if (host.Preparation.Presenting)
+                    Send("cancel");
+                menuOpen = true;
+                Recenter();
                 return;
             }
             if (host.Preparation.IsFreeSession && host.Preparation.Active)
@@ -206,9 +228,14 @@ namespace WheelchairSonification.XR
             bool active
         )
         {
+            if (
+                host.Revision != localMessageRevision
+                || Time.realtimeSinceStartupAsDouble >= localMessageUntil
+            )
+                localProblem = "";
             bool example = state.stage == "Visual" || state.stage == "Audio";
             bool waiting = state.stage == "Waiting";
-            if (active || state.moving)
+            if (active || state.moving || state.canConfirmStopped)
                 awaitingStop = true;
             if (!active && !state.moving && state.safeToShowPanel)
                 awaitingStop = false;
@@ -226,7 +253,7 @@ namespace WheelchairSonification.XR
             alignDisplay.gameObject.SetActive(
                 host.Research.Wizard.Calibration.Complete && !active && !state.moving
             );
-            alignDisplay.interactable = ready && state.safeToShowPanel;
+            alignDisplay.interactable = host.DisplayAlignmentReason == "";
             panel.gameObject.SetActive(showPanel);
             if (showPanel && !wasPanelVisible)
                 Recenter();
@@ -246,6 +273,8 @@ namespace WheelchairSonification.XR
                 footerText.text = "PC接続の確認番号\n" + code;
             if (awaitingStop && !state.moving && !active)
                 footerText.text = "安全に止まってお待ちください";
+            if (state.canConfirmStopped)
+                footerText.text = "安全に止まったらA／Xで\n準備画面へ戻れます";
             string key =
                 state.stage
                 + "|"
@@ -268,9 +297,8 @@ namespace WheelchairSonification.XR
                 instruction.rectTransform.sizeDelta = new Vector2(920, grid ? 76 : 142);
                 detail.gameObject.SetActive(!grid);
                 detail.text =
-                    !string.IsNullOrEmpty(localProblem) ? localProblem
-                    : !string.IsNullOrEmpty(state.problem) && state.stage != "Paused"
-                        ? state.problem
+                    !string.IsNullOrEmpty(state.problem) && state.stage != "Paused" ? state.problem
+                    : !string.IsNullOrEmpty(localProblem) ? localProblem
                     : state.detail;
                 for (int i = 0; i < buttons.Count; i++)
                 {
@@ -387,6 +415,7 @@ namespace WheelchairSonification.XR
         public void ShowPreview(PreparationSnapshot state)
         {
             menuOpen = true;
+            contentKey = ""; // Participant-only fixtures can clear the heading between snapshots.
             RenderState(state, false, "123456", true, false);
         }
 

@@ -9,11 +9,13 @@ namespace WheelchairSonification.Tests
     {
         [TestCase(0, 0, false)]
         [TestCase(.02, 0, false)]
-        [TestCase(.05, .05 / 1.5, true)]
-        [TestCase(.75, .5, true)]
+        [TestCase(.05, .05 / .75, true)]
+        [TestCase(.375, .5, true)]
+        [TestCase(.5, 2.0 / 3, true)]
+        [TestCase(.75, 1, true)]
         [TestCase(1.5, 1, true)]
         [TestCase(2, 1, true)]
-        [TestCase(-.75, .5, true)]
+        [TestCase(-.375, .5, true)]
         public void MappingPreservesSignedRawAndClipsOutput(
             double raw,
             double normalized,
@@ -25,16 +27,44 @@ namespace WheelchairSonification.Tests
             Assert.That(f.left.rawRps, Is.EqualTo(raw));
             Assert.That(f.left.normalized, Is.EqualTo(normalized).Within(1e-9));
             Assert.That(f.left.active, Is.EqualTo(active));
-            Assert.That(f.right.normalized, Is.EqualTo(.2).Within(1e-9));
+            Assert.That(f.right.normalized, Is.EqualTo(.4).Within(1e-9));
         }
 
         [Test]
         public void ExponentialPitch()
         {
             var e = new SpeedFeedbackEngine(new FeedbackSettings());
-            var f = e.Update(0, .75, 1.5, true, StudyGroup.Auditory, true);
+            var f = e.Update(0, .375, .75, true, StudyGroup.Auditory, true);
             Assert.That(f.left.frequencyHz, Is.EqualTo(220 * Math.Sqrt(3)).Within(1e-9));
             Assert.That(f.right.frequencyHz, Is.EqualTo(660).Within(1e-9));
+        }
+
+        [TestCase(.75)]
+        [TestCase(1.5)]
+        public void FixedExamplesUseConfiguredFractions(double range)
+        {
+            var settings = new FeedbackSettings { rangeRps = range };
+            var left = FeedbackProtocol.Example(0, settings);
+            var right = FeedbackProtocol.Example(1, settings);
+            var different = FeedbackProtocol.Example(2, settings);
+            var engine = new SpeedFeedbackEngine(settings);
+            Assert.That(left.left, Is.EqualTo(right.right));
+            Assert.That(left.right, Is.Zero);
+            Assert.That(right.left, Is.Zero);
+            var value = engine.Update(
+                0,
+                different.left,
+                different.right,
+                true,
+                StudyGroup.Visual,
+                true
+            );
+            Assert.That(value.left.normalized, Is.EqualTo(.8).Within(1e-9));
+            Assert.That(value.right.normalized, Is.EqualTo(.3).Within(1e-9));
+            Assert.That(
+                engine.Update(1, left.left, 0, true, StudyGroup.Auditory, true).left.normalized,
+                Is.EqualTo(.5).Within(1e-9)
+            );
         }
 
         [Test]

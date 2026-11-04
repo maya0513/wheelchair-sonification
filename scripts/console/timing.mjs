@@ -8,6 +8,12 @@ export class TrialClock {
   hasResultFor(trialId) {
     return !!trialId && this.completedTrials.has(trialId);
   }
+  reset() {
+    this.state = 'idle';
+    this.trialId = '';
+    this.startedAt = undefined;
+    this.endedAt = null;
+  }
   prepare(delayMs = 3000, trialId = '') {
     if (this.state === 'preparing' || this.state === 'running') throw new Error('既に計時中です。');
     if (this.hasResultFor(trialId))

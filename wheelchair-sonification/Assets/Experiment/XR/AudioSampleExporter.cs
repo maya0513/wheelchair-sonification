@@ -25,11 +25,13 @@ namespace WheelchairSonification.Editor
         {
             public bool physical_headset_listened = false;
             public string generator = "StereoToneGenerator used by UnityFeedbackOutput";
+            public FeedbackSettings feedback;
             public Sample[] samples;
         }
 
         public static void Export(string directory)
         {
+            var settings = new FeedbackSettings();
             var samples = new List<Sample>();
             string[] names =
             {
@@ -60,15 +62,15 @@ namespace WheelchairSonification.Editor
                 int rate = 48000,
                     seconds = scenario == 8 ? 120 : 8;
                 var generator = new StereoToneGenerator();
-                var engine = new SpeedFeedbackEngine(new FeedbackSettings());
+                var engine = new SpeedFeedbackEngine(settings);
                 var data = new float[rate * seconds * 2];
                 double peak = 0,
                     step = 0;
                 for (int frame = 0; frame < seconds * 100; frame++)
                 {
                     double t = frame * .01,
-                        l = .5,
-                        r = .5;
+                        l = FeedbackProtocol.Example(0, settings).left,
+                        r = l;
                     bool valid = true;
                     switch (scenario)
                     {
@@ -79,11 +81,12 @@ namespace WheelchairSonification.Editor
                             l = 0;
                             break;
                         case 3:
-                            l = .9;
-                            r = .3;
+                            (l, r) = FeedbackProtocol.Example(2, settings);
                             break;
                         case 4:
-                            l = r = .1 + 1.3 * (.5 - .5 * Math.Cos(2 * Math.PI * t / 8));
+                            l = r =
+                                settings.rangeRps
+                                * (.1 + .9 * (.5 - .5 * Math.Cos(2 * Math.PI * t / 8)));
                             break;
                         case 5:
                             if (t > 3)
@@ -97,8 +100,8 @@ namespace WheelchairSonification.Editor
                             r = .02 * Math.Cos(t * 40);
                             break;
                         case 8:
-                            l = .5 + .25 * Math.Sin(t * .4);
-                            r = .5 + .25 * Math.Cos(t * .3);
+                            l = settings.rangeRps * (.5 + .25 * Math.Sin(t * .4));
+                            r = settings.rangeRps * (.5 + .25 * Math.Cos(t * .3));
                             break;
                     }
                     // Silence at both ends makes previews safe to concatenate and checks the actual fades.
@@ -135,7 +138,10 @@ namespace WheelchairSonification.Editor
             }
             File.WriteAllText(
                 Path.Combine(directory, "audio-manifest.json"),
-                JsonUtility.ToJson(new Manifest { samples = samples.ToArray() }, true)
+                JsonUtility.ToJson(
+                    new Manifest { feedback = settings, samples = samples.ToArray() },
+                    true
+                )
             );
         }
 

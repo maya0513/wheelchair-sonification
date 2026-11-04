@@ -166,6 +166,7 @@ namespace WheelchairSonification.Editor
                     "VisualAnswer",
                     "AudioAnswer",
                     "Paused",
+                    "Stopping",
                     "Result",
                     "Waiting",
                 };
@@ -211,6 +212,31 @@ namespace WheelchairSonification.Editor
                     xr.PreparationUi.ShowPreview(PreparationWorkflow.Preview("Home"));
                     ShotImage($"{index++:00}-prep-field", "準備画面・視野と背景");
                 }
+                xr.Rig.Camera.fieldOfView = 70;
+                xr.ShowParticipantPreview("", false);
+                var speedSettings = new FeedbackSettings();
+                foreach (bool light in new[] { true, false })
+                {
+                    xr.Rig.Camera.backgroundColor = light
+                        ? new Color(.75f, .76f, .78f)
+                        : new Color(.12f, .13f, .15f);
+                    xr.Research.Output.Apply(
+                        new SpeedFeedbackEngine(speedSettings).Update(
+                            0,
+                            .5,
+                            .25,
+                            true,
+                            StudyGroup.Visual,
+                            true
+                        )
+                    );
+                    ShotImage(
+                        light ? "60-range-light" : "61-range-dark",
+                        "新尺度・左0.5 rpsは約67%、右0.25 rpsは約33%"
+                    );
+                }
+                xr.Research.Output.Stop();
+                xr.PreparationUi.ShowPreview(PreparationWorkflow.Preview("Home"));
                 xr.Rig.Camera.fieldOfView = 70;
                 xr.Rig.Camera.transform.rotation = Quaternion.Euler(0, 60, 0);
                 ShotImage("42-prep-head-turned", "準備パネルは空間に固定・頭部回転後", true);

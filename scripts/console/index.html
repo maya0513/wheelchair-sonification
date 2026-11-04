@@ -50,7 +50,11 @@
               <p class="eyebrow">PREPARATION</p>
               <h1>準備・チェック</h1>
             </div>
-            <p>ゴーグルでも、ここからでも進められます。</p>
+            <div class="display-tools">
+              <button id="align-display">表示位置を合わせ直す</button>
+              <p id="align-state" class="hint"></p>
+              <p id="align-reason" class="hint"></p>
+            </div>
           </div>
           <div id="preparation-entries" class="preparation-entries" aria-label="準備機能"></div>
           <div class="setup-grid">
@@ -72,6 +76,7 @@
                 ><button id="manual-assign" class="primary">選択を確定</button>
               </div>
               <button id="prep-cancel" class="text-button" hidden>チェックを中断</button>
+              <button id="confirm-stopped" hidden>停止を確認して準備へ戻る</button>
             </div>
             <div class="card equipment">
               <h2>装着と追跡</h2>
@@ -138,14 +143,10 @@
                 ><button id="set-volume">音量を設定</button>
               </div>
               <p>実測の接続不良を合成入力で補いません。</p>
-              <h2>表示位置と視線</h2>
-              <p>
-                座って正面を向き、車いすを止めて表示を合わせます。眼球校正はHMDの設定 → 入力 →
-                アイトラッカーで行います。
-              </p>
+              <h2>視線</h2>
+              <p>眼球校正はHMDの設定 → 入力 → アイトラッカーで行います。</p>
               <div class="row">
-                <button id="align-display">表示位置を合わせる</button
-                ><button id="eye-calibration">眼球校正を確認済みにする</button>
+                <button id="eye-calibration">眼球校正を確認済みにする</button>
               </div>
               <p id="eye-state"></p>
               <pre id="eye-detail"></pre>
@@ -254,6 +255,7 @@
             <h2>音と表示の見本</h2>
             <p>口頭回答を記録します。自動合否はありません。</p>
             <div id="examples"></div>
+            <p id="example-range" class="hint"></p>
             <label>回答・知覚の問題<textarea id="understanding" rows="3"></textarea></label
             ><button id="save-understanding" class="primary">理解確認を保存</button>
           </div>

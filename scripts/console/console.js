@@ -185,6 +185,7 @@ click('pair', async () => {
   await api('pair', { deviceId: candidate.deviceId, code: $('pair-code').value });
 });
 click('prep-cancel', () => command('prep.cancel'));
+click('confirm-stopped', () => command('prep.confirmStopped'));
 click('manual-assign', () =>
   command('prep.select', $('manual-device').value, state?.preparation?.manualRole),
 );
@@ -235,7 +236,8 @@ click('apply-selection', () =>
 );
 click('record-start', () => {
   cancelAudio();
-  clock.state = 'idle';
+  clock.reset();
+  cueInfo = {};
   return command('start');
 });
 click('cue', startCue);
@@ -338,16 +340,30 @@ for (const modality of ['Auditory', 'Visual']) {
   const name = document.createElement('strong');
   name.textContent = modality === 'Auditory' ? '聴覚' : '視覚';
   row.append(name);
-  for (const [label, l, r] of [
+  for (const [label, leftFraction, rightFraction] of [
     ['左だけ', 0.5, 0],
     ['右だけ', 0, 0.5],
     ['左が速い', 0.8, 0.3],
   ]) {
     const b = document.createElement('button');
     b.textContent = label;
+    b.dataset.modality = modality;
     b.onclick = safe(async () => {
+      const range = state?.feedbackRangeRps;
+      if (!(Number.isFinite(range) && range > 0))
+        throw new Error('提示範囲を取得できません。APKとPCを同じ版に更新してください。');
+      const l = leftFraction * range,
+        r = rightFraction * range;
       await command('quick', `${modality}:${l}:${r}`);
-      if (state.visitId) await saveEntry('example', { modality, leftRps: l, rightRps: r });
+      if (state.visitId)
+        await saveEntry('example', {
+          modality,
+          leftRps: l,
+          rightRps: r,
+          rangeRps: range,
+          presentationRequested: true,
+          physicalOutputConfirmed: false,
+        });
     });
     row.append(b);
   }
@@ -359,6 +375,10 @@ window.addEventListener('keydown', (e) => {
     safe(() => endClock())();
   }
 });
+for (const id of ['participant', 'group', 'phase', 'task', 'repetition']) {
+  $(id).addEventListener('input', render);
+  $(id).addEventListener('change', render);
+}
 function render() {
   if (!view) return;
   $('mode').textContent = view.state?.sourceKind?.startsWith('synthetic')
@@ -425,6 +445,16 @@ function render() {
   if (state && oldSourceKind !== state.sourceKind) {
     oldSourceKind = state.sourceKind;
     $('input-kind').value = state.sourceKind?.startsWith('synthetic') ? 'synthetic' : 'actual';
+  }
+  if (state?.running) {
+    // Disabled editors describe the active trial, never an earlier unsubmitted draft.
+    $('participant').value = state.participantId || '';
+    $('group').value = ['Auditory', 'Visual', 'NoFeedback'].includes(state.group)
+      ? state.group
+      : '';
+    $('phase').value = state.phase;
+    $('task').value = state.task;
+    $('repetition').value = state.repetition;
   }
   const busy = !!pendingId || !!view.pending,
     active = !!state?.running,
@@ -503,8 +533,32 @@ function render() {
   $('health').textContent = state
     ? `入力：${state.sourceKind?.startsWith('synthetic') ? '合成' : '実測'} ／ 校正：${state.calibrationReady ? '有効' : '未完了'} ／ ゴーグル：${state.presentationReady ? '準備済み' : '未準備'}`
     : '機器情報を待っています。';
-  $('align-display').disabled =
-    !usable || active || !state?.calibrationReady || !state?.preparation?.safeToShowPanel;
+  $('align-display').disabled = !usable || state?.canAlignDisplay !== true;
+  $('align-state').textContent = state?.displayAligned
+    ? '設定済み・停止中に何度でも合わせ直せます。'
+    : '着座して正面を向き、表示位置を合わせます。';
+  $('align-reason').textContent = !view.connected
+    ? 'ゴーグルを接続してください。'
+    : busy
+      ? '操作の反映を待っています。'
+      : typeof state?.canAlignDisplay !== 'boolean'
+        ? 'APKとPCを同じ版に更新してください。'
+        : state?.displayAlignmentReason || '';
+  for (const b of $('examples').querySelectorAll('button')) {
+    const unavailable = !Number.isFinite(state?.feedbackRangeRps) || state.feedbackRangeRps <= 0;
+    b.disabled =
+      !usable ||
+      active ||
+      preparing ||
+      !state?.presentationReady ||
+      unavailable ||
+      (b.dataset.modality === 'Visual' && !state?.displayAligned);
+    b.title = unavailable ? 'APKとPCを同じ版に更新してください。' : '';
+  }
+  $('example-range').textContent =
+    Number.isFinite(state?.feedbackRangeRps) && state.feedbackRangeRps > 0
+      ? `提示上限 ${state.feedbackRangeRps} 回転/秒。見本は片側50%、左右差80%／30%です。`
+      : '提示範囲を取得できません。APKとPCを同じ版に更新してください。';
   $('eye-calibration').disabled = !usable || active;
   $('eye-state').textContent = state
     ? `表示位置：${state.displayAligned ? '設定済み' : '位置合わせが必要'} ／ 視線：${state.eyeStatus || '未確認'} ／ 眼球校正：${state.eyeCalibrationConfirmed ? '確認済み' : '未確認'}`
@@ -534,7 +588,7 @@ function render() {
     : training
       ? state.trainingEnded
         ? 'FB停止済み。安全停止後に記録を終了します。'
-        : '目安2分。訓練終了でFBを止め、安全停止まで記録します。'
+        : '目安1分。訓練終了でFBを止め、安全停止まで記録します。'
       : cs === 'preparing'
         ? '開始音を準備中です。'
         : cs === 'running'
@@ -656,7 +710,9 @@ function renderPreparation(usable, active, busy) {
   $('guide-detail').textContent =
     p?.stage === 'Free'
       ? '終了でFBを止めます。データは保存しません。'
-      : p?.detail || 'ゴーグル単体でも準備・チェックを行えます。';
+      : p
+        ? p.detail || ''
+        : 'ゴーグル単体でも準備・チェックを行えます。';
   $('guide-step').textContent =
     {
       registration: 'トラッカー登録',
@@ -666,13 +722,15 @@ function renderPreparation(usable, active, busy) {
     }[p?.mode] || '準備機能を選択';
   $('guide-running').textContent = busy
     ? '変更を反映中…'
-    : p?.stage === 'Free'
-      ? '自由走行中'
-      : p?.moving
-        ? '動作を確認中'
-        : p?.active
-          ? 'チェック中'
-          : '';
+    : p?.canConfirmStopped
+      ? '安全停止を待っています'
+      : p?.stage === 'Free'
+        ? '自由走行中'
+        : p?.moving
+          ? '動作を確認中'
+          : p?.active
+            ? 'チェック中'
+            : '';
   $('prep-issue').hidden = !p?.problem;
   $('prep-issue').textContent = p?.problem || '';
   $('guide-disabled').textContent = !view.connected
@@ -703,6 +761,8 @@ function renderPreparation(usable, active, busy) {
   $('prep-cancel').hidden = !p?.active;
   $('prep-cancel').disabled = !view.connected;
   $('prep-cancel').textContent = p?.mode === 'free' ? '自由走行を終了・FB停止' : 'チェックを中断';
+  $('confirm-stopped').hidden = !p?.canConfirmStopped;
+  $('confirm-stopped').disabled = !usable || active;
   $('free-state').hidden = p?.mode !== 'free';
   const rps = (v) => (Number.isFinite(v) ? v.toFixed(2) : '—');
   $('free-state').textContent =
@@ -711,7 +771,10 @@ function renderPreparation(usable, active, busy) {
       ? `左 ${rps(p.leftRps)}、右 ${rps(p.rightRps)} 回転/秒`
       : p?.stage === 'Free'
         ? '追跡欠測・FB停止中'
-        : '停止中・準備中');
+        : '停止中・準備中') +
+    (Number.isFinite(state?.feedbackRangeRps)
+      ? ` ／ 提示上限 ${state.feedbackRangeRps} 回転/秒`
+      : '');
   $('manual-selection').hidden = p?.stage !== 'Manual';
   const devicesKey = JSON.stringify(state?.devices?.map((d) => [d.key, d.valid]));
   if ($('manual-device').dataset.key !== devicesKey) {

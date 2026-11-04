@@ -11,6 +11,19 @@ namespace WheelchairSonification.Core
             Math.Max(low, Math.Min(high, x));
 
         public static bool Finite(double x) => !double.IsNaN(x) && !double.IsInfinity(x);
+
+        // Fixed examples use the same fraction of the configured range on every screen.
+        public static (double left, double right) Example(int index, FeedbackSettings settings)
+        {
+            settings.Validate();
+            return index switch
+            {
+                0 => (.5 * settings.rangeRps, 0),
+                1 => (0, .5 * settings.rangeRps),
+                2 => (.8 * settings.rangeRps, .3 * settings.rangeRps),
+                _ => throw new ArgumentOutOfRangeException(nameof(index)),
+            };
+        }
     }
 
     // The same sample generator runs in Unity's audio callback and offline WAV export.

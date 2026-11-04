@@ -76,6 +76,10 @@ namespace WheelchairSonification.Tests
             yield return new WaitForSecondsRealtime(.08f);
             Assert.That(exampleCancelled, Is.True);
             Assert.That(r.Active, Is.True);
+            var saved = JsonUtility.FromJson<ResearchSessionSettings>(
+                File.ReadAllText(Path.Combine(r.SaveRoot, r.TrialId, "session.json"))
+            );
+            Assert.That(saved.feedback.rangeRps, Is.EqualTo(.75));
             Assert.That(Send("trainingEnd").ok, Is.True);
             Assert.That(r.Active, Is.True);
             Assert.That(r.Output.Last.enabled, Is.False);
@@ -83,6 +87,48 @@ namespace WheelchairSonification.Tests
             Assert.That(r.Active, Is.False);
             Assert.That(File.Exists(host.ExportPath), Is.True);
             Assert.That(Directory.GetDirectories(r.SaveRoot).Length, Is.EqualTo(1));
+        }
+
+        [UnityTest]
+        public IEnumerator RepeatedDisplayAlignmentPreservesCalibrationAndSharesGuardWithUi()
+        {
+            r.enabled = host.enabled = false;
+            r.Tick(0);
+            var calibration = r.Wizard.Calibration;
+            string before = JsonUtility.ToJson(calibration);
+            int aligned = 0;
+            host.AlignDisplay = () => aligned++;
+            void Tick(double time)
+            {
+                var frame = PreparationInference.Copy(r.Frame);
+                frame.time = time;
+                host.Preparation.Tick(frame, time, true, r.Settings, r.Volume);
+            }
+            for (int i = 0; i < 90; i++)
+                Tick(i * .025);
+            Assert.That(host.Snapshot().canAlignDisplay, Is.True);
+            Assert.That(Send("alignDisplay").ok, Is.True);
+            Assert.That(Send("alignDisplay").ok, Is.True);
+            Assert.That(aligned, Is.EqualTo(2));
+            Assert.That(JsonUtility.ToJson(calibration), Is.EqualTo(before));
+            Assert.That(r.Wizard.Calibration, Is.SameAs(calibration));
+            Assert.That(host.Snapshot().feedbackRangeRps, Is.EqualTo(.75));
+            host.ExamplePresenting = () => true;
+            Assert.That(host.Snapshot().canAlignDisplay, Is.False);
+            Assert.That(host.Snapshot().displayAlignmentReason, Does.Contain("見本"));
+            Assert.That(Send("alignDisplay").ok, Is.False);
+            host.ExamplePresenting = () => false;
+            Assert.That(Send("prep.freeAuditory").ok, Is.True);
+            Assert.That(host.Snapshot().canAlignDisplay, Is.False);
+            Assert.That(Send("alignDisplay").ok, Is.False);
+            Assert.That(Send("prep.cancel").ok, Is.True);
+            Assert.That(Send("prep.confirmStopped").ok, Is.True);
+            Assert.That(Send("createVisit", "P_ALIGN").ok, Is.True);
+            Assert.That(Send("start").ok, Is.True);
+            Assert.That(host.Snapshot().canAlignDisplay, Is.False);
+            Assert.That(host.Snapshot().displayAlignmentReason, Does.Contain("記録"));
+            Assert.That(Send("alignDisplay").ok, Is.False);
+            yield return null;
         }
 
         [UnityTest]

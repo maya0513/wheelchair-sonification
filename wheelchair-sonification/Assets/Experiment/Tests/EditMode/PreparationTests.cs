@@ -609,5 +609,131 @@ namespace WheelchairSonification.Tests
             Assert.That(workflow.Stage, Is.EqualTo("Result"));
             Assert.That(workflow.Mode, Is.EqualTo("feedback"));
         }
+
+        [Test]
+        public void RegisteredStillnessIgnoresWristsButRequiresEveryCriticalDevice()
+        {
+            Calibrate();
+            for (int i = 0; i < 100; i++)
+            {
+                time += .025;
+                workflow.Tick(
+                    ChairFixture.Frame(time, distance, lt, rt, true),
+                    time,
+                    true,
+                    new FeedbackSettings(),
+                    .1f
+                );
+            }
+            Assert.That(
+                workflow.TrackedStill,
+                Is.True,
+                "Moving wrists must not block positioning."
+            );
+            time += .025;
+            lt += .02;
+            workflow.Tick(
+                ChairFixture.Frame(time, distance, lt, rt, true),
+                time,
+                true,
+                new FeedbackSettings(),
+                .1f
+            );
+            Assert.That(
+                workflow.TrackedStill,
+                Is.False,
+                "One rotating wheel must not be outvoted."
+            );
+        }
+
+        [Test]
+        public void MissingTrackingCanReturnToPreparationOnlyAfterExplicitStopConfirmation()
+        {
+            Calibrate();
+            Hold(2.3);
+            var before = Files();
+            workflow.Execute("freeVisual");
+            Hold(3.2);
+            workflow.Execute("cancel");
+            for (int i = 0; i < 100; i++)
+            {
+                time += .025;
+                var missing = ChairFixture.Frame(time, distance, lt, rt, false);
+                missing.Find("fixture-2").valid = false;
+                workflow.Tick(missing, time, true, new FeedbackSettings(), .1f);
+            }
+            Assert.That(workflow.Stage, Is.EqualTo("FreeStopping"));
+            Assert.That(output.enabled, Is.False);
+            Assert.That(workflow.View.canConfirmStopped, Is.True);
+            workflow.Execute("confirmStopped");
+            Assert.That(workflow.Stage, Is.EqualTo("Result"));
+            Assert.That(workflow.View.safeToShowPanel, Is.True);
+            Assert.That(workflow.View.stopConfirmedManually, Is.True);
+            Assert.That(workflow.TrackedStill, Is.False);
+            Assert.Throws<InvalidOperationException>(() => workflow.Execute("freeVisual"));
+            CollectionAssert.AreEquivalent(before, Files());
+            time += .025;
+            distance += .05;
+            Tick();
+            time += .025;
+            distance += .05;
+            Tick();
+            Assert.That(
+                workflow.View.safeToShowPanel,
+                Is.False,
+                "New motion revokes manual confirmation."
+            );
+            Hold(2.3);
+            Assert.That(
+                workflow.Stage,
+                Is.EqualTo("Result"),
+                "Tracking recovery must not resume feedback."
+            );
+            workflow.Execute("freeVisual");
+            Assert.That(workflow.Stage, Is.EqualTo("Countdown"));
+        }
+
+        [Test]
+        public void ManualStopCannotBypassAnActiveRunOrCompleteAnInterruptedCheck()
+        {
+            Assert.Throws<InvalidOperationException>(() => workflow.Execute("confirmStopped"));
+            workflow.Execute("register");
+            string path = workflow.View.directory;
+            Assert.Throws<InvalidOperationException>(() => workflow.Execute("confirmStopped"));
+            workflow.Interrupt("fixture_missing");
+            workflow.Tick(null, time + .1, true, new FeedbackSettings(), .1f);
+            workflow.Execute("confirmStopped");
+            Assert.That(workflow.Stage, Is.EqualTo("Result"));
+            Assert.That(
+                File.ReadAllText(Path.Combine(path, "closed.json")),
+                Does.Contain("\"check_complete\":false")
+            );
+            Assert.That(workflow.View.safeToShowPanel, Is.True);
+            Assert.That(
+                workflow.View.results.Single(r => r.id == "roles").status,
+                Is.EqualTo("pending")
+            );
+        }
+
+        [Test]
+        public void CancelledMotionCheckCanReturnWithoutRewritingItsClosedRecord()
+        {
+            Calibrate();
+            workflow.Execute("check.forward");
+            workflow.Execute("next");
+            Hold(3.2);
+            time += .025;
+            var frame = ChairFixture.Frame(time, distance, lt, rt, false);
+            frame.Find("fixture-2").valid = false;
+            workflow.Tick(frame, time, true, new FeedbackSettings(), .1f);
+            workflow.Execute("cancel");
+            Assert.That(workflow.Stage, Is.EqualTo("Result"));
+            Assert.That(workflow.View.canConfirmStopped, Is.True);
+            var before = Files();
+            workflow.Execute("confirmStopped");
+            Assert.That(workflow.View.safeToShowPanel, Is.True);
+            Assert.That(workflow.View.canConfirmStopped, Is.False);
+            CollectionAssert.AreEquivalent(before, Files());
+        }
     }
 }

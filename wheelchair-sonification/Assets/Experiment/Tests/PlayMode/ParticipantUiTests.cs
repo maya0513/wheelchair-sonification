@@ -51,8 +51,8 @@ namespace WheelchairSonification.Tests
             );
             output.Apply(f);
             Assert.That(gauge.Visible, Is.True);
-            Assert.That(gauge.leftFill.rect.height, Is.EqualTo(64).Within(.01));
-            Assert.That(gauge.rightFill.rect.height, Is.EqualTo(192).Within(.01));
+            Assert.That(gauge.leftFill.rect.height, Is.EqualTo(128).Within(.01));
+            Assert.That(gauge.rightFill.rect.height, Is.EqualTo(320).Within(.01));
             f.group = StudyGroup.Auditory;
             output.Apply(f);
             Assert.That(gauge.Visible, Is.False);
@@ -138,6 +138,67 @@ namespace WheelchairSonification.Tests
             xr.PreparationUi.ShowPreview(PreparationWorkflow.Preview("Forward"));
             Assert.That(xr.PreparationUi.PanelVisible, Is.False);
             Assert.That(xr.PreparationUi.Footer.gameObject.activeSelf, Is.True);
+            UnityEngine.Object.Destroy(root);
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator HeadsetMenuStopsFreeRunAndCanRecoverMissingTracking()
+        {
+            var root = new GameObject("XR free run fixture");
+            var xr = root.AddComponent<FocusVisionDemo>();
+            xr.EnableEditorPreview();
+            yield return null;
+            xr.enabled = xr.Research.enabled = xr.VisitHost.enabled = false;
+            xr.Research.Tick(0);
+            double time = 0;
+            bool missing = false;
+            void Tick()
+            {
+                time += .025;
+                var frame = PreparationInference.Copy(xr.Research.Frame);
+                frame.time = time;
+                if (missing)
+                    frame.Find("synthetic-2").valid = false;
+                xr.VisitHost.Preparation.Tick(frame, time, true, xr.Research.Settings, .1f, true);
+                xr.PreparationUi.Render(false, "123456", true);
+            }
+            for (int i = 0; i < 90; i++)
+                Tick();
+            var calibration = xr.Research.Wizard.Calibration;
+            Assert.That(xr.VisitHost.ExecuteLocal("alignDisplay").ok, Is.True);
+            Assert.That(xr.VisitHost.ExecuteLocal("alignDisplay").ok, Is.True);
+            Assert.That(xr.Research.Wizard.Calibration, Is.SameAs(calibration));
+            Assert.That(xr.Gauge.Anchor.IsValid(xr.Research.Frame, calibration), Is.True);
+            Assert.That(xr.VisitHost.ExecuteLocal("prep.freeVisual").ok, Is.True);
+            for (int i = 0; i < 130; i++)
+                Tick();
+            Assert.That(xr.VisitHost.Preparation.Stage, Is.EqualTo("Free"));
+            Assert.That(xr.PreparationUi.PanelVisible, Is.False);
+            xr.PreparationUi.Toggle(); // Same path as the controller's A/X action.
+            Assert.That(xr.VisitHost.Preparation.Stage, Is.EqualTo("FreeStopping"));
+            Assert.That(root.GetComponent<UnityFeedbackOutput>().Last.enabled, Is.False);
+            for (int i = 0; i < 90; i++)
+                Tick();
+            Assert.That(xr.PreparationUi.PanelVisible, Is.True);
+            Assert.That(xr.VisitHost.Preparation.Stage, Is.EqualTo("Result"));
+            Assert.That(xr.VisitHost.ExecuteLocal("prep.freeVisual").ok, Is.True);
+            for (int i = 0; i < 130; i++)
+                Tick();
+            missing = true;
+            Tick();
+            xr.PreparationUi.Toggle();
+            Tick();
+            Assert.That(xr.VisitHost.Preparation.Stage, Is.EqualTo("FreeStopping"));
+            Assert.That(
+                xr.PreparationUi.Footer.GetComponentInChildren<TMPro.TMP_Text>().text,
+                Does.Contain("A／X")
+            );
+            xr.PreparationUi.Toggle();
+            Tick();
+            Assert.That(xr.PreparationUi.PanelVisible, Is.True);
+            Assert.That(xr.VisitHost.Preparation.View.stopConfirmedManually, Is.True);
+            Assert.That(xr.VisitHost.ExecuteLocal("prep.freeVisual").ok, Is.False);
             UnityEngine.Object.Destroy(root);
             yield return null;
         }

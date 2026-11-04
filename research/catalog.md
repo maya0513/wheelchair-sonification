@@ -1,6 +1,6 @@
 # 文献・公式資料一覧
 
-**69件の研究・方法論・ガイドライン＋12件の公式資料**。本文重点確認・関連節・抄録・書誌のみを区別する。全件の全文精読を意味しない。
+**71件の研究・方法論・ガイドライン＋12件の公式資料**。本文重点確認・関連節・抄録・書誌のみを区別する。全件の全文精読を意味しない。
 
 本文は公開PDF・XML・HTML等。D09は公式Wordの関連節。閲覧範囲の詳細は各ノートを参照。
 
@@ -75,6 +75,8 @@
 | [L67](papers/L67-rzayev-2018.md) | 2018 | Reading on Smart Glasses: The Effect of Text Position, Presentation Type and Walking | XR表示配置・透明度 | 本文関連節 | 公開本文 |
 | [L68](papers/L68-shin-park-2024.md) | 2024 | Evaluation of Interface Design for Video See-Through Head-Mounted Display: Focusing on Walking Users | XR表示配置・透明度 | 本文関連節 | 公開本文 |
 | [L69](papers/L69-he-2025.md) | 2025 | Designing Augmented Reality for Cyclists: How Text-Based Notification Placements Influence Attentional Tunneling and Cycling Experience | XR表示配置・透明度 | 本文関連節 | [PDF](pdfs/L69.pdf) |
+| [L70](papers/L70-de-klerk-2020.md) | 2020 | de Klerk et al. Physiological and biomechanical comparison of overground, treadmill, and ergometer handrim wheelchair propulsion in able-bodied subjects under standardized conditions | 初心者・設定速度 | 本文関連節 | 公開本文 |
+| [L71](papers/L71-sonenblum-2012.md) | 2012 | Sonenblum et al. Manual Wheelchair Use: Bouts of Mobility in Everyday Life | 日常移動・速度範囲 | 本文関連節 | 公開本文 |
 
 ## 公式資料
 

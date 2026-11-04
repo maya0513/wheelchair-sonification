@@ -159,6 +159,7 @@ test('independent preparation and free-run commands do not persist operator data
     'prep.freeVisual',
     'prep.freeAuditory',
     'prep.cancel',
+    'prep.confirmStopped',
     'abort',
   ]) {
     const reply = await f.api('/api/command', { action, visitId: 'existing', revision: 1 });

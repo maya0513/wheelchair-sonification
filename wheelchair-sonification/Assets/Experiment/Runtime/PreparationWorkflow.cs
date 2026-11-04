@@ -51,6 +51,8 @@ namespace WheelchairSonification.Runtime
             moving,
             showLabels,
             safeToShowPanel,
+            canConfirmStopped,
+            stopConfirmedManually,
             physicalAccuracyVerified = false;
         public int manualRole = -1,
             requiredTracked,
@@ -100,6 +102,20 @@ namespace WheelchairSonification.Runtime
         public bool IsFreeSession => Mode == "free";
         public bool Selecting => Stage.EndsWith("Menu", StringComparison.Ordinal);
         public bool ShowLabels => Stage == "Candidate" || Stage == "Manual";
+        public bool Presenting => Stage == "Visual" || Stage == "Audio";
+        public bool TrackedStill => SnapshotStill();
+        public bool CanConfirmStopped =>
+            presentationReady
+            && (
+                Stage == "Stopping"
+                || Stage == "FreeStopping"
+                || (
+                    Stage == "Result"
+                    && needsStopConfirmation
+                    && !SnapshotStill()
+                    && !stopConfirmedManually
+                )
+            );
         public int ManualRole { get; private set; } = 2;
         public PreparationCandidate Candidate { get; private set; }
         public PreparationSnapshot View => Snapshot();
@@ -127,7 +143,9 @@ namespace WheelchairSonification.Runtime
             motionEvidence,
             lastSpeedTime;
         bool manual,
-            observed;
+            observed,
+            stopConfirmedManually,
+            needsStopConfirmation;
         int speedSamples,
             validSpeedSamples;
 
@@ -154,6 +172,33 @@ namespace WheelchairSonification.Runtime
 
         public void Execute(string action, string value = "", int role = -1)
         {
+            if (action == "confirmStopped")
+            {
+                if (!CanConfirmStopped)
+                    throw new InvalidOperationException(
+                        "FBを終了してから、安全に停止したことを確認してください。"
+                    );
+                stop();
+                log?.Action(now, "confirmStopped", "operator_confirmed_not_tracking_evidence");
+                if (Stage == "Result")
+                {
+                    needsStopConfirmation = false;
+                    stopConfirmedManually = true;
+                    Notify();
+                }
+                else if (IsFreeSession)
+                {
+                    Enter("Result");
+                    stopConfirmedManually = true;
+                    Notify();
+                }
+                else
+                {
+                    stopConfirmedManually = true;
+                    Finish(false, "実施者が停止を確認しました。追跡・登録を確認してください。");
+                }
+                return;
+            }
             if (action == "start" || action == "register")
             {
                 Start();
@@ -579,6 +624,8 @@ namespace WheelchairSonification.Runtime
         void Enter(string stage)
         {
             stop();
+            stopConfirmedManually = false;
+            needsStopConfirmation = false;
             Stage = stage;
             entered = now;
             stillSince = double.NaN;
@@ -630,6 +677,11 @@ namespace WheelchairSonification.Runtime
                 return;
             }
             bool stable = IsStill(frame, previous);
+            if (stopConfirmedManually && ShowsMotion(frame, previous))
+            {
+                stopConfirmedManually = false;
+                needsStopConfirmation = Stage == "Result";
+            }
             previous = PreparationInference.Copy(frame);
             if (stable)
             {
@@ -716,15 +768,12 @@ namespace WheelchairSonification.Runtime
                         Enter(Stage == "Visual" ? "VisualAnswer" : "AudioAnswer");
                         return;
                     }
+                    var exampleSpeeds = FeedbackProtocol.Example(example, feedback);
                     present(
                         engine.Update(
                             time,
-                            example == 1 ? 0
-                                : example == 0 ? .5
-                                : .8,
-                            example == 0 ? 0
-                                : example == 1 ? .5
-                                : .3,
+                            exampleSpeeds.left,
+                            exampleSpeeds.right,
                             true,
                             Stage == "Visual" ? StudyGroup.Visual : StudyGroup.Auditory,
                             local < 2
@@ -803,20 +852,47 @@ namespace WheelchairSonification.Runtime
         {
             if (b == null || a.time <= b.time || a.time - b.time > .15)
                 return false;
+            var bindings = new[] { 2, 3, 4 }.Select(i => wizard.Calibration.roles[i]).ToArray();
+            if (bindings.All(r => !string.IsNullOrEmpty(r.key)))
+                return bindings.All(r =>
+                {
+                    var current = a.Find(r.key);
+                    var last = b.Find(r.key);
+                    return current?.valid == true
+                        && last?.valid == true
+                        && current.runtimeDeviceId == r.runtimeDeviceId
+                        && last.runtimeDeviceId == r.runtimeDeviceId
+                        && PoseStill(current, last, a.time - b.time);
+                });
             var values = a
                 .poses.Where(p =>
                     p.valid
                     && b.Find(p.key)?.valid == true
                     && b.Find(p.key).runtimeDeviceId == p.runtimeDeviceId
                 )
-                .Select(p =>
-                    (p.position - b.Find(p.key).position).magnitude / (a.time - b.time)
-                        <= Settings.stillSpeedMeters
-                    && Quaternion.Angle(p.rotation, b.Find(p.key).rotation) / (a.time - b.time)
-                        <= Settings.stillAngularDegrees
-                )
+                .Select(p => PoseStill(p, b.Find(p.key), a.time - b.time))
                 .ToArray();
             return values.Length >= 3 && values.Count(v => v) > values.Length / 2;
+        }
+
+        bool PoseStill(TrackerPose current, TrackerPose last, double interval) =>
+            (current.position - last.position).magnitude / interval <= Settings.stillSpeedMeters
+            && Quaternion.Angle(current.rotation, last.rotation) / interval
+                <= Settings.stillAngularDegrees;
+
+        bool ShowsMotion(PoseFrame a, PoseFrame b)
+        {
+            if (b == null || a.time <= b.time || a.time - b.time > .15)
+                return false;
+            var keys = new[] { 2, 3, 4 }.Select(i => wizard.Calibration.roles[i].key).ToArray();
+            bool assigned = keys.All(k => !string.IsNullOrEmpty(k));
+            return a.poses.Any(p =>
+                (!assigned || keys.Contains(p.key))
+                && p.valid
+                && b.Find(p.key)?.valid == true
+                && p.runtimeDeviceId == b.Find(p.key).runtimeDeviceId
+                && !PoseStill(p, b.Find(p.key), a.time - b.time)
+            );
         }
 
         bool StillLongEnough() =>
@@ -824,6 +900,7 @@ namespace WheelchairSonification.Runtime
 
         public void RequireStop()
         {
+            stopConfirmedManually = false;
             uiStillSince = double.NaN;
             previous = null;
         }
@@ -1045,6 +1122,7 @@ namespace WheelchairSonification.Runtime
         void Finish(bool completed, string reason)
         {
             stop();
+            needsStopConfirmation = Moving && !SnapshotStill() && !stopConfirmedManually;
             Problem = reason;
             Stage = "Result";
             Mark("storage", "confirmed", "ゴーグルに保存。PCの回収・照合は別表示。");
@@ -1080,6 +1158,7 @@ namespace WheelchairSonification.Runtime
                 return;
             }
             stop();
+            needsStopConfirmation = Moving && !SnapshotStill();
             TechnicalProblem = e.ToString();
             Problem = "入力・保存を確認できません。PCで確認してください。";
             Stage = "Result";
@@ -1114,7 +1193,9 @@ namespace WheelchairSonification.Runtime
                 active = Active,
                 moving = Moving,
                 showLabels = ShowLabels,
-                safeToShowPanel = SnapshotStill(),
+                safeToShowPanel = SnapshotStill() || stopConfirmedManually,
+                canConfirmStopped = CanConfirmStopped,
+                stopConfirmedManually = stopConfirmedManually,
                 manualRole = Stage == "Manual" ? ManualRole : -1,
                 proposedBindings = (string[])proposed.Clone(),
                 actions = content.actions.Select(AvailableAction).ToArray(),
@@ -1482,8 +1563,8 @@ namespace WheelchairSonification.Runtime
                 workflow.speed = new WheelSpeedSample
                 {
                     valid = true,
-                    leftRps = .45,
-                    rightRps = .9,
+                    leftRps = .225,
+                    rightRps = .6,
                 };
             workflow.uiStillSince = -3;
             workflow.id = "preview-only";
