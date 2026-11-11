@@ -31,4 +31,4 @@ Archives of Physical Medicine and Rehabilitation 83(12), 1783–1788。調査・
 
 PubMed / Europe PMC Abstract。出版社PDFはHTTP403で保存できず。
 
-研究の報告と本研究の設計案は区別する。[課題選定](../topics/wheelchair-skill-assessment.md)・[FB案比較](../topics/feedback-design-alternatives.md)・[現行研究計画](../../docs/study-plan.md)を参照。
+研究の報告と本研究の設計案は区別する。[課題選定](../topics/wheelchair-skill-assessment.md)・[FB案比較](../topics/feedback-design-alternatives.md)・[現行研究計画](../../docs/1_study-plan.md)を参照。

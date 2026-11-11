@@ -23,7 +23,7 @@
 | 会場回線なしのPC操作と時計 | [オフライン通信](implementation/offline-local-control.md) |
 | モック・記録再生・テストで開発する | [開発とテストの入門](implementation/development-and-testing-guide.md) |
 
-これらは文献・公式資料と設計判断を整理する資料。現行アプリの操作は[実施手順](../docs/operations/setup.md)、実行コマンドは[開発資料](../docs/development/README.md)を参照する。
+これらは文献・公式資料と設計判断を整理する資料。現行アプリの操作は[実施手順](../docs/operations/1_setup.md)、実行コマンドは[開発資料](../docs/development/README.md)を参照する。
 
 ## 出典と調査範囲を確認する
 
@@ -40,4 +40,4 @@
 
 ## 採用していない案を調べる
 
-[推進角・目標誤差の計測可能性](implementation/propulsion-angle-measurement-feasibility.md)は、接触区間を測る案の検討資料。[簡易EEG](topics/eeg.md)は将来の参考で、今回の計測には組み込まない。原発表の内容は[保存資料](../docs/archive/README.md)を参照する。参加者の映像や生ログは文献資料に含めない。
+[推進角・目標誤差の計測可能性](implementation/propulsion-angle-measurement-feasibility.md)は、接触区間を測る案の検討資料。[簡易EEG](topics/eeg.md)は将来の参考で、今回の計測には組み込まない。参加者の映像や生ログは文献資料に含めない。

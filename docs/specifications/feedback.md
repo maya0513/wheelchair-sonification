@@ -1,6 +1,6 @@
 # 車輪速度フィードバックの仕様
 
-本研究で返す情報・音・表示をこの文書で定義する。課題と進行は[実験手順](../experiment-protocol.md)、時計と採点は[計測仕様](measurement.md)、記録列は[保存形式](recording.md)を参照する。
+本研究で返す情報・音・表示をこの文書で定義する。課題と進行は[実験手順](../2_experiment-protocol.md)、時計と採点は[計測仕様](measurement.md)、記録列は[保存形式](recording.md)を参照する。4件の仕様のつながりは[仕様と定義](README.md)で示す。
 
 ## 返す情報
 

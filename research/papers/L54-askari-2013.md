@@ -31,4 +31,4 @@ ICC .72–.96、計測輪との相関 .92–.99。速度・頻度・m/cycleの�
 
 Methods: Wheelchair Propulsion Test / Measurement properties、Discussion、Appendix 1 pp.1696–1697（保存PDF pp.7–8）。
 
-研究の報告と本研究の設計案は区別する。[課題選定](../topics/wheelchair-skill-assessment.md)・[FB案比較](../topics/feedback-design-alternatives.md)・[現行研究計画](../../docs/study-plan.md)を参照。
+研究の報告と本研究の設計案は区別する。[課題選定](../topics/wheelchair-skill-assessment.md)・[FB案比較](../topics/feedback-design-alternatives.md)・[現行研究計画](../../docs/1_study-plan.md)を参照。

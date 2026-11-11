@@ -31,4 +31,4 @@ SCI集団での結果。高能力者での識別・部分標本の小ささ。�
 
 Methods: Experimental procedure、Results: Table I、Discussion。出版社HTMLと保存PDF pp.1–4。タイトルのmobiltyは原文表記。
 
-研究の報告と本研究の設計案は区別する。[課題選定](../topics/wheelchair-skill-assessment.md)・[FB案比較](../topics/feedback-design-alternatives.md)・[現行研究計画](../../docs/study-plan.md)を参照。
+研究の報告と本研究の設計案は区別する。[課題選定](../topics/wheelchair-skill-assessment.md)・[FB案比較](../topics/feedback-design-alternatives.md)・[現行研究計画](../../docs/1_study-plan.md)を参照。

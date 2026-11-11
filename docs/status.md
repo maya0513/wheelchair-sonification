@@ -2,7 +2,9 @@
 
 実装、PC上の確認、実機での測定性能、研究の実施許可を区別する。本計測の判断と担当は[開始条件G1–G6](operations/study-operations.md#本計測開始条件)に集約する。
 
-来訪は合計30分、事前・直後の2時点に変更した。保持評価は設けない。訓練量と配分は[実験手順](experiment-protocol.md)、主要評価は[分析計画](analysis-plan.md)を参照する。
+この文書に置くのは時点ごとの事実である。確認の方法と受入れ目標は[検証計画](specifications/validation.md)、本計測を始めるかの判断基準は開始条件G1–G6が定める。
+
+来訪は合計30分、事前・直後の2時点に変更した。保持評価は設けない。訓練量と配分は[実験手順](2_experiment-protocol.md)、主要評価は[分析計画](3_analysis-plan.md)を参照する。
 
 ## 使える機能と確認範囲
 
@@ -40,4 +42,4 @@
 
 Releaseの添付物は署名付きAPK一件。PCは同じ版のリポジトリから起動する。ローカル出力は`.local/builds/android-release/`で、APK・`build-info.json`・`SHA256SUMS.txt`を保持する。ARM64・IL2CPP・非デバッグ・XR・通信形式3・ライセンス・署名・既存鍵との一致を検査する。対象ソースと検査結果は`build-info.json`、使い方は[画像付き説明](app-overview.md)で確認する。
 
-実際に公開されたバージョンと添付物は[Releases](https://github.com/maya0513/wheelchair-sonification/releases)を参照する。導入は[実施者の準備手順](operations/setup.md)、再生成・公開は[開発者のビルド手順](development/android-build.md)に従う。
+実際に公開されたバージョンと添付物は[Releases](https://github.com/maya0513/wheelchair-sonification/releases)を参照する。導入は[実施者の準備手順](operations/1_setup.md)、再生成・公開は[開発者のビルド手順](development/android-build.md)に従う。

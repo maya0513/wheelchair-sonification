@@ -3,27 +3,28 @@
 lockfile_version = 3
 
 [[tools.just]]
-version = "1.58.0"
+version = "1.59.0"
 backend = "aqua:casey/just"
 specifiers = ["latest"]
 
 [tools.just."platforms.linux-x64"]
-checksum = "sha256:4a5cc2f53e6f0f8c59092a6cc38291eb729d46a7dd95d3ae582008881b84931d"
-url = "https://github.com/casey/just/releases/download/1.58.0/just-1.58.0-x86_64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/casey/just/releases/assets/500509978"
+checksum = "sha256:409044617b6f06517c1035e55ca38c8c856ff8b650e41bc2aa1ef82d5903a23e"
+checksum_source = "mise-versions"
+url = "https://github.com/casey/just/releases/download/1.59.0/just-1.59.0-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/casey/just/releases/assets/642949555"
 
 [[tools.node]]
-version = "24.21.0"
+version = "26.13.0"
 backend = "core:node"
 specifiers = ["lts"]
 
 [tools.node."platforms.linux-x64"]
-checksum = "sha256:6e1db87ef58b8819e5d5402eff1536491b18edd8eb7bee5ef7897876e88dc5ff"
-url = "https://nodejs.org/dist/v24.21.0/node-v24.21.0-linux-x64.tar.gz"
+checksum = "sha256:5848553868b402d3fabb5b09270649977780a390f832155721025a08b5104455"
+url = "https://nodejs.org/dist/v26.13.0/node-v26.13.0-linux-x64.tar.gz"
 
 [[tools."npm:skills"]]
-version = "1.7.4"
-aube = { path = ".mise/locks/npm-skills/1.7.4", digest = "sha256:0fc828a5def0f23c2336c3e5094fc52f74b3b73e8f86a28c338a63c4324b902b" }
+version = "1.7.6"
+aube = { path = ".mise/locks/npm-skills/1.7.6", digest = "sha256:217c1e2076b569495d2a0f30817b0adef33c8a15266bc9aa54990e0258ab75ef" }
 backend = "npm:skills"
 specifiers = ["latest"]
 
@@ -31,7 +32,7 @@ specifiers = ["latest"]
 version = "10.3.0"
 backend = "pypi:mcpforunityserver"
 specifiers = ["latest"]
-uv = { path = ".mise/locks/pypi-mcpforunityserver/10.3.0~3f3c3010", digest = "sha256:5431c1ea69f4d9ea4b63673b81f97eb93585ff7694f0317819c29fe8859b6bcb" }
+uv = { path = ".mise/locks/pypi-mcpforunityserver/10.3.0~3f3c3010", digest = "sha256:490ffec39df1bf08b9c3cac5a75fd9e280a1756f2b6f27eb15eb8f3bb38e1a0c" }
 
 [tools."pypi:mcpforunityserver".options]
 python = "3.14"
@@ -67,12 +68,12 @@ url = "https://github.com/typst/typst/releases/download/v0.15.1/typst-x86_64-unk
 url_api = "https://api.github.com/repos/typst/typst/releases/assets/480300761"
 
 [[tools.uv]]
-version = "0.13.0"
+version = "0.13.7"
 backend = "aqua:astral-sh/uv"
 specifiers = ["latest"]
 
 [tools.uv."platforms.linux-x64"]
-checksum = "sha256:1468ebd5a5541121837c5a2817b9972ba6090fa6caa3d142620850a47fb75154"
-url = "https://github.com/astral-sh/uv/releases/download/0.13.0/uv-x86_64-unknown-linux-gnu.tar.gz"
-url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/626003332"
+checksum = "sha256:c5221ff41b7892bfc223543883600125f6a47fe845093e0f5bdff4f359196d83"
+url = "https://github.com/astral-sh/uv/releases/download/0.13.7/uv-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/704009823"
 provenance = "github-attestations"

@@ -2,7 +2,7 @@
 
 対象はVIVE Focus VisionのAndroid／OpenXR単体実行。[確認状況](../status.md)と[開発環境](README.md)を確認する。
 
-配布物を使う場合は[導入手順](../operations/setup.md)へ進む。ここではAPKを生成・検査・公開する手順を扱う。
+配布物を使う場合は[導入手順](../operations/1_setup.md)へ進む。ここではAPKを生成・検査・公開する手順を扱う。
 
 ## 開発環境と署名
 

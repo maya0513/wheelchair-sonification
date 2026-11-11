@@ -31,4 +31,4 @@
 
 原著pp.190–191（保存PDF pp.2–3）方法・図1、p.192考察。PDF p.3の図を画像でも確認。
 
-研究の報告と本研究の設計案は区別する。[課題選定](../topics/wheelchair-skill-assessment.md)・[FB案比較](../topics/feedback-design-alternatives.md)・[現行研究計画](../../docs/study-plan.md)を参照。
+研究の報告と本研究の設計案は区別する。[課題選定](../topics/wheelchair-skill-assessment.md)・[FB案比較](../topics/feedback-design-alternatives.md)・[現行研究計画](../../docs/1_study-plan.md)を参照。

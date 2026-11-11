@@ -6,7 +6,7 @@
 |---|---|
 | どんなアプリか画像で見る | [アプリの概要](docs/app-overview.md) |
 | 研究計画・実験手順・分析を読む | [研究資料の入口](docs/README.md) |
-| 機器をつなぎ、動作を確かめる | [導入・装着・準備](docs/operations/setup.md) |
+| 機器をつなぎ、動作を確かめる | [導入・装着・準備](docs/operations/1_setup.md) |
 | 実装を変更・テスト・配布する | [開発の入口](docs/development/README.md) |
 | 先行研究と設計の根拠を調べる | [文献調査](research/README.md) |
 | 実施前に残っている確認を知る | [確認状況](docs/status.md) |

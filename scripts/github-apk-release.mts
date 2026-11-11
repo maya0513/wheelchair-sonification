@@ -127,7 +127,7 @@ export async function publishRelease(
       `APKを本体のDownloadへUSBでコピーし、ファイルブラウザーからインストールしてください。\n` +
       `PC側は同じ版のリポジトリで \`just start\` を実行します。\n\n` +
       `[画像付きの説明](https://github.com/${releaseRepository}/blob/${tag}/docs/app-overview.md) · ` +
-      `[導入・操作手順](https://github.com/${releaseRepository}/blob/${tag}/docs/operations/setup.md)\n\n` +
+      `[導入・操作手順](https://github.com/${releaseRepository}/blob/${tag}/docs/operations/1_setup.md)\n\n` +
       `このAPKでの実機インストール、追跡、音・表示・視線、走行中の動作は未確認です。` +
       `ソフトウェア試験の成功を実機性能の検証とは扱いません。\n\n` +
       `- Source: ${commit}\n- Version: ${info.version} / Android versionCode ${info.versionCode}\n` +

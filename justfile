@@ -18,6 +18,8 @@ update:
     mise lock --bump
     just setup
     mise exec --locked -- skills update --project --yes
+    # skills CLIがClaude Code向けに作る .claude/skills のリンクは使わないため、更新のたびに除去する
+    rm -rf .claude
 
 # 実験用PC画面を起動（Wi-Fi設定は変更しない）
 start:

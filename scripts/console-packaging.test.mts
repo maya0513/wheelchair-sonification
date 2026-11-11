@@ -75,7 +75,7 @@ test('overview ZIP keeps referenced images local and links detailed documents to
   mkdirSync(folder, { recursive: true });
   writeFileSync(
     join(root, 'docs/app-overview.md'),
-    '# 概要\n![テスト](images/app-overview/view.png)\n[全体](images/app-overview/full.png)\n[操作](operations/console.md)\n[開発](development/README.md)\n[仕様](specifications/feedback.md#提示する場面)\n[状態](status.md)\n[30分の手順](experiment-protocol.md#30分の配分)\n',
+    '# 概要\n![テスト](images/app-overview/view.png)\n[全体](images/app-overview/full.png)\n[操作](operations/3_console.md)\n[開発](development/README.md)\n[仕様](specifications/feedback.md#提示する場面)\n[状態](status.md)\n[30分の手順](2_experiment-protocol.md#30分の配分)\n',
   );
   for (const name of ['view.png', 'full.png']) writeFileSync(join(folder, name), 'image fixture');
   writeFileSync(join(folder, 'capture-info.json'), '{}');
@@ -100,11 +100,11 @@ test('overview ZIP keeps referenced images local and links detailed documents to
     !result.files.some((p: string) => p.includes('poses.csv') || p.includes('unreferenced')),
   );
   assert.match(result.text, /!\[テスト\]\(images\/app-overview\/view.png\)/);
-  assert.ok(result.text.includes('blob/' + 'a'.repeat(40) + '/docs/operations/console.md'));
+  assert.ok(result.text.includes('blob/' + 'a'.repeat(40) + '/docs/operations/3_console.md'));
   assert.ok(result.text.includes('blob/' + 'a'.repeat(40) + '/docs/development/README.md'));
   assert.ok(result.text.includes('blob/' + 'a'.repeat(40) + '/docs/status.md'));
   assert.ok(
-    result.text.includes('blob/' + 'a'.repeat(40) + '/docs/experiment-protocol.md#30分の配分'),
+    result.text.includes('blob/' + 'a'.repeat(40) + '/docs/2_experiment-protocol.md#30分の配分'),
   );
   assert.ok(result.text.includes('feedback.md#提示する場面'));
   rmSync(join(folder, 'full.png'));

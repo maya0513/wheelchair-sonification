@@ -15,7 +15,7 @@ Microsoftの数値はHoloLens等の条件を含む。Focus Visionでの最適距
 
 前後進による自動候補生成は本研究の実装上の提案。上の資料がこの識別手法の精度を検証したものではない。複数候補や欠測では自動確定せず、実物選択へ移る。機能チェックと独立参照による角度・速度・出力遅延の検証を分ける。
 
-設計の正本は[装着・チェック](../../docs/operations/setup.md)、責務の境界は[開発ガイド](../../docs/development/README.md)、研究用性能は[検証計画](../../docs/specifications/validation.md)を参照。
+設計の正本は[装着・チェック](../../docs/operations/1_setup.md)、責務の境界は[開発ガイド](../../docs/development/README.md)、研究用性能は[検証計画](../../docs/specifications/validation.md)を参照。
 
 ## 表示配置と視線記録の根拠
 

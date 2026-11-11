@@ -25,10 +25,10 @@ RESNA 2007 Conference Proceedings。調査・照合日：2026-10-14。
 
 ## 本研究への示唆
 
-障害物を知らせる警告音と、左右車輪速度を返す連続音を区別する。3名・電動車いすの結果を、本研究の[初心者の推進練習](../../docs/study-plan.md)へ直接一般化しない。
+障害物を知らせる警告音と、左右車輪速度を返す連続音を区別する。3名・電動車いすの結果を、本研究の[初心者の推進練習](../../docs/1_study-plan.md)へ直接一般化しない。
 
 ## 確認位置
 
 原会議ページのAbstract、Backgroundの評価経路・計測説明（検索公開テキスト）。DOI・頁は未確認。
 
-研究の報告と本研究の設計案は区別する。[課題選定](../topics/wheelchair-skill-assessment.md)・[FB案比較](../topics/feedback-design-alternatives.md)・[現行研究計画](../../docs/study-plan.md)を参照。
+研究の報告と本研究の設計案は区別する。[課題選定](../topics/wheelchair-skill-assessment.md)・[FB案比較](../topics/feedback-design-alternatives.md)・[現行研究計画](../../docs/1_study-plan.md)を参照。

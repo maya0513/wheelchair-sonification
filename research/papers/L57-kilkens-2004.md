@@ -31,4 +31,4 @@ Archives of Physical Medicine and Rehabilitation 85(3), 424–431。調査・照
 
 Abstract、出版社の検索公開テキストAppendix1 Item1とResponsiveness。PDF取得は403。全文精読とは区別。
 
-研究の報告と本研究の設計案は区別する。[課題選定](../topics/wheelchair-skill-assessment.md)・[FB案比較](../topics/feedback-design-alternatives.md)・[現行研究計画](../../docs/study-plan.md)を参照。
+研究の報告と本研究の設計案は区別する。[課題選定](../topics/wheelchair-skill-assessment.md)・[FB案比較](../topics/feedback-design-alternatives.md)・[現行研究計画](../../docs/1_study-plan.md)を参照。

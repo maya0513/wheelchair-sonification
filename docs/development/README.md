@@ -1,6 +1,6 @@
 # 開発の入口
 
-コードを変更し、テスト・画像確認・ビルドを行う人向け。アプリを使う場合は[導入・装着・準備](../operations/setup.md)から読む。開発とテストの考え方は[入門解説](../../research/implementation/development-and-testing-guide.md)にまとめる。
+コードを変更し、テスト・画像確認・ビルドを行う人向け。アプリを使う場合は[導入・装着・準備](../operations/1_setup.md)から読む。開発とテストの考え方は[入門解説](../../research/implementation/development-and-testing-guide.md)にまとめる。
 
 ## 環境と実行入口
 

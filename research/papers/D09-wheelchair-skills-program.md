@@ -19,4 +19,4 @@ WSTは個別技能を評価し、WSPは教示・練習・安全補助・FBの原
 
 手動車いすの坂・段差・移乗・後輪バランス等も含むマニュアルの対象全体を今回測ったことにはしない。最新版という理由だけで旧版での信頼性・妥当性をそのまま保証したと扱わない。
 
-参照：[課題レビュー](../topics/wheelchair-skill-assessment.md)、[研究計画](../../docs/study-plan.md)。
+参照：[課題レビュー](../topics/wheelchair-skill-assessment.md)、[研究計画](../../docs/1_study-plan.md)。

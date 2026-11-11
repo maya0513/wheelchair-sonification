@@ -20,4 +20,4 @@
 
 ## 本研究への適用
 
-文献の結果と実装案を区別する。現在は左右車輪の速度を連続提示し、PC合図後の手動採時を使う。[研究計画](../../docs/study-plan.md)・[計測仕様](../../docs/specifications/measurement.md)・[検証計画](../../docs/specifications/validation.md)を参照。
+文献の結果と実装案を区別する。現在は左右車輪の速度を連続提示し、PC合図後の手動採時を使う。[研究計画](../../docs/1_study-plan.md)・[計測仕様](../../docs/specifications/measurement.md)・[検証計画](../../docs/specifications/validation.md)を参照。
