@@ -475,11 +475,24 @@ output {
   margin: 10px 0;
 }
 
-.display-tools {
-  max-width: 390px;
+.card .subhead {
+  font-size: 16px;
+  margin-top: 20px;
 }
-.display-tools .hint {
-  margin: 4px 0 0;
+.gaze-card {
+  margin-bottom: 18px;
+}
+.gaze-blocks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.gaze-block .subhead {
+  margin-top: 0;
+}
+#eye-detail {
+  max-height: 84px;
+  overflow: auto;
 }
 #archives a {
   display: block;
@@ -510,6 +523,9 @@ output {
     font-size: 14px;
   }
   .setup-grid {
+    grid-template-columns: 1fr;
+  }
+  .gaze-blocks {
     grid-template-columns: 1fr;
   }
   .equipment {

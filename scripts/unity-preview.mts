@@ -1,6 +1,7 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
+  chmodSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
@@ -156,6 +157,30 @@ function fingerprint(root: string) {
   return hash.digest('hex');
 }
 
+// ロックファイルがあっても、このプロジェクトを開くEditorのプロセスが
+// 生きていなければ、前回の異常終了で残った残骸とみなして取り除く。
+function editorRunning(project: string) {
+  const pattern = 'projectPath ' + project.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return spawnSync('pgrep', ['-f', pattern]).status === 0;
+}
+
+function clearStaleLockfile(project: string) {
+  const lockfile = join(project, 'Temp/UnityLockfile');
+  if (existsSync(lockfile) && !editorRunning(project)) rmSync(lockfile, { force: true });
+}
+
+// mkdtempの一時フォルダは所有者だけが読める権限になるため、
+// 成果物を共同作業で開ける権限へそろえる。
+function makeShareable(directory: string) {
+  if (!existsSync(directory)) return;
+  chmodSync(directory, 0o775);
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) makeShareable(path);
+    else if (entry.isFile()) chmodSync(path, 0o664);
+  }
+}
+
 export async function runPreview(
   root = repository,
   mode = 'capture',
@@ -167,8 +192,13 @@ export async function runPreview(
     readFileSync(join(project, 'ProjectSettings/ProjectVersion.txt'), 'utf8'),
   )?.[1];
   if (!version) throw new Error('Unityの版を確認できません。');
-  if (existsSync(join(project, 'Temp/UnityLockfile')))
-    throw new Error('Unity Editorを閉じてから実行してください。');
+  const lockfile = join(project, 'Temp/UnityLockfile');
+  if (existsSync(lockfile)) {
+    if (editorRunning(project))
+      throw new Error('Unity Editorを閉じてから実行してください。');
+    rmSync(lockfile, { force: true });
+    console.log('前回の異常終了で残ったロックファイルを削除しました。');
+  }
   await prepareXrSdk(root);
   const editor = editorPath(version, process.platform, env);
   mkdirSync(join(root, '.local/logs'), { recursive: true });
@@ -278,12 +308,15 @@ export async function runPreview(
       rmSync(output + '.previous', { recursive: true, force: true });
       if (existsSync(output)) renameSync(output, output + '.previous');
       renameSync(staging, output);
+      makeShareable(output);
       console.log('画面一覧: ' + join(output, 'index.html'));
       return output;
     }
     return replayOutput;
   } finally {
     restore();
+    clearStaleLockfile(project);
+    if (staging) makeShareable(staging);
   }
 }
 

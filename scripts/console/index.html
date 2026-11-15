@@ -50,13 +50,38 @@
               <p class="eyebrow">PREPARATION</p>
               <h1>準備・チェック</h1>
             </div>
-            <div class="display-tools">
-              <button id="align-display">表示位置を合わせ直す</button>
-              <p id="align-state" class="hint"></p>
-              <p id="align-reason" class="hint"></p>
-            </div>
           </div>
           <div id="preparation-entries" class="preparation-entries" aria-label="準備機能"></div>
+          <div class="card gaze-card">
+            <div class="section-heading">
+              <h2>表示位置と視線</h2>
+            </div>
+            <div class="gaze-blocks">
+              <div class="gaze-block">
+                <h2 class="subhead">1. 表示位置</h2>
+                <p>
+                  参加者が座って正面を向き、車いすが止まっている状態で押します。表示が視線の正面に揃います。
+                </p>
+                <div class="row">
+                  <button id="align-display">表示位置を合わせる</button>
+                </div>
+                <p id="align-state" class="hint"></p>
+                <p id="align-reason" class="hint"></p>
+              </div>
+              <div class="gaze-block">
+                <h2 class="subhead">2. 眼球校正</h2>
+                <p>
+                  参加者に、HMDの「設定 → 入力 →
+                  アイトラッカー」で校正してもらいます。終わったら取得状態を確認して、確認済みにします。これは実施者の確認記録で、精度の合否判定ではありません。
+                </p>
+                <div class="row">
+                  <button id="eye-calibration">眼球校正を確認済みにする</button>
+                </div>
+                <p id="eye-state"></p>
+                <pre id="eye-detail"></pre>
+              </div>
+            </div>
+          </div>
           <div class="setup-grid">
             <div class="card guide">
               <div class="guide-top">
@@ -143,13 +168,6 @@
                 ><button id="set-volume">音量を設定</button>
               </div>
               <p>実測の接続不良を合成入力で補いません。</p>
-              <h2>視線</h2>
-              <p>眼球校正はHMDの設定 → 入力 → アイトラッカーで行います。</p>
-              <div class="row">
-                <button id="eye-calibration">眼球校正を確認済みにする</button>
-              </div>
-              <p id="eye-state"></p>
-              <pre id="eye-detail"></pre>
               <h2>役割の手動設定</h2>
               <div id="roles"></div>
               <h2>左右車輪の軸</h2>

@@ -182,7 +182,8 @@ namespace WheelchairSonification.Runtime
                     Research.PresentationReady,
                     Research.Settings,
                     Research.Volume,
-                    Research.DisplayReady?.Invoke() ?? true
+                    Research.DisplayReady?.Invoke() ?? true,
+                    DisplayAlignmentReason
                 );
         }
 
@@ -255,6 +256,19 @@ namespace WheelchairSonification.Runtime
                     );
                 if (c.action.StartsWith("prep.", StringComparison.Ordinal))
                 {
+                    if (c.action == "prep.alignDisplay")
+                    {
+                        string prepAlignmentReason = DisplayAlignmentReason;
+                        if (prepAlignmentReason != "")
+                            throw new InvalidOperationException(prepAlignmentReason);
+                        AlignDisplay();
+                        Error = null;
+                        Revision++;
+                        result.ok = true;
+                        result.message = "表示位置を合わせました。";
+                        Remember(result);
+                        return result;
+                    }
                     if (
                         c.action == "prep.next"
                         && Preparation.Stage == "VisualReady"

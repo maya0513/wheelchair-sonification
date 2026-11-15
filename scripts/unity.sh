@@ -60,9 +60,25 @@ if [[ "$1" == libraries ]]; then
     exit 0
 fi
 
-if [[ -e "$project/Temp/UnityLockfile" ]]; then
-    echo "Unity Editorを閉じてから just dev unity-$1 を実行してください。" >&2
-    exit 1
+lockfile="$project/Temp/UnityLockfile"
+# ロックファイルがあっても、このプロジェクトを開くEditorのプロセスが
+# 生きていなければ、前回の異常終了で残った残骸とみなして取り除く。
+editor_running() {
+    local pattern=${project//./\\.}
+    pgrep -f "projectPath $pattern" >/dev/null 2>&1
+}
+cleanup_stale_lockfile() {
+    if [[ -e "$lockfile" ]] && ! editor_running; then
+        rm -f -- "$lockfile"
+    fi
+}
+if [[ -e "$lockfile" ]]; then
+    if editor_running; then
+        echo "Unity Editorを閉じてから just dev unity-$1 を実行してください。" >&2
+        exit 1
+    fi
+    echo "前回の異常終了で残ったロックファイルを削除します: $lockfile" >&2
+    rm -f -- "$lockfile"
 fi
 mkdir -p "$root/.local/logs"
 node "$root/scripts/unity-xr-sdk.mts"
@@ -104,6 +120,7 @@ case "$1" in
         ;;
 esac
 if [[ "$status" -ne 0 ]]; then
+    cleanup_stale_lockfile
     echo "Unityバッチ確認に失敗しました（終了コード: $status、ログ: $log）。" >&2
     if [[ -s "$log" ]]; then
         tail -n 60 -- "$log" >&2
@@ -113,10 +130,12 @@ if [[ "$status" -ne 0 ]]; then
     exit "$status"
 fi
 if [[ ! -s "$log" ]]; then
+    cleanup_stale_lockfile
     echo "Unityの終了コードは0ですが、今回のログがありません: $log" >&2
     exit 1
 fi
 if grep -Eq 'error CS[0-9]+|Scripts have compiler errors|Compilation failed' "$log"; then
+    cleanup_stale_lockfile
     echo "コンパイルエラーがあります: $log" >&2
     exit 1
 fi
@@ -126,6 +145,7 @@ if [[ -n "$results" ]]; then
 fi
 if ! grep -Fq 'Exiting batchmode successfully now!' "$log" ||
     ! grep -Fq 'Application will exit with return code 0' "$log"; then
+    cleanup_stale_lockfile
     echo "Unityの正常終了記録がありません: $log" >&2
     tail -n 60 -- "$log" >&2
     exit 1

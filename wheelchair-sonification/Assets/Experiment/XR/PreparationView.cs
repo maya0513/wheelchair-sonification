@@ -22,8 +22,7 @@ namespace WheelchairSonification.XR
             connection;
         readonly List<Button> buttons = new List<Button>();
         readonly List<Button> entries = new List<Button>();
-        readonly Button cancel,
-            alignDisplay;
+        readonly Button cancel;
         readonly Dictionary<string, RectTransform> markers =
             new Dictionary<string, RectTransform>();
         string contentKey = "",
@@ -55,7 +54,7 @@ namespace WheelchairSonification.XR
             title = XrUi.Text(panel, "Heading", "準備とチェック", 40, 12, 920, 95, 56);
             instruction = XrUi.Text(panel, "Instruction", "", 40, 208, 920, 142, 48);
             detail = XrUi.Text(panel, "Detail", "", 40, 350, 920, 60, 36);
-            connection = XrUi.Text(panel, "Connection", "", 400, 638, 340, 54, 34);
+            connection = XrUi.Text(panel, "Connection", "", 40, 638, 700, 54, 34);
             for (int i = 0; i < 4; i++)
             {
                 int slot = i;
@@ -91,17 +90,6 @@ namespace WheelchairSonification.XR
             cancel.GetComponentInChildren<TMP_Text>().fontSize = 36;
             cancel.GetComponentInChildren<TMP_Text>().text = "中断";
             cancel.onClick.AddListener(() => Send("cancel"));
-            alignDisplay = Button(panel, "Align display", 40, 638, 340, 54);
-            alignDisplay.GetComponentInChildren<TMP_Text>().fontSize = 36;
-            alignDisplay.GetComponentInChildren<TMP_Text>().text = "表示を合わせる";
-            alignDisplay.onClick.AddListener(() =>
-            {
-                var r = host.ExecuteLocal("alignDisplay");
-                localProblem = r.ok ? "表示位置を合わせました" : r.message;
-                localMessageRevision = host.Revision;
-                localMessageUntil = Time.realtimeSinceStartupAsDouble + 3;
-                contentKey = "";
-            });
             footer = XrUi.Canvas(
                 "Movement instruction",
                 rig.Camera.transform,
@@ -142,8 +130,23 @@ namespace WheelchairSonification.XR
         void RunAction(int index)
         {
             var actions = host.Preparation.View.actions;
-            if (index < actions.Length)
-                Send(actions[index].id);
+            if (index >= actions.Length)
+                return;
+            if (actions[index].id == "alignDisplay")
+            {
+                AlignDisplay();
+                return;
+            }
+            Send(actions[index].id);
+        }
+
+        void AlignDisplay()
+        {
+            var r = host.ExecuteLocal("alignDisplay");
+            localProblem = r.ok ? "表示位置を合わせました" : r.message;
+            localMessageRevision = host.Revision;
+            localMessageUntil = Time.realtimeSinceStartupAsDouble + 3;
+            contentKey = "";
         }
 
         void Send(string action, string value = "", int role = 0)
@@ -250,10 +253,6 @@ namespace WheelchairSonification.XR
             cancel.gameObject.SetActive(state.active);
             cancel.GetComponentInChildren<TMP_Text>().text =
                 state.mode == "free" ? "FB終了" : "中断";
-            alignDisplay.gameObject.SetActive(
-                host.Research.Wizard.Calibration.Complete && !active && !state.moving
-            );
-            alignDisplay.interactable = host.DisplayAlignmentReason == "";
             panel.gameObject.SetActive(showPanel);
             if (showPanel && !wasPanelVisible)
                 Recenter();

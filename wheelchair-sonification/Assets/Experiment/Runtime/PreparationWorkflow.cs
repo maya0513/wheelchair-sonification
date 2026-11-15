@@ -134,6 +134,7 @@ namespace WheelchairSonification.Runtime
         StudyGroup freeGroup = StudyGroup.Visual;
         bool presentationReady,
             displayReady = true;
+        string displayAlignmentReason = "";
         string[] proposed = new string[5];
         double now,
             entered,
@@ -661,13 +662,15 @@ namespace WheelchairSonification.Runtime
             bool presentationReady,
             FeedbackSettings feedback,
             float volume,
-            bool displayReady = true
+            bool displayReady = true,
+            string displayAlignmentReason = ""
         )
         {
             now = time;
             frame = current;
             this.presentationReady = presentationReady;
             this.displayReady = displayReady;
+            this.displayAlignmentReason = displayAlignmentReason;
             if (frame == null)
             {
                 uiStillSince = double.NaN;
@@ -1249,6 +1252,8 @@ namespace WheelchairSonification.Runtime
                 reason = StartReason(action.id.Substring(6));
             else if (action.id == "freeVisual" || action.id == "freeAuditory")
                 reason = StartReason(action.id);
+            else if (action.id == "alignDisplay")
+                reason = displayAlignmentReason;
             else if (action.id == "next" && Stage == "VisualReady")
                 reason = StartReason("visual");
             action.reason = reason;
@@ -1289,15 +1294,25 @@ namespace WheelchairSonification.Runtime
                     return (
                         "FB検査",
                         "止まったまま、見本を確かめます",
-                        "視覚は先に表示位置を合わせます。",
-                        new[] { A("check.visual", "視覚の見本"), A("check.audio", "聴覚の見本") }
+                        "視覚の見本には、表示位置合わせが必要です。",
+                        new[]
+                        {
+                            A("alignDisplay", displayReady ? "表示を合わせ直す" : "表示を合わせる"),
+                            A("check.visual", "視覚の見本"),
+                            A("check.audio", "聴覚の見本"),
+                        }
                     );
                 case "FreeMenu":
                     return (
                         "自由走行・保存なし",
                         "実際の車輪の速さを返します",
-                        "停止中に選択。メニューでFBを終了。",
-                        new[] { A("freeVisual", "視覚で走る"), A("freeAuditory", "聴覚で走る") }
+                        "視覚で走るには、表示位置合わせが必要です。",
+                        new[]
+                        {
+                            A("alignDisplay", displayReady ? "表示を合わせ直す" : "表示を合わせる"),
+                            A("freeVisual", "視覚で走る"),
+                            A("freeAuditory", "聴覚で走る"),
+                        }
                     );
                 case "Free":
                     return ("自由走行・保存なし", "", "", Array.Empty<PreparationAction>());

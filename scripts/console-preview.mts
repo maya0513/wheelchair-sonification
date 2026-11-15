@@ -1,9 +1,11 @@
 import { spawn, spawnSync } from 'node:child_process';
 import {
+  chmodSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readdirSync,
   writeFileSync,
   rmSync,
   renameSync,
@@ -20,6 +22,17 @@ import {
 } from './console-preview-fixture.mts';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+
+// mkdtempの一時フォルダは所有者だけが読める権限になるため、
+// 成果物を共同作業で開ける権限へそろえる。
+function makeShareable(directory: string) {
+  chmodSync(directory, 0o775);
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) makeShareable(path);
+    else if (entry.isFile()) chmodSync(path, 0o664);
+  }
+}
 export async function captureConsole(output = join(root, '.local/console-preview')) {
   const finalOutput = output;
   mkdirSync(dirname(finalOutput), { recursive: true });
@@ -675,6 +688,7 @@ export async function captureConsole(output = join(root, '.local/console-preview
     rmSync(finalOutput + '.previous', { recursive: true, force: true });
     if (existsSync(finalOutput)) renameSync(finalOutput, finalOutput + '.previous');
     renameSync(output, finalOutput);
+    makeShareable(finalOutput);
     console.log('実施者画面を撮影しました: ' + join(finalOutput, 'index.html'));
     return finalOutput;
   } finally {

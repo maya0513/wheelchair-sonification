@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import {
   copyFileSync,
   existsSync,
@@ -51,14 +51,17 @@ set -eu
 printf '%s\\n' "$@" > "${root}/invocation"
 log=''
 results=''
+proj=''
 while [[ $# -gt 0 ]]; do
   if [[ "$1" == -logFile ]]; then log="$2"; shift; fi
   if [[ "$1" == -testResults ]]; then results="$2"; shift; fi
+  if [[ "$1" == -projectPath ]]; then proj="$2"; shift; fi
   shift
 done
 case "$TEST_CASE" in
   no-log) exit 0 ;;
   failure) echo 'license failed' >&2; exit 7 ;;
+  failure-lock) mkdir -p "$proj/Temp"; : > "$proj/Temp/UnityLockfile"; exit 7 ;;
   compiler) printf 'error CS1002: expected ;\\n${successLog}' > "$log" ;;
   incomplete) echo 'startup only' > "$log" ;;
   *) printf '${successLog}' > "$log" ;;
@@ -107,15 +110,39 @@ test('batch success needs a new log with normal termination', (t) => {
   );
 });
 
-test('open and check refuse a locked project without launching', (t) => {
+test('open and check refuse a project a live Editor has open', (t) => {
   const { root, execute } = fixture(t);
-  writeFileSync(join(root, 'wheelchair-sonification/Temp/UnityLockfile'), '');
+  const project = join(root, 'wheelchair-sonification');
+  writeFileSync(join(project, 'Temp/UnityLockfile'), '');
+  // 生きているEditorの代わり。コマンドラインに -projectPath を含む待機プロセス。
+  const holder = spawn('python3', ['-c', 'import time; time.sleep(10)', '-projectPath', project], {
+    stdio: 'ignore',
+  });
+  t.after(() => holder.kill('SIGKILL'));
   for (const mode of ['open', 'check']) {
     const result = execute(mode);
     assert.equal(result.status, 1);
     assert.match(result.stderr, /Editorを閉じて/);
     assert.equal(existsSync(join(root, 'invocation')), false);
   }
+});
+
+test('a stale lockfile from a crashed Editor is removed and the run proceeds', (t) => {
+  const { root, execute } = fixture(t);
+  const lockfile = join(root, 'wheelchair-sonification/Temp/UnityLockfile');
+  writeFileSync(lockfile, '');
+  const result = execute();
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stderr, /ロックファイルを削除/);
+  assert.equal(existsSync(lockfile), false);
+});
+
+test('a failed run removes the lockfile its Editor left behind', (t) => {
+  const { root, execute } = fixture(t);
+  const lockfile = join(root, 'wheelchair-sonification/Temp/UnityLockfile');
+  const result = execute('check', 'failure-lock');
+  assert.equal(result.status, 7);
+  assert.equal(existsSync(lockfile), false);
 });
 
 test('missing libraries prevent startup', (t) => {
