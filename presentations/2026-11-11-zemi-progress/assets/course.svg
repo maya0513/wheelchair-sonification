@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="320" viewBox="0 0 800 320">
+<rect width="800" height="320" fill="white"/>
+<path d="M 210,160 C 210,70 330,70 330,160 C 330,250 210,250 210,160 C 210,70 90,70 90,160 C 90,250 210,250 210,160 Z" fill="none" stroke="black" stroke-width="2.5"/>
+<polygon points="90,160 78,182 102,182" fill="black"/>
+<polygon points="330,160 318,182 342,182" fill="black"/>
+<line x1="90" y1="285" x2="330" y2="285" stroke="black" stroke-width="1.2"/>
+<line x1="90" y1="278" x2="90" y2="292" stroke="black" stroke-width="1.2"/>
+<line x1="330" y1="278" x2="330" y2="292" stroke="black" stroke-width="1.2"/>
+<text x="210" y="308" font-size="16" text-anchor="middle" font-family='Noto Sans CJK JP, sans-serif'>コーン間 5 m</text>
+<text x="210" y="40" font-size="17" text-anchor="middle" font-family='Noto Sans CJK JP, sans-serif'>8の字走（1周）</text>
+<line x1="450" y1="60" x2="450" y2="300" stroke="black" stroke-width="0.8"/>
+<text x="610" y="40" font-size="17" text-anchor="middle" font-family='Noto Sans CJK JP, sans-serif'>10 m直進</text>
+<line x1="480" y1="160" x2="740" y2="160" stroke="black" stroke-width="2.5"/>
+<polygon points="480,160 492,138 468,138" fill="black"/>
+<polygon points="740,160 752,138 728,138" fill="black"/>
+<text x="480" y="195" font-size="15" text-anchor="middle" font-family='Noto Sans CJK JP, sans-serif'>スタート</text>
+<text x="740" y="195" font-size="15" text-anchor="middle" font-family='Noto Sans CJK JP, sans-serif'>ゴール</text>
+<line x1="480" y1="245" x2="740" y2="245" stroke="black" stroke-width="1.2"/>
+<line x1="480" y1="238" x2="480" y2="252" stroke="black" stroke-width="1.2"/>
+<line x1="740" y1="238" x2="740" y2="252" stroke="black" stroke-width="1.2"/>
+<text x="610" y="272" font-size="16" text-anchor="middle" font-family='Noto Sans CJK JP, sans-serif'>10 m</text>
+</svg>
