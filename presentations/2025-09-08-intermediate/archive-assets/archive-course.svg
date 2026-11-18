@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="300" viewBox="0 0 820 300">
+<rect width="820" height="300" fill="white"/>
+<text x="190" y="36" font-size="17" text-anchor="middle" font-family='Noto Sans CJK JP, sans-serif'>ジグザグ走</text>
+<polyline points="40,110 110,180 180,110 250,180 320,110" fill="none" stroke="black" stroke-width="2.5"/>
+<polygon points="40,215 30,240 50,240" fill="black"/>
+<polygon points="110,215 100,240 120,240" fill="black"/>
+<polygon points="180,215 170,240 190,240" fill="black"/>
+<polygon points="250,215 240,240 260,240" fill="black"/>
+<polygon points="320,215 310,240 330,240" fill="black"/>
+<line x1="330" y1="262" x2="52" y2="262" stroke="black" stroke-width="2"/>
+<polygon points="40,262 56,256 56,268" fill="black"/>
+<text x="190" y="288" font-size="14" text-anchor="middle" font-family='Noto Sans CJK JP, sans-serif'>折り返して直線で戻る（全長 20 m）</text>
+<text x="620" y="36" font-size="17" text-anchor="middle" font-family='Noto Sans CJK JP, sans-serif'>8の字走</text>
+<path d="M 620,150 C 620,70 720,70 720,150 C 720,230 620,230 620,150 C 620,70 520,70 520,150 C 520,230 620,230 620,150 Z" fill="none" stroke="black" stroke-width="2.5"/>
+<polygon points="520,150 510,172 530,172" fill="black"/>
+<polygon points="720,150 710,172 730,172" fill="black"/>
+<text x="620" y="288" font-size="14" text-anchor="middle" font-family='Noto Sans CJK JP, sans-serif'>コーン間 5 m、8の字に5周</text>
+</svg>
