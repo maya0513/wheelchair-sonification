@@ -19,6 +19,7 @@
 | `console-validation.mts` | 継続確認の成功証拠がある場合だけ採用。未実施でも公開を妨げない |
 | `console-packaging.mts` | ローカル確認用ZIPの作成。Release公開からは呼ばない |
 | `unity-results.py` | NUnit XMLの失敗・件数・空結果の検査 |
+| `line-deviation.mts` | 線課題のズレ解析。マーカー3点からの座標変換、区間別集計、ほぼ停止の計数 |
 | `unity-state.mts` | バッチ実行後にUnity設定・動的フォントの変更を戻す |
 | `unity-mcp.mts` | MCPサーバーとUnityパッケージの版合わせ、任意のEditor接続 |
 
