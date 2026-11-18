@@ -24,3 +24,8 @@ update:
 # 実験用PC画面を起動（Wi-Fi設定は変更しない）
 start:
     mise exec --locked -- node scripts/experiment-console.mts
+
+# Typstスライドをコンパイル（出力先を省略すると入力ファイルと同名のPDFになる）
+# 例: just typc presentations/2026-11-18-zemi-progress/main.typ presentations/2026-11-18-zemi-progress/zemi-progress.pdf
+typc src dst=replace(src, ".typ", ".pdf"):
+    mise exec --locked -- typst compile {{quote(src)}} {{quote(dst)}}
